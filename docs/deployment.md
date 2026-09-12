@@ -1,5 +1,16 @@
 # OpenAI Sites deployment
 
+## Development and deployment policy
+
+User instruction, 2026-09-12:
+
+- All development, builds, tests, and previews happen locally by default.
+- Never deploy to production or publish to OpenAI Sites without an explicit user command for that deployment. A request to fix, improve, finish, or continue development is not a deployment command.
+- Previous publication requests do not authorize future deployments. This rule overrides any Sites skill's default to publish after edits.
+- The existing Site belongs to the user's personal account. On an explicit deployment request, use that personal account and reuse the existing Site; do not create a workspace replacement.
+- Do not initiate Sites publishing preparation (remote pushes, write credentials, or hosted versions) during ordinary local development. Keep local changes ready for a later explicit deployment command.
+- Do not automatically resume a previously blocked deployment when access is restored; wait for an explicit command.
+
 ## Existing Site
 
 - Live URL: https://esd-formatting-lab.pnv82g.chatgpt.site
@@ -24,7 +35,9 @@ Confirmed by the native deployment status response on 2026-09-12 at 01:32:35 UTC
 
 These identify the first publication. Copy new version/deployment IDs directly from tool responses for subsequent revisions.
 
-## Updating the same app
+## Publishing an update after an explicit command
+
+Start this procedure only after the user explicitly commands deployment. Use the personal account that owns this Site.
 
 1. Read the current installed `sites:sites-hosting` skill and its publishing/handoff references. Use native Sites tools and the current plugin scripts.
 2. Read the manifest, reuse its project ID, and check the Site audience through `get_site` as required by the skill. Preserve public access; do not switch it to private to deploy.
@@ -35,7 +48,7 @@ These identify the first publication. Copy new version/deployment IDs directly f
 7. Call `save_site_version` with the exact project ID, pushed SHA, and absolute archive path, then `deploy_site_version` with the returned version ID. This is the public deployment path.
 8. Poll `get_deployment_status` with the returned deployment ID until terminal. Report success only for `succeeded` with a URL. Return the exact URL and use the app-opening tool for handoff.
 
-Do not redeploy for documentation-only maintenance. Respect future requests for local-only changes or saving without deployment.
+Every development change stays local until an explicit deployment command. Do not infer publishing authorization from app edits or documentation maintenance.
 
 ## Windows notes
 
@@ -49,4 +62,4 @@ Credentials expire. None are stored here, in the manifest, or in Git configurati
 
 ## Pending toolbar-placement update · 2026-09-12
 
-The fixed-toolbar placement change is built, tested, and saved locally, but has not been republished. Both `get_site` and `create_source_repository_write_credential` returned `NOT_FOUND / project_not_found` for the saved project ID; `search_sites` for `esd-formatting-lab` returned no results. Preserve the existing manifest, project ID, and public URL. Restore Sites access in the account/workspace owning the existing Site, then publish this update through the procedure above. Do not create a replacement Site to work around this error.
+The fixed-toolbar placement change is built, tested, and saved locally, but has not been republished. Both `get_site` and `create_source_repository_write_credential` returned `NOT_FOUND / project_not_found` for the saved project ID; `search_sites` for `esd-formatting-lab` returned no results. Preserve the existing manifest, project ID, and public URL. The user clarified that deployment uses their personal account. Leave this update local; only after a new explicit deployment command should access be checked in that personal account and publication resumed. Do not create a replacement Site to work around this error.

@@ -4,6 +4,8 @@ A small, local browser prototype for experimenting with the Electronics System D
 
 **Published app:** [ESD Formatting Lab](https://esd-formatting-lab.pnv82g.chatgpt.site) — accessible to anyone with the link. See [deployment instructions](docs/deployment.md) to update the same Site.
 
+Development and previews stay local. Production updates require an explicit deployment command and use the owner's personal OpenAI account.
+
 ## Run
 
 Requires Node.js 22.12+ and npm.
@@ -24,7 +26,7 @@ npm test        # Formatting, geometry, and snapshot checks
 
 - Select a block, open Fill color, and choose a swatch. Double-click its label (or press Enter) to reveal text controls. Enter finishes label editing; Escape cancels the label draft.
 - Switch **Flat / Grouped / Inline** in the Interaction lab. These implement the three [document-defined solutions](docs/solutions.md): dedicated Stroke/Text/Alignment sub-toolbars with Back, stable compound controls with grouped popovers, and actual expansion within one toolbar row.
-- Open Stroke to compare patterns and Zero / Small / Medium / Large widths.
+- Open Stroke to compare patterns and Small / Medium / Large / Extra large widths (1 / 2 / 4 / 8 px).
 - Select a connection and open its arrow-style group to choose None, Left, Right, or Both, or use the separate cycle button to iterate None → Left → Right → Both. The group icon shows the current state; the cycle button tooltip names the next state. Left and right refer to the source and target ends of the drawn path, even when moved around the canvas.
 - Shift-click objects to apply shared formatting together. Different values appear as Mixed.
 - Drag objects, resize from the bottom-right handle, use H to pan or the zoom controls, and try the dense and edge scenes.

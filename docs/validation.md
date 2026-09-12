@@ -1,5 +1,25 @@
 # Toolbar solutions validation · 2026-09-11
 
+## Direct choices and lighter popovers · 2026-09-12
+
+Grouped text formatting now exposes four font-style icon buttons directly; numeric font-size arrows remain visible. The Show popover headers modifier removes or restores the title and close button across formatting popovers and persists in local saves and exported experiments, defaulting to enabled for old files.
+
+Stroke widths now offer 1, 2, 4, and 8 px with line samples across all behaviors. Zero is absent from the choices; legacy saved widths still load. Added snapshot coverage for the header modifier and new width.
+
+Build and all 32 tests pass. Local browser checks confirmed one-click Compact font selection, the size stepper changing 18 to 19, header removal without moving the toolbar (x=78, y=162.0625), four visibly distinct width samples, and selecting 8 px. Test formatting changes were undone. No deployment was performed.
+
+## Compact custom colors · 2026-09-12
+
+Removed the separate custom color input. Saved custom colors now share a row with a circular plus button in the last position; the plus remains available when there are no saved colors and opens the native color dialog for selection and manual entry.
+
+The production build passes. Local browser verification confirmed matching 23 px circles, the plus after the saved swatches, no inline hex field, and successful opening and dismissal of the native color dialog. No deployment was performed.
+
+## Nearby edge docking · 2026-09-12
+
+Fixed the fallback that chose the top of the canvas when a selected block crossed the bottom boundary. Equally clear docking positions now prefer the edge nearest the selection. Containment checks tolerate tiny floating-point errors so a valid right-clamped anchor is not rejected.
+
+Reproduced the bug in Grouped by zooming a selected Control firmware block past the lower boundary: the previous toolbar jumped to screen y=76. After the fix, it docked at y=741 and remained there when the color popup opened upward. Switching between different popup sizes also retained the anchor. All 28 tests and the production build pass, including new bottom-boundary and fractional-coordinate regressions. This change is local only.
+
 ## Fixed toolbar anchor · 2026-09-12
 
 The toolbar now chooses its position independently of popover size: above the selection when the toolbar alone fits, otherwise below, with viewport-edge docking when neither fits. Opening, switching, and closing panels retains that anchor. Popovers prefer the outward side, flip toward the selection only when outward space is insufficient, and scroll within the larger available side if neither fits their natural height.

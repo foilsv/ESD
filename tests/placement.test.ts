@@ -190,3 +190,45 @@ test('a selection wider than the viewport keeps a stable clear anchor where vert
     checkConnected(p);
   }
 });
+
+test('a block crossing the bottom boundary docks nearby instead of jumping to the top', () => {
+  const selection = { x: 440, y: 695, w: 195, h: 110 };
+  const closed = placeFormattingPanel(selection, bar, null, viewport);
+  assert.equal(closed.toolbar.y, viewport.y + viewport.h - bar.h);
+  assert.equal(closed.edgeAnchored, true);
+  let p = closed;
+  for (const size of [popup, { w: 304, h: 248 }, { w: 288, h: 120 }, null]) {
+    p = placeFormattingPanel(selection, bar, size, viewport, 250, p);
+    assert.deepEqual(p.toolbar, closed.toolbar);
+    assert.deepEqual(placeFormattingPanel(selection, bar, size, viewport).toolbar, closed.toolbar);
+    assert.equal(p.direction, 'up');
+    checkContained(p);
+    checkConnected(p);
+  }
+  const topSelection = { ...selection, y: -150 };
+  const top = placeFormattingPanel(topSelection, bar, popup, viewport);
+  assert.equal(top.toolbar.y, viewport.y);
+  assert.equal(top.direction, 'down');
+  checkContained(top);
+});
+
+test('fractional right-edge coordinates do not reject a valid anchor above the selection', () => {
+  const fractionalViewport = { x: 78, y: 14, w: 398.2, h: 660 };
+  const selection = { x: 400, y: 550, w: 180, h: 110 };
+  const fractionalBar = { w: 220.1, h: 44 };
+  const closed = placeFormattingPanel(selection, fractionalBar, null, fractionalViewport);
+  assert.equal(closed.toolbar.y, 490);
+  assert.equal(closed.edgeAnchored, false);
+  const open = placeFormattingPanel(
+    selection,
+    fractionalBar,
+    popup,
+    fractionalViewport,
+    180,
+    closed,
+  );
+  assert.deepEqual(open.toolbar, closed.toolbar);
+  assert.equal(open.direction, 'up');
+  assert.ok(open.toolbar.x + open.toolbar.w <= fractionalViewport.x + fractionalViewport.w + 1e-6);
+  checkConnected(open);
+});

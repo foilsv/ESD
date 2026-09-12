@@ -682,6 +682,9 @@ button[aria-pressed='true']:not(.swatch):not(.color-swatch) {
   color: #8994a3;
   margin-top: 4px;
 }
+.switch-row + .switch-row {
+  margin-top: 12px;
+}
 .switch-row input {
   position: absolute;
   right: 0;
@@ -1230,23 +1233,26 @@ button[aria-pressed='true']:not(.swatch):not(.color-swatch) {
   color: var(--muted);
   font-size: 11px;
 }
-.custom-color-editor {
-  display: flex;
+.custom-color-add {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  background: transparent;
   color: var(--muted);
+  border: 1px dashed var(--border);
 }
-.custom-color-editor .hex-control {
-  flex: 1;
-  margin: 0;
+.custom-color-add:hover {
+  color: var(--accent);
+  border-color: var(--accent);
 }
-.custom-color-editor .hex-control input:not([type='color']) {
-  width: 100%;
-  min-width: 0;
-}
-.custom-color-editor input[type='color'] {
-  flex-shrink: 0;
-  cursor: pointer;
+.custom-color-picker {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 .custom-swatches {
   padding-top: 10px;
@@ -1267,9 +1273,23 @@ button[aria-pressed='true']:not(.swatch):not(.color-swatch) {
 .formatting-popover .font-control {
   width: 100%;
 }
-.grouped-text-controls .font-picker {
+.font-style-choices {
   margin-left: auto;
 }
+.font-style-choices button {
+  width: 46px;
+  min-width: 0;
+  height: 30px;
+  padding: 0;
+}
+.font-style-choices button > span {
+  display: flex;
+}
+.font-size-input::-webkit-inner-spin-button,
+.font-size-input::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
 .formatting-popover .font-size-input {
   flex-shrink: 0;
 }

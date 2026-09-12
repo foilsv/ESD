@@ -15,7 +15,10 @@ export const PANEL_GAP = 14;
 const SELECTION_GAP = 16;
 const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(n, max));
 const inside = (r: Rect, v: Rect) =>
-  r.x >= v.x && r.y >= v.y && r.x + r.w <= v.x + v.w && r.y + r.h <= v.y + v.h;
+  r.x >= v.x - 1e-6 &&
+  r.y >= v.y - 1e-6 &&
+  r.x + r.w <= v.x + v.w + 1e-6 &&
+  r.y + r.h <= v.y + v.h + 1e-6;
 
 /** Anchor the toolbar first. A popover may flip or scroll, but cannot move it. */
 export function placeFormattingPanel(
@@ -55,7 +58,12 @@ export function placeFormattingPanel(
       { x: centerX, y: viewport.y, ...bar },
       { x: centerX, y: Math.max(viewport.y, bottom - bar.h), ...bar },
     ];
-    toolbar = edges.sort((a, b) => overlap(a, selection) - overlap(b, selection))[0];
+    // Equally clear edges should keep the controls near the selected object.
+    // Otherwise a block moving just beyond the bottom jumps to the top edge.
+    const distance = (r: Rect) => Math.abs(r.y + r.h / 2 - (selection.y + selection.h / 2));
+    toolbar = edges.sort(
+      (a, b) => overlap(a, selection) - overlap(b, selection) || distance(a) - distance(b),
+    )[0];
   }
 
   const available = {

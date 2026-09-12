@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Check, Plus, Pipette } from 'lucide-react';
-import { ColorInput, type ColorKey } from './FormattingControls';
+import { type ColorKey } from './FormattingControls';
 
 const neutrals = [
   '#ffffff',
@@ -68,6 +68,7 @@ export default function ColorPalette({
 }) {
   const [custom, setCustom] = useState(readCustomColors);
   const [notice, setNotice] = useState('');
+  const customPicker = useRef<HTMLInputElement>(null);
   const label = kind === 'fill' ? 'Fill color' : kind === 'stroke' ? 'Stroke color' : 'Text color';
   const colors = [
     ...(kind === 'fill' ? ['transparent', ...neutrals.slice(0, 6), '#0f172a'] : neutrals),
@@ -129,7 +130,7 @@ export default function ColorPalette({
                 setNotice('');
               } catch (error) {
                 if (!(error instanceof DOMException && error.name === 'AbortError'))
-                  setNotice('Could not sample a color. Use the color picker below.');
+                  setNotice('Could not sample a color. Use Add custom color.');
               }
             }}
           >
@@ -137,19 +138,34 @@ export default function ColorPalette({
           </button>
         )}
       </div>
-      <div className="custom-color-editor">
-        <Plus size={14} aria-hidden="true" />
-        <ColorInput value={value} onChange={chooseCustom} />
-      </div>
-      {custom.length > 0 && (
-        <div
-          className="color-swatch-grid custom-swatches"
-          role="group"
-          aria-label="Saved custom colors"
+      <div
+        className="color-swatch-grid custom-swatches"
+        role="group"
+        aria-label="Saved custom colors"
+      >
+        {custom.map(swatch)}
+        <button
+          className="color-swatch custom-color-add"
+          type="button"
+          aria-label="Add custom color"
+          title="Add custom color"
+          onClick={() => customPicker.current?.click()}
         >
-          {custom.map(swatch)}
-        </div>
-      )}
+          <Plus size={14} aria-hidden="true" />
+        </button>
+      </div>
+      <input
+        ref={customPicker}
+        className="custom-color-picker"
+        type="color"
+        aria-label="Choose custom color"
+        tabIndex={-1}
+        value={value?.startsWith('#') ? value : '#ffffff'}
+        onChange={(event) => chooseCustom(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === 'Escape') event.stopPropagation();
+        }}
+      />
       {notice && (
         <p className="color-picker-notice" role="status">
           {notice}

@@ -79,6 +79,7 @@ export default function App() {
   const [detail, setDetail] = useState<Detail>(null);
   const [behavior, setBehavior] = useState<PanelBehavior>(initial?.behavior ?? 'flat');
   const [sticky, setSticky] = useState(initial?.sticky ?? true);
+  const [showPopoverHeaders, setShowPopoverHeaders] = useState(initial?.showPopoverHeaders ?? true);
   const [labOpen, setLabOpen] = useState(() => window.innerWidth > 900);
   const [grid, setGrid] = useState(false);
   const [tool, setTool] = useState<Tool>('select');
@@ -138,11 +139,14 @@ export default function App() {
   }, [viewport, fit]);
   useEffect(() => {
     const timeout = window.setTimeout(
-      () => setSaved(saveSnapshot({ version: 2, objects, scene, behavior, sticky })),
+      () =>
+        setSaved(
+          saveSnapshot({ version: 2, objects, scene, behavior, sticky, showPopoverHeaders }),
+        ),
       300,
     );
     return () => clearTimeout(timeout);
-  }, [objects, scene, behavior, sticky]);
+  }, [objects, scene, behavior, sticky, showPopoverHeaders]);
   useEffect(() => {
     if (!notice) return;
     const timeout = window.setTimeout(() => setNotice(''), 4000);
@@ -427,6 +431,7 @@ export default function App() {
       scene,
       behavior,
       sticky,
+      showPopoverHeaders,
     };
     const url = URL.createObjectURL(
       new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' }),
@@ -451,6 +456,7 @@ export default function App() {
       setScene(snapshot.scene);
       setBehavior(snapshot.behavior);
       setSticky(snapshot.sticky);
+      setShowPopoverHeaders(snapshot.showPopoverHeaders ?? true);
       setSelected([]);
       setEditing(null);
       setDetail(null);
@@ -646,6 +652,7 @@ export default function App() {
             objects={chosen}
             editing={Boolean(editing)}
             behavior={behavior}
+            showPopoverHeaders={showPopoverHeaders}
             detail={detail}
             setDetail={setDetail}
             patch={patch}
@@ -735,6 +742,18 @@ export default function App() {
                   type="checkbox"
                   checked={sticky}
                   onChange={(e) => setSticky(e.target.checked)}
+                />
+                <span className="switch" />
+              </label>
+              <label className="switch-row">
+                <span>
+                  Show popover headers<span className="field-note">Title and close button</span>
+                </span>
+                <input
+                  type="checkbox"
+                  aria-label="Show popover headers"
+                  checked={showPopoverHeaders}
+                  onChange={(e) => setShowPopoverHeaders(e.target.checked)}
                 />
                 <span className="switch" />
               </label>

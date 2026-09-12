@@ -17,10 +17,10 @@ import {
 import { fonts, patternDash, type FontFamily, type Pattern, type Style } from './model';
 
 export const widths = [
-  { value: 0, label: 'Zero' },
-  { value: 1.5, label: 'Small' },
+  { value: 1, label: 'Small' },
   { value: 2, label: 'Medium' },
   { value: 4, label: 'Large' },
+  { value: 8, label: 'Extra large' },
 ];
 export type Value = <K extends keyof Style>(key: K) => Style[K] | undefined;
 export interface ControlProps {
@@ -181,6 +181,27 @@ export function FontControl({ value, patch }: ControlProps) {
         ))}
       </select>
     </span>
+  );
+}
+export function FontChoices({ value, patch }: ControlProps) {
+  const family = value('fontFamily');
+  return (
+    <div className="segmented font-style-choices" role="group" aria-label="Font family">
+      {(Object.keys(fonts) as FontFamily[]).map((id) => (
+        <button
+          key={id}
+          type="button"
+          aria-label={fonts[id].label + ' font style'}
+          title={fonts[id].label}
+          aria-pressed={family === id}
+          onClick={() => patch({ fontFamily: id })}
+        >
+          <span aria-hidden="true">
+            <FontStyleIcon family={id} />
+          </span>
+        </button>
+      ))}
+    </div>
   );
 }
 function FontStyleIcon({ family }: { family?: FontFamily }) {
@@ -466,7 +487,7 @@ export function StrokeControls({
               aria-pressed={value('width') === width}
               onClick={() => patch({ width })}
             >
-              {inline ? <StrokeSample width={width} /> : label}
+              <StrokeSample width={width} />
             </button>
           ))}
         </div>

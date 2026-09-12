@@ -33,6 +33,7 @@ import {
   ColorButton,
   EmphasisControls,
   FontControl,
+  FontChoices,
   SizeDropdown,
   SizeChoices,
   StrokeControls,
@@ -44,6 +45,7 @@ interface Props {
   objects: DiagramObject[];
   editing: boolean;
   behavior: PanelBehavior;
+  showPopoverHeaders?: boolean;
   detail: Detail;
   setDetail: (detail: Detail) => void;
   patch: (patch: Partial<Style>) => void;
@@ -146,7 +148,7 @@ export default function FormattingToolbar(props: Props) {
     <div className={inline ? 'inline-text-controls' : 'grouped-text-controls'}>
       <div className="detail-row">
         <span>Font</span>
-        <FontControl {...controls} />
+        {inline ? <FontControl {...controls} /> : <FontChoices {...controls} />}
         {inline && sizeControl}
       </div>
       {!inline && (
@@ -517,18 +519,20 @@ export default function FormattingToolbar(props: Props) {
             visibility: placement?.popover ? undefined : 'hidden',
           }}
         >
-          <div className="detail-heading">
-            <span>{popoverTitle}</span>
-            <button
-              className="icon-button small"
-              aria-label="Close popover"
-              onClick={() =>
-                sizeOpen ? setSizeOpen(false) : color ? setColor(null) : setDetail(null)
-              }
-            >
-              <X size={14} />
-            </button>
-          </div>
+          {props.showPopoverHeaders !== false && (
+            <div className="detail-heading">
+              <span>{popoverTitle}</span>
+              <button
+                className="icon-button small"
+                aria-label="Close popover"
+                onClick={() =>
+                  sizeOpen ? setSizeOpen(false) : color ? setColor(null) : setDetail(null)
+                }
+              >
+                <X size={14} />
+              </button>
+            </div>
+          )}
           {sizeOpen ? (
             <SizeDropdown {...controls} onChoose={() => setSizeOpen(false)} />
           ) : color ? (

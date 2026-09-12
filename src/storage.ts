@@ -8,6 +8,7 @@ export interface Snapshot {
   scene: Scene;
   behavior: PanelBehavior;
   sticky: boolean;
+  showPopoverHeaders?: boolean;
 }
 export function validSnapshot(input: unknown): input is Snapshot {
   if (!input || typeof input !== 'object') return false;
@@ -17,6 +18,7 @@ export function validSnapshot(input: unknown): input is Snapshot {
     Object.hasOwn(scenes, data.scene) &&
     ['flat', 'grouped', 'inline'].includes(data.behavior) &&
     typeof data.sticky === 'boolean' &&
+    (data.showPopoverHeaders === undefined || typeof data.showPopoverHeaders === 'boolean') &&
     Array.isArray(data.objects) &&
     data.objects.length <= 200 &&
     new Set(data.objects.map((o) => o?.id)).size === data.objects.length &&
@@ -37,7 +39,7 @@ export function validSnapshot(input: unknown): input is Snapshot {
         [o.style.fill, o.style.stroke, o.style.textColor].every(
           (c) => typeof c === 'string' && (/^#[0-9a-f]{6}$/i.test(c) || c === 'transparent'),
         ) &&
-        [0, 1, 1.5, 2, 4].includes(o.style.width) &&
+        [0, 1, 1.5, 2, 4, 8].includes(o.style.width) &&
         ['solid', 'dashed', 'dotted'].includes(o.style.pattern) &&
         Number.isFinite(o.style.fontSize) &&
         o.style.fontSize >= 8 &&
@@ -69,6 +71,7 @@ export function parseSnapshot(input: unknown): Snapshot | null {
   const migrated = {
     ...data,
     version: 2,
+    showPopoverHeaders: data.showPopoverHeaders === undefined ? true : data.showPopoverHeaders,
     behavior:
       typeof data.behavior === 'string'
         ? (legacyNames[data.behavior] ?? data.behavior)
