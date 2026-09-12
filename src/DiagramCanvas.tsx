@@ -34,6 +34,11 @@ interface Props {
   move: (point: Point) => void;
   end: () => void;
 }
+
+export function arrowMarkerSize(width: number) {
+  return Math.max(9, Math.min(24, width * 3));
+}
+
 export default function DiagramCanvas(props: Props) {
   const { objects, selected, editing, view } = props;
   const render = (object: DiagramObject) => {
@@ -72,22 +77,28 @@ export default function DiagramCanvas(props: Props) {
           <>
             <defs>
               <marker
-                id={`arrow-${id}`}
-                markerWidth="9"
-                markerHeight="9"
-                refX="7"
+                id={`arrow-start-${id}`}
+                markerWidth={arrowMarkerSize(style.width)}
+                markerHeight={arrowMarkerSize(style.width)}
+                viewBox="0 0 8 8"
+                refX="1"
                 refY="4"
-                orient="auto-start-reverse"
+                orient="auto"
                 markerUnits="userSpaceOnUse"
               >
-                <path
-                  d="M1 1 L7 4 L1 7"
-                  fill="none"
-                  stroke={style.stroke}
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+                <path d="M7 1 L1 4 L7 7 Z" fill={style.stroke} />
+              </marker>
+              <marker
+                id={`arrow-end-${id}`}
+                markerWidth={arrowMarkerSize(style.width)}
+                markerHeight={arrowMarkerSize(style.width)}
+                viewBox="0 0 8 8"
+                refX="7"
+                refY="4"
+                orient="auto"
+                markerUnits="userSpaceOnUse"
+              >
+                <path d="M1 1 L7 4 L1 7 Z" fill={style.stroke} />
               </marker>
             </defs>
             {active && (
@@ -115,12 +126,12 @@ export default function DiagramCanvas(props: Props) {
               strokeLinecap="round"
               markerStart={
                 ['left', 'both'].includes(connectionArrows(object)) && style.width > 0
-                  ? `url(#arrow-${id})`
+                  ? `url(#arrow-start-${id})`
                   : undefined
               }
               markerEnd={
                 ['right', 'both'].includes(connectionArrows(object)) && style.width > 0
-                  ? `url(#arrow-${id})`
+                  ? `url(#arrow-end-${id})`
                   : undefined
               }
             />

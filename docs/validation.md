@@ -40,6 +40,8 @@ All 26 tests pass, including ten placement regressions for stable anchors, top/b
 
 ## Four-state connection arrows
 
+Latest visual refinement: Both now uses one bidirectional arrow, while the separate iterator uses an iteration symbol. SVG arrow markers scale from 9 px at thin strokes to 24 px at the 8 px width. Start and end triangles now have separate marker viewports and reference points, preventing the start triangle from being clipped when rendered at 4 or 8 px. The production build and all 37 tests pass, including a rendered-SVG regression. Local browser checks confirmed complete arrowheads at both ends of routed 4 px and 8 px SPI connections; the test formatting was restored afterward. No deployment was performed.
+
 Behavior integration: the arrow selector now uses the shared group system. Browser checks verified Inline's four individual buttons, Grouped's connected popover with an unchanged toolbar position, and Flat's dedicated row with working Back. Choosing Both updated both arrowheads; cycling while the popover remained open updated the selected choice. The independent iterator remains available in each mode. All 24 tests and the production build pass; no browser warnings or errors appeared.
 
 Follow-up correction: restored two separate controls in every behavior. The icon dropdown directly selects None, Left, Right, or Both; the adjacent circular-arrow button cycles those same states. Browser checks confirmed dropdown-to-iterator synchronization, both arrowheads, and one-step Undo after a direct choice. Visually checked the two controls together. All 23 tests and the production build pass.

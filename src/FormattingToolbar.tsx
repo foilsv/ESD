@@ -2,9 +2,8 @@ import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
-  ArrowLeftRight,
   Minus,
-  RotateCw,
+  IterationCw,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -41,6 +40,27 @@ import {
   StrokeSample,
   type ColorKey,
 } from './FormattingControls';
+
+function BidirectionalArrow({ size = 18 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      data-icon="arrow-both"
+    >
+      <path d="M4 12h16" />
+      <path d="m8 8-4 4 4 4" />
+      <path d="m16 8 4 4-4 4" />
+    </svg>
+  );
+}
 
 interface Props {
   objects: DiagramObject[];
@@ -308,13 +328,13 @@ export default function FormattingToolbar(props: Props) {
         ? ArrowLeft
         : arrowState === 'right'
           ? ArrowRight
-          : ArrowLeftRight;
+          : BidirectionalArrow;
   const nextArrows =
     arrowState === 'mixed' ? 'none' : arrowStyles[(arrowStyles.indexOf(arrowState) + 1) % 4];
   const arrowChoices = (
     <div className="segmented arrow-choices" role="group" aria-label="Connection arrow style">
       {arrowStyles.map((arrowStyle) => {
-        const Icon = { none: Minus, left: ArrowLeft, right: ArrowRight, both: ArrowLeftRight }[
+        const Icon = { none: Minus, left: ArrowLeft, right: ArrowRight, both: BidirectionalArrow }[
           arrowStyle
         ];
         return (
@@ -345,7 +365,7 @@ export default function FormattingToolbar(props: Props) {
       data-arrow-style={arrowState}
       onClick={props.cycleArrows}
     >
-      <RotateCw size={18} />
+      <IterationCw size={18} data-icon="iterate-arrow-states" />
     </button>
   );
   const directionControls = context.direction && (

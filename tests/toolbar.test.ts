@@ -111,6 +111,8 @@ test('Arrow choices follow each behavior while retaining the separate cycle butt
       assert.match(expanded, new RegExp(`aria-label="Arrows: ${state}"`));
     }
     assert.equal((expanded.match(/aria-label="Cycle connection arrows"/g) ?? []).length, 1);
+    assert.match(expanded, /data-icon="arrow-both"/);
+    assert.match(expanded, /data-icon="iterate-arrow-states"/);
     assert.match(expanded, /aria-label="Arrows: right" aria-pressed="true"/);
     if (behavior === 'flat') {
       assert.match(expanded, /aria-label="Back to object formatting"/);

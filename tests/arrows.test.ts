@@ -1,8 +1,47 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { createScene } from '../src/fixtures';
+import DiagramCanvas, { arrowMarkerSize } from '../src/DiagramCanvas';
 import { connectionArrows, cycleConnectionArrows } from '../src/model';
 import { parseSnapshot } from '../src/storage';
+
+test('connection arrow markers scale visibly with thicker strokes', () => {
+  assert.deepEqual([1, 2, 4, 8].map(arrowMarkerSize), [9, 9, 12, 24]);
+  assert.equal(arrowMarkerSize(20), 24);
+});
+
+test('large bidirectional connections use separate unclipped start and end markers', () => {
+  const objects = createScene('system').map((object) =>
+    object.id === 'pwm'
+      ? { ...object, arrowStyle: 'both' as const, style: { ...object.style, width: 8 } }
+      : object,
+  );
+  const markup = renderToStaticMarkup(
+    createElement(DiagramCanvas, {
+      objects,
+      selected: [],
+      editing: null,
+      draft: '',
+      setDraft() {},
+      view: { x: 0, y: 0, zoom: 1 },
+      grid: false,
+      hand: false,
+      select() {},
+      edit() {},
+      finishEdit() {},
+      startObject() {},
+      startCanvas() {},
+      move() {},
+      end() {},
+    }),
+  );
+  assert.match(markup, /id="arrow-start-pwm"[^>]*markerWidth="24"[^>]*refX="1"/);
+  assert.match(markup, /id="arrow-end-pwm"[^>]*markerWidth="24"[^>]*refX="7"/);
+  assert.match(markup, /marker-start="url\(#arrow-start-pwm\)"/);
+  assert.match(markup, /marker-end="url\(#arrow-end-pwm\)"/);
+});
 
 test('connection arrows cycle all four states without moving their endpoints', () => {
   let objects = createScene('system');
