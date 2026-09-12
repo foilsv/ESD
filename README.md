@@ -59,6 +59,7 @@ There is no server, account, production ESD connection, or runtime access to Goo
 | `src/App.tsx`                | Changing selection, interaction state, history, and experiment controls     |
 | `src/manufacturerStyles.ts`  | Changing screenshot-inspired manufacturer palettes and color application    |
 | `src/storage.ts`             | Changing snapshot validation and local persistence                          |
+| `src/releaseNotes.ts`        | Grouping user-visible changes for the next deployment and version history   |
 | `docs/context.md`            | Understanding the prior discussions and open decisions                      |
 | `docs/experiments.md`        | Planning and recording the next design experiments                          |
 

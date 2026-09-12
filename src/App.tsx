@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import DiagramCanvas, { type View } from './DiagramCanvas';
 import FormattingToolbar from './FormattingToolbar';
+import WhatsNew from './WhatsNew';
 import {
   bounds,
   connectionArrows,
@@ -55,6 +56,7 @@ import {
 } from './manufacturerStyles';
 import { loadSnapshot, saveSnapshot, parseSnapshot, type Snapshot } from './storage';
 import { behaviors, compatibleDetail, detailOnTextEntry, toolbarContext } from './toolbarModel';
+import { currentRelease } from './releaseNotes';
 
 type Tool = 'select' | 'hand' | 'connect';
 type DiagramState = { objects: DiagramObject[]; manufacturer: ManufacturerStyle };
@@ -68,6 +70,7 @@ type Drag = {
   moved: boolean;
 };
 export default function App() {
+  const [showWhatsNew, setShowWhatsNew] = useState(() => window.location.hash === '#whats-new');
   const [initial] = useState(loadSnapshot);
   const [scene, setScene] = useState<Scene>(initial?.scene ?? 'system');
   const [history, setHistory] = useState<History>({
@@ -400,7 +403,38 @@ export default function App() {
     });
   }
   useEffect(() => {
+    const syncPage = () => setShowWhatsNew(window.location.hash === '#whats-new');
+    window.addEventListener('popstate', syncPage);
+    window.addEventListener('hashchange', syncPage);
+    return () => {
+      window.removeEventListener('popstate', syncPage);
+      window.removeEventListener('hashchange', syncPage);
+    };
+  }, []);
+  function openWhatsNew() {
+    if (window.location.hash !== '#whats-new') {
+      window.history.pushState({ ...window.history.state, esdPage: 'whats-new' }, '', '#whats-new');
+    }
+    setShowWhatsNew(true);
+  }
+  function closeWhatsNew() {
+    if (window.history.state?.esdPage === 'whats-new') {
+      window.history.back();
+      return;
+    }
+    window.history.replaceState(
+      window.history.state,
+      '',
+      `${window.location.pathname}${window.location.search}`,
+    );
+    setShowWhatsNew(false);
+  }
+  useEffect(() => {
     const handler = (event: KeyboardEvent) => {
+      if (showWhatsNew) {
+        if (event.key === 'Escape') closeWhatsNew();
+        return;
+      }
       if ((event.target as HTMLElement).closest('input, textarea, select, [contenteditable]'))
         return;
       if (event.key === 'Escape') {
@@ -519,6 +553,19 @@ export default function App() {
         <span className="header-divider" />
         <span className="document-name">Formatting lab</span>
         <span className="prototype-tag">PROTOTYPE</span>
+        <button
+          className={`version-button ${showWhatsNew ? 'active' : ''}`}
+          aria-label={
+            showWhatsNew
+              ? `Version ${currentRelease.version}. Back to lab`
+              : `Version ${currentRelease.version}. View what's new`
+          }
+          aria-current={showWhatsNew ? 'page' : undefined}
+          onClick={showWhatsNew ? closeWhatsNew : openWhatsNew}
+        >
+          <span>v{currentRelease.version}</span>
+          <span className="version-link-label">What&apos;s new</span>
+        </button>
         <div className="header-actions">
           <span className="save-status">
             {saved ? 'Saved in this browser' : 'Browser storage unavailable'}
@@ -581,7 +628,8 @@ export default function App() {
           }}
         />
       </header>
-      <main ref={stage} className="stage">
+      {showWhatsNew && <WhatsNew onBack={closeWhatsNew} />}
+      <main ref={stage} className="stage" hidden={showWhatsNew}>
         <DiagramCanvas
           objects={objects}
           selected={selected}
@@ -803,7 +851,8 @@ export default function App() {
               </p>
               <label className="switch-row">
                 <span>
-                  Keep details open<span className="field-note">Across compatible selections</span>
+                  Keep details open
+                  <span className="field-note">Across compatible selections</span>
                 </span>
                 <input
                   type="checkbox"

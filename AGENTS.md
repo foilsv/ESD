@@ -34,6 +34,14 @@ User instruction, 2026-09-12:
 3. Check the relevant browser interaction, including expanded panel placement, text mode, and mixed selection where applicable.
 4. Describe the behavior changed and checks performed. Keep the result local. Publish only in response to an explicit deployment command, through the user's personal account and the existing Site. Do not add unrelated infrastructure.
 
+## Version and What's new maintenance
+
+- `src/releaseNotes.ts` is the source of truth for the version shown in the app and the What's new page. Its version numbers follow OpenAI Sites deployment versions, not package or commit versions.
+- During local development after a deployment, maintain one topmost unpublished entry for the next deployment. Consolidate user-visible work into 2–5 meaningful themes. Update an existing theme when related work continues; do not add a line for every commit, code cleanup, test, or internal fix.
+- Describe outcomes a person evaluating the prototype can notice. Include an internal fix only when it materially changes reliability or behavior, and name that outcome rather than the implementation.
+- Preserve earlier deployed entries. Before an explicitly requested deployment, confirm the unpublished version is the next Sites version and set its `publishedOn` date before the final build and package. If a deployment does not complete, do not describe it as successfully published in deployment documentation.
+- Start the next unpublished entry only when meaningful post-deployment work begins. Keep the entry concise enough that the page remains a release overview rather than a changelog archive.
+
 Use CSS variables for shared visual decisions. Preserve accessible names, focus feedback, keyboard shortcuts, and reduced-motion behavior. Do not replace design experimentation with an oversized settings/inspector product.
 
 ## Existing deployment
