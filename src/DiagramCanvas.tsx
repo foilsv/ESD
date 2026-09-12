@@ -185,7 +185,7 @@ export default function DiagramCanvas(props: Props) {
             strokeDasharray={patternDash(style.pattern)}
           />
         )}
-        {active && !isLine(object) && (
+        {active && editing !== id && !isLine(object) && (
           <g className="selection-outline" pointerEvents="none">
             <rect
               x={rect.x - 4}
@@ -289,7 +289,7 @@ export default function DiagramCanvas(props: Props) {
             {object.subtitle}
           </text>
         )}
-        {active && !isLine(object) && (
+        {active && editing !== id && !isLine(object) && (
           <rect
             className="resize-handle"
             aria-label="Resize object"
