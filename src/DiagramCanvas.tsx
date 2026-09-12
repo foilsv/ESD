@@ -1,16 +1,15 @@
 import { Cpu } from 'lucide-react';
 import {
   bounds,
-  connectionArrows,
   fonts,
   isLine,
   labelBounds,
-  pathFor,
   patternDash,
   type DiagramObject,
   type Point,
 } from './model';
 import type { PointerEvent as ReactPointerEvent } from 'react';
+import { connectionGeometry } from './connectionGeometry';
 
 export interface View {
   x: number;
@@ -35,10 +34,6 @@ interface Props {
   end: () => void;
 }
 
-export function arrowMarkerSize(width: number) {
-  return Math.max(9, Math.min(24, width * 3));
-}
-
 export default function DiagramCanvas(props: Props) {
   const { objects, selected, editing, view } = props;
   const render = (object: DiagramObject) => {
@@ -46,6 +41,7 @@ export default function DiagramCanvas(props: Props) {
     const active = selected.includes(id);
     const label = labelBounds(object, objects);
     const rect = bounds(object, objects);
+    const geometry = isLine(object) ? connectionGeometry(object, objects) : null;
     return (
       <g
         key={id}
@@ -73,13 +69,13 @@ export default function DiagramCanvas(props: Props) {
           }
         }}
       >
-        {isLine(object) ? (
+        {geometry ? (
           <>
             <defs>
               <marker
                 id={`arrow-start-${id}`}
-                markerWidth={arrowMarkerSize(style.width)}
-                markerHeight={arrowMarkerSize(style.width)}
+                markerWidth={geometry.startSize || 1}
+                markerHeight={geometry.startSize || 1}
                 viewBox="0 0 8 8"
                 refX="1"
                 refY="4"
@@ -90,8 +86,8 @@ export default function DiagramCanvas(props: Props) {
               </marker>
               <marker
                 id={`arrow-end-${id}`}
-                markerWidth={arrowMarkerSize(style.width)}
-                markerHeight={arrowMarkerSize(style.width)}
+                markerWidth={geometry.endSize || 1}
+                markerHeight={geometry.endSize || 1}
                 viewBox="0 0 8 8"
                 refX="7"
                 refY="4"
@@ -101,9 +97,9 @@ export default function DiagramCanvas(props: Props) {
                 <path d="M1 1 L7 4 L1 7 Z" fill={style.stroke} />
               </marker>
             </defs>
-            {active && (
+            {active && geometry.shaftPath && (
               <path
-                d={pathFor(object, objects)}
+                d={geometry.shaftPath}
                 fill="none"
                 stroke="#93baff"
                 strokeWidth="10"
@@ -111,29 +107,54 @@ export default function DiagramCanvas(props: Props) {
               />
             )}
             <path
-              d={pathFor(object, objects)}
+              d={geometry.fullPath}
               fill="none"
               stroke="transparent"
               strokeWidth="18"
               className="line-hit"
             />
+            {geometry.shaftPath && (
+              <path
+                className="connection-shaft"
+                d={geometry.shaftPath}
+                fill="none"
+                stroke={style.stroke}
+                strokeWidth={style.width}
+                strokeDasharray={patternDash(style.pattern)}
+                strokeLinecap={
+                  !(geometry.startSize || geometry.endSize) ||
+                  (style.pattern !== 'solid' && geometry.roundCapsFit)
+                    ? 'round'
+                    : 'butt'
+                }
+              />
+            )}
+            {geometry.shaftPath &&
+              style.pattern === 'solid' &&
+              (geometry.startSize > 0 || geometry.endSize > 0) &&
+              [
+                !geometry.startSize ? geometry.points[0] : null,
+                !geometry.endSize ? geometry.points.at(-1) : null,
+              ].map(
+                (point, i) =>
+                  point && (
+                    <circle
+                      key={i}
+                      cx={point.x}
+                      cy={point.y}
+                      r={style.width / 2}
+                      fill={style.stroke}
+                    />
+                  ),
+              )}
             <path
-              d={pathFor(object, objects)}
+              className="connection-arrowheads"
+              d={geometry.fullPath}
               fill="none"
-              stroke={style.stroke}
-              strokeWidth={style.width}
-              strokeDasharray={patternDash(style.pattern)}
-              strokeLinecap="round"
-              markerStart={
-                ['left', 'both'].includes(connectionArrows(object)) && style.width > 0
-                  ? `url(#arrow-start-${id})`
-                  : undefined
-              }
-              markerEnd={
-                ['right', 'both'].includes(connectionArrows(object)) && style.width > 0
-                  ? `url(#arrow-end-${id})`
-                  : undefined
-              }
+              stroke="none"
+              pointerEvents="none"
+              markerStart={geometry.startSize > 0 ? `url(#arrow-start-${id})` : undefined}
+              markerEnd={geometry.endSize > 0 ? `url(#arrow-end-${id})` : undefined}
             />
           </>
         ) : kind === 'symbol' ? (

@@ -171,11 +171,27 @@ export function ends(object: DiagramObject, objects: DiagramObject[]): [Point, P
     { x: target.x + (fromRight ? 0 : target.w), y: target.y + target.h / 2 },
   ];
 }
-export function pathFor(object: DiagramObject, objects: DiagramObject[]) {
+export function linePoints(object: DiagramObject, objects: DiagramObject[]): Point[] {
   const [a, b] = ends(object, objects);
-  if (object.kind === 'line') return `M ${a.x} ${a.y} L ${b.x} ${b.y}`;
   const mid = (a.x + b.x) / 2;
-  return `M ${a.x} ${a.y} H ${mid} V ${b.y} H ${b.x}`;
+  const route = object.kind === 'line' ? [a, b] : [a, { x: mid, y: a.y }, { x: mid, y: b.y }, b];
+  const points: Point[] = [];
+  for (const point of route) {
+    const last = points.at(-1);
+    if (last && last.x === point.x && last.y === point.y) continue;
+    points.push(point);
+    if (points.length < 3) continue;
+    const [p, q, r] = points.slice(-3);
+    if ((p.x === q.x && q.x === r.x) || (p.y === q.y && q.y === r.y))
+      points.splice(points.length - 2, 1);
+  }
+  return points;
+}
+export function pointsPath(points: Point[]) {
+  return points.map((p, i) => `${i ? 'L' : 'M'} ${p.x} ${p.y}`).join(' ');
+}
+export function pathFor(object: DiagramObject, objects: DiagramObject[]) {
+  return pointsPath(linePoints(object, objects));
 }
 export function bounds(object: DiagramObject, objects: DiagramObject[]): Rect {
   if (!isLine(object)) return object;

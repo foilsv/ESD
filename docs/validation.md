@@ -1,5 +1,13 @@
 # Toolbar solutions validation · 2026-09-11
 
+## Arrow shaft termination · 2026-09-12
+
+The previous separate-marker change did not fix the reported defect: the visible stroke still ran to the tip underneath the filled triangle. The earlier clipping explanation and verification missed that overlap.
+
+Visible shafts now stop at triangle bases; a separate unpainted path places the arrowheads at the original attached endpoints. Solid shafts use butt caps at arrow bases. Patterned round caps remain when geometrically contained by the triangle; bare solid ends retain round caps only when a shaft exists. Route normalization handles straight/vertical paths, and short endpoint runs shrink the heads without reversing the shaft or extending past an elbow.
+
+Local browser checks verified Large (4 px) and Extra large (8 px) bidirectional SPI connections, a left-only 8 px connection, and dotted 8 px rendering. The original 8 px solid Both setting was restored. The build and all 49 tests pass, including geometric base/tip checks across four states, reverse/vertical/short/zero routes, and a rendered check that the full arrow carrier has no stroke. No deployment was performed.
+
 ## Styled font dropdowns · 2026-09-12
 
 Replaced the Flat/Inline native font select with a real icon button and the shared formatting popover. Each choice shows its style icon and class name, with a checkmark on the selected style. Grouped retains its direct four-button row. Font popovers use the existing placement, connector, optional header, and viewport limits; selection and Escape close only the dropdown and return focus to its trigger. Opening size, color, or another group dismisses it.
