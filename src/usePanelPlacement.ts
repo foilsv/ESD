@@ -24,7 +24,17 @@ export function usePanelPlacement(
   const measure = () => {
     if (!toolbar.current) return;
     const bar = toolbar.current.getBoundingClientRect();
-    const panel = activeTrigger ? popover.current?.getBoundingClientRect() : null;
+    const panelElement = activeTrigger ? popover.current : null;
+    const panel = panelElement?.getBoundingClientRect();
+    // Measure full content, not its already-capped height, so direction decisions
+    // stay correct on resize and when switching to a taller popover.
+    const naturalPanelHeight =
+      panelElement && panel
+        ? Math.max(
+            panel.height,
+            panelElement.scrollHeight + panelElement.offsetHeight - panelElement.clientHeight,
+          )
+        : 0;
     const trigger = activeTrigger
       ? toolbar.current
           .querySelector(`[data-popover-trigger="${activeTrigger}"]`)
@@ -33,7 +43,7 @@ export function usePanelPlacement(
     const next = placeFormattingPanel(
       selection,
       { w: bar.width, h: bar.height },
-      panel ? { w: panel.width, h: panel.height } : null,
+      panel ? { w: panel.width, h: naturalPanelHeight } : null,
       viewport,
       trigger ? trigger.x + trigger.width / 2 - bar.x : bar.width / 2,
       previous.current?.context === context ? previous.current.placement : undefined,

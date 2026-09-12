@@ -24,7 +24,7 @@ Previous chat images were not available in the initial text retrieval. In the su
 4. Avoid unnecessary category navigation. Uncommon related settings belong in one secondary surface or inline group according to the selected solution.
 5. Label editing is unambiguous intent: expose text controls without another navigation click.
 6. Format by shared capabilities, consistently across object families.
-7. Protect the selected object's space. Keep the toolbar anchored and open popovers away from the selection (upward above, downward below). Flip/shift the pair near edges, retain successful placement across open/close, and dock oversized selections at a viewport edge. Visually connect the panel to its originating button.
+7. Place the toolbar above the selection if the toolbar alone fits, otherwise below; use a viewport-edge fallback when neither side fits or the selection is oversized. Opening, switching, or closing a popover must never move the toolbar. Popovers prefer opening away from the selection (upward above, downward below), but may flip independently toward it and overlap when outward space is insufficient. If neither direction fits, cap the panel to available space and scroll its contents. Visually connect the panel to its originating button. This supersedes the earlier rule to flip or shift the toolbar and popover together.
 8. Support shared-property multi-selection with explicit mixed state.
 9. Grid defaults off; blankets are excluded from this exploration.
 10. Use four functional font roles rather than a long font list.

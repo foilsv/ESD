@@ -2,6 +2,8 @@
 
 A small, local browser prototype for experimenting with the Electronics System Design editor's contextual formatting panel. It opens directly on a sample diagram.
 
+**Published app:** [ESD Formatting Lab](https://esd-formatting-lab.pnv82g.chatgpt.site) — accessible to anyone with the link. See [deployment instructions](docs/deployment.md) to update the same Site.
+
 ## Run
 
 Requires Node.js 22.12+ and npm.
@@ -26,6 +28,7 @@ npm test        # Formatting, geometry, and snapshot checks
 - Select a connection and open its arrow-style group to choose None, Left, Right, or Both, or use the separate cycle button to iterate None → Left → Right → Both. The group icon shows the current state; the cycle button tooltip names the next state. Left and right refer to the source and target ends of the drawn path, even when moved around the canvas.
 - Shift-click objects to apply shared formatting together. Different values appear as Mixed.
 - Drag objects, resize from the bottom-right handle, use H to pan or the zoom controls, and try the dense and edge scenes.
+- In the edge scenes, open and switch Grouped popovers: the toolbar stays fixed, while a popover can flip toward the selection when it lacks space to open away from it.
 - Switch to **Object families** to test block, hardware, software, port, connection, simple line, rectangle, ellipse, text, and symbol contexts.
 - B adds a block, T adds text, C connects two objects, V selects, H pans. Delete removes the selection; Ctrl/Cmd+Z undoes; Ctrl/Cmd+Shift+Z redoes.
 - Changes save in this browser. **Save experiment** exports JSON; **Open** restores it. Reset scene is undoable. Changing a scene replaces the current sample; export to keep several experiments.
@@ -57,7 +60,7 @@ There is no server, account, production ESD connection, or runtime access to Goo
 
 ## Deliberate limits
 
-This is a formatting test harness, not a production editor. Labels use whole-object formatting and truncate long single-line content; rich text, wrapping, routing edits, marquee selection, clipboard operations, object grouping, real parts data, image import, blankets, and collaboration are outside the initial scope. The panel avoids selection bounds when space permits; a selection covering most of the viewport cannot always be kept clear. Desktop pointer interaction is the primary target.
+This is a formatting test harness, not a production editor. Labels use whole-object formatting and truncate long single-line content; rich text, wrapping, routing edits, marquee selection, clipboard operations, object grouping, real parts data, image import, blankets, and collaboration are outside the initial scope. The toolbar sits above the selection when it fits, otherwise below, and never moves when a popover opens, switches, or closes. Popovers open away from the selection when space permits; near viewport edges they may flip toward and cover it. Oversized selections use a viewport-edge fallback. Desktop pointer interaction is the primary target.
 
 Expanded Inline controls stay in one row and scroll horizontally when the viewport is too narrow. Underline, strikethrough, and vertical text alignment are available to match the reference controls; vertical alignment moves the label and its subtitle together.
 

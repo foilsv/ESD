@@ -513,7 +513,7 @@ export default function FormattingToolbar(props: Props) {
                       : 288,
               viewport.w,
             ),
-            maxHeight: Math.max(0, viewport.h - (placement?.toolbar.h ?? 44) - PANEL_GAP),
+            maxHeight: placement?.popoverMaxHeight ?? Math.max(0, viewport.h - 44 - PANEL_GAP),
             visibility: placement?.popover ? undefined : 'hidden',
           }}
         >

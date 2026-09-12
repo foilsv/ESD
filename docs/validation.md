@@ -1,5 +1,11 @@
 # Toolbar solutions validation · 2026-09-11
 
+## Fixed toolbar anchor · 2026-09-12
+
+The toolbar now chooses its position independently of popover size: above the selection when the toolbar alone fits, otherwise below, with viewport-edge docking when neither fits. Opening, switching, and closing panels retains that anchor. Popovers prefer the outward side, flip toward the selection only when outward space is insufficient, and scroll within the larger available side if neither fits their natural height.
+
+All 26 tests pass, including ten placement regressions for stable anchors, top/bottom fallback, independent flips, capped heights, horizontal trigger alignment, and oversized selections. The production build passes. In the running Grouped UI, opening Fill, Text, Alignment, and Stroke, then closing/reopening kept the toolbar at x=78, y=170.90625. Three canvas-edge selections also retained identical before/after coordinates; the popover flipped downward near the top and opened upward where space allowed. No browser errors appeared in these checks. The local preview server was restarted before these checks to load the new implementation.
+
 ## Four-state connection arrows
 
 Behavior integration: the arrow selector now uses the shared group system. Browser checks verified Inline's four individual buttons, Grouped's connected popover with an unchanged toolbar position, and Flat's dedicated row with working Back. Choosing Both updated both arrowheads; cycling while the popover remained open updated the selected choice. The independent iterator remains available in each mode. All 24 tests and the production build pass; no browser warnings or errors appeared.
