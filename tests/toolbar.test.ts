@@ -1,0 +1,163 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import FormattingToolbar from '../src/FormattingToolbar';
+import { createScene } from '../src/fixtures';
+import { labelBounds, type Detail, type PanelBehavior } from '../src/model';
+import { compatibleDetail, detailOnTextEntry } from '../src/toolbarModel';
+import { parseSnapshot } from '../src/storage';
+
+const objects = createScene('system');
+const mcu = objects.find((o) => o.id === 'mcu')!;
+function render(
+  behavior: PanelBehavior,
+  editing: boolean,
+  detail: Detail = detailOnTextEntry(behavior),
+  selection = [mcu],
+) {
+  return renderToStaticMarkup(
+    createElement(FormattingToolbar, {
+      objects: selection,
+      behavior,
+      editing,
+      detail,
+      setDetail() {},
+      patch() {},
+      patchObjects() {},
+      cycleArrows() {},
+      finishEditing() {},
+      selection: { x: 300, y: 300, w: 180, h: 100 },
+      viewport: { x: 0, y: 0, w: 1200, h: 800 },
+    }),
+  );
+}
+test('Flat automatically replaces object tools with a full text row and Back', () => {
+  const markup = render('flat', true);
+  assert.match(markup, /aria-label="Back to object formatting"/);
+  assert.match(markup, /aria-label="Font family"/);
+  assert.match(markup, /aria-label="Underline"/);
+  assert.match(markup, /data-popover-trigger="font-size"/);
+  assert.doesNotMatch(markup, /class="font-size-input"/);
+  assert.doesNotMatch(markup, /aria-label="Fill color"/);
+  assert.doesNotMatch(markup, /data-testid="formatting-popover"/);
+});
+test('Grouped retains primary object controls when text tools open automatically', () => {
+  const markup = render('grouped', true);
+  assert.match(markup, /aria-label="Fill color"/);
+  assert.match(markup, /aria-label="Stroke settings"/);
+  assert.match(markup, /data-testid="formatting-popover"/);
+  assert.match(markup, /aria-label="Font family"/);
+  assert.doesNotMatch(markup, /aria-label="Back to object formatting"/);
+});
+test('Flat stroke and alignment replace the object row with dedicated tools and Back', () => {
+  for (const detail of ['stroke', 'alignment'] as const) {
+    const markup = render('flat', false, detail);
+    assert.match(markup, /aria-label="Back to object formatting"/);
+    assert.match(markup, /data-testid="flat-detail-controls"/);
+    assert.doesNotMatch(markup, /data-testid="formatting-popover"/);
+    assert.doesNotMatch(markup, /aria-label="Fill color"/);
+    assert.doesNotMatch(markup, /aria-label="Text formatting"/);
+    if (detail === 'stroke') {
+      assert.match(markup, /aria-label="dashed stroke"/);
+      assert.match(markup, /aria-label="Large stroke width"/);
+      assert.match(markup, /aria-label="Stroke color"/);
+    } else {
+      assert.match(markup, /aria-label="Horizontal alignment"/);
+      assert.match(markup, /aria-label="Vertical alignment"/);
+    }
+  }
+});
+test('Grouped stroke and alignment keep the object row and use a popover', () => {
+  for (const detail of ['stroke', 'alignment'] as const) {
+    const markup = render('grouped', false, detail);
+    assert.match(markup, /aria-label="Fill color"/);
+    assert.match(markup, /data-testid="formatting-popover"/);
+    assert.doesNotMatch(markup, /aria-label="Back to object formatting"/);
+    assert.doesNotMatch(markup, /data-testid="flat-detail-controls"/);
+  }
+});
+test('Inline expands compound controls inside the row without a compound popover', () => {
+  for (const detail of ['text', 'stroke', 'alignment'] as const) {
+    const markup = render('inline', false, detail);
+    assert.match(markup, /data-testid="inline-controls"/);
+    assert.doesNotMatch(markup, /data-testid="formatting-popover"/);
+    if (detail === 'text') {
+      assert.match(markup, /data-popover-trigger="font-size"/);
+      assert.doesNotMatch(markup, /class="font-size-input"/);
+    }
+  }
+});
+test('sticky groups transfer only to compatible selections, and switching off closes them', () => {
+  const port = objects.find((o) => o.kind === 'port')!;
+  const line = objects.find((o) => o.kind === 'connection')!;
+  assert.equal(compatibleDetail('stroke', [mcu, line], 'inline', true), 'stroke');
+  assert.equal(compatibleDetail('stroke', [port], 'inline', true), null);
+  assert.equal(compatibleDetail('text', [mcu, port], 'grouped', true), 'text');
+  assert.equal(compatibleDetail('alignment', [mcu, port], 'grouped', true), null);
+  assert.equal(compatibleDetail('text', [mcu], 'grouped', false), null);
+  assert.equal(compatibleDetail('arrows', [line], 'inline', true), 'arrows');
+  assert.equal(compatibleDetail('arrows', [mcu, line], 'inline', true), null);
+  assert.equal(compatibleDetail('arrows', [line], 'grouped', false), null);
+});
+test('Arrow choices follow each behavior while retaining the separate cycle button', () => {
+  const connection = objects.find((o) => o.id === 'pwm')!;
+  for (const behavior of ['flat', 'grouped', 'inline'] as const) {
+    const collapsed = render(behavior, false, null, [connection]);
+    assert.match(collapsed, /aria-label="Arrows settings"/);
+    assert.doesNotMatch(collapsed, /aria-label="Arrows: none"/);
+    const expanded = render(behavior, false, 'arrows', [connection]);
+    for (const state of ['none', 'left', 'right', 'both']) {
+      assert.match(expanded, new RegExp(`aria-label="Arrows: ${state}"`));
+    }
+    assert.equal((expanded.match(/aria-label="Cycle connection arrows"/g) ?? []).length, 1);
+    assert.match(expanded, /aria-label="Arrows: right" aria-pressed="true"/);
+    if (behavior === 'flat') {
+      assert.match(expanded, /aria-label="Back to object formatting"/);
+      assert.doesNotMatch(expanded, /aria-label="Stroke settings"/);
+      assert.doesNotMatch(expanded, /data-testid="formatting-popover"/);
+    } else if (behavior === 'grouped') {
+      assert.match(expanded, /aria-label="Stroke settings"/);
+      assert.match(expanded, /data-testid="formatting-popover"/);
+      assert.doesNotMatch(expanded, /data-testid="inline-controls"/);
+    } else {
+      assert.match(expanded, /data-testid="inline-controls"/);
+      assert.doesNotMatch(expanded, /data-testid="formatting-popover"/);
+    }
+  }
+});
+test('version-one experiments migrate all three choices without losing diagram styles', () => {
+  for (const [oldName, newName] of [
+    ['replace', 'flat'],
+    ['stack', 'grouped'],
+    ['inline', 'inline'],
+  ]) {
+    const legacyObjects = objects.map((o) => {
+      const { underline: _u, strikethrough: _s, verticalAlign: _v, ...style } = o.style;
+      return { ...o, style };
+    });
+    const migrated = parseSnapshot({
+      version: 1,
+      objects: legacyObjects,
+      scene: 'system',
+      behavior: oldName,
+      sticky: true,
+    });
+    assert.ok(migrated);
+    assert.equal(migrated.behavior, newName);
+    assert.equal(migrated.objects[0].style.fill, objects[0].style.fill);
+    assert.equal(migrated.objects[0].style.verticalAlign, 'middle');
+    assert.equal(migrated.objects[0].style.underline, false);
+  }
+  assert.equal(
+    parseSnapshot({ version: 9, objects, scene: 'system', behavior: 'flat', sticky: true }),
+    null,
+  );
+});
+test('vertical alignment moves the label and keeps its subtitle group inside a block', () => {
+  const top = labelBounds({ ...mcu, style: { ...mcu.style, verticalAlign: 'top' } }, objects);
+  const bottom = labelBounds({ ...mcu, style: { ...mcu.style, verticalAlign: 'bottom' } }, objects);
+  assert.ok(top.y < labelBounds(mcu, objects).y);
+  assert.ok(bottom.y > labelBounds(mcu, objects).y);
+  assert.ok(bottom.y + bottom.h + 18 <= mcu.y + mcu.h);
+});

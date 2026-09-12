@@ -1,0 +1,56 @@
+# ESD context and initial decisions
+
+Captured 2026-09-11 to make the project usable by future coding agents.
+
+## Purpose
+
+Prototype a compact, floating formatting panel for an Electronics System Design editor. The product goal is a light, fast, specialized system-sketching experience. This repository tests formatting interaction, not electrical correctness or the complete ESD product.
+
+## Sources consulted
+
+- **ESD formatting principles** — ChatGPT task `6aa44732-8734-83ea-8df3-b15f30d2a4d5`: principles, user correction against category-launcher toolbars, compact object matrix, and four-font discussion.
+- **Branch · ESD formatting principles** — task `6aa44d7f-b7f0-83ea-b4a6-7a3cb9035479`: expanded panel occlusion, color access, four width options, and an alternative endpoint model.
+- **Branch · Branch · ESD formatting principles** — task `6aa45415-25d8-83e9-9988-abe9f266f7b7`: replace, stack, and label-local approaches to automatic text context.
+- [ESD cleanup for Altium/Octopart 27 (WIP, Sept 2026)](https://docs.google.com/document/d/1RRapoQvgYt93Ht-B2GCwZotjMoJUpJOKeOwTIsLu6lk/edit) — fetched from connected Google Drive, including the Formatting Toolbar Composition section and four font roles.
+- **ESD – Objects and Formatting Reference** is referenced extensively in those chats. The attached workbook was located, but this initial implementation uses the compact matrix from the conversation rather than claiming a fresh cell-by-cell audit.
+
+Previous chat images were not available in the initial text retrieval. In the subsequent implementation request, the user linked the specific **Formatting toolbar solutions** section. Its updated descriptions and embedded reference images were inspected and implemented; `docs/solutions.md` is now the current specification for the three options.
+
+## Established guidance
+
+1. Good default styling first; optimize the interaction needed to produce a clear diagram.
+2. Floating, contextual toolbar; no irrelevant disabled controls.
+3. Colors have independent stateful Tier-1 controls. The requested solutions use compact dropdowns for simple color/font choices.
+4. Avoid unnecessary category navigation. Uncommon related settings belong in one secondary surface or inline group according to the selected solution.
+5. Label editing is unambiguous intent: expose text controls without another navigation click.
+6. Format by shared capabilities, consistently across object families.
+7. Protect the selected object's space. Keep the toolbar anchored and open popovers away from the selection (upward above, downward below). Flip/shift the pair near edges, retain successful placement across open/close, and dock oversized selections at a viewport edge. Visually connect the panel to its originating button.
+8. Support shared-property multi-selection with explicit mixed state.
+9. Grid defaults off; blankets are excluded from this exploration.
+10. Use four functional font roles rather than a long font list.
+
+## Object capabilities
+
+| Family                                            | Object selected                                         | Label editing                                          |
+| ------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------ |
+| Block / hardware / software / rectangle / ellipse | Direct fill, stroke sample → details                    | Size, bold, text colors, alignment; typography details |
+| Port                                              | Direct fill                                             | Size, bold, text colors; typography details            |
+| Connection                                        | Direct line colors, stroke, directional toggle, reverse | Size, bold, text colors; typography details            |
+| Simple line                                       | Direct line colors, stroke                              | Not applicable                                         |
+| Text                                              | Text controls immediately                               | Same controls                                          |
+| Symbol                                            | Direct symbol color                                     | Not applicable                                         |
+
+The table above captures capability families from the initial discussions; the current Tier-1/Tier-2 composition follows `docs/solutions.md`. Stroke offers solid/dashed/dotted and Zero/Small/Medium/Large. Typography includes four font roles, size, B/I/U/S and text color; alignment includes horizontal and vertical choices where applicable.
+
+## Open decisions, not assumed approvals
+
+- The latest user correction replaces the initial direction toggle/reverse model with four arrow states: None, Left (source), Right (target), and Both, available through a style group and a separate cycling button. The style group follows Flat sub-toolbar navigation, Grouped popovers, and Inline expansion with four individual buttons. This explicitly supersedes the earlier endpoint restriction.
+- The user selected the updated document's three architectures: **Flat**, **Grouped**, and **Inline**. These replace the starter options. A separate label-local anchor remains deferred.
+- The initial default is Flat; all three solutions remain switchable and no winner has been chosen.
+- Property allocation varies by solution as described in `docs/solutions.md`; these are working comparison variants.
+- Stickiness across compatible selections is an optional experiment, enabled initially.
+- The live document lists Courier New for Mono; an earlier chat suggested IBM Plex Mono. This prototype follows Courier New.
+
+## Technical decision
+
+Local React + TypeScript + Vite, SVG rendering, plain CSS and HTML controls. This is a small code project meant for agent-assisted iteration, not a hosted website deliverable. Keep it independent of ESD production and private Drive data. Browser storage is versioned; JSON export captures reproducible experiments. Reconsider a diagram engine only when experiments actually require richer routing/geometry.
