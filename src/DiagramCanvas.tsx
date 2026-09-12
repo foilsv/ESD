@@ -157,7 +157,7 @@ export default function DiagramCanvas(props: Props) {
             y={y}
             width={w}
             height={h}
-            rx={kind === 'rectangle' ? 2 : kind === 'port' ? 4 : 8}
+            rx={0}
             fill={style.fill}
             stroke={style.stroke}
             strokeWidth={style.width}
