@@ -1,5 +1,11 @@
 # Toolbar solutions validation · 2026-09-11
 
+## Styled font dropdowns · 2026-09-12
+
+Replaced the Flat/Inline native font select with a real icon button and the shared formatting popover. Each choice shows its style icon and class name, with a checkmark on the selected style. Grouped retains its direct four-button row. Font popovers use the existing placement, connector, optional header, and viewport limits; selection and Escape close only the dropdown and return focus to its trigger. Opening size, color, or another group dismisses it.
+
+The build and all 35 tests pass. Visually verified the Inline trigger icon and matching four-choice popover locally. Further selection/keyboard interaction checks were interrupted when browser tabs became unavailable. No deployment was performed.
+
 ## Default custom colors and simpler lab · 2026-09-12
 
 Added four Octopart-derived custom defaults and replaced the old accumulated palette without deleting its backup storage key. Custom selection now listens to the native commit event instead of React's drag-preview changes; stored colors normalize case and remove exact duplicates. Removed the Current context block and Try it guidance, retaining Reset scene.

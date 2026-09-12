@@ -151,36 +151,51 @@ export function ColorInput({ value, onChange }: { value?: string; onChange: (v: 
     </div>
   );
 }
-export function FontControl({ value, patch }: ControlProps) {
+export function FontControl({
+  value,
+  active,
+  onClick,
+  controlsId,
+}: Pick<ControlProps, 'value'> & { active: boolean; onClick: () => void; controlsId: string }) {
   const family = value('fontFamily');
   return (
-    <span className="font-picker" title={`Font style: ${family ? fonts[family].label : 'Mixed'}`}>
-      <span className="font-picker-icon" aria-hidden="true">
-        <FontStyleIcon family={family} />
-        <ChevronDown size={10} />
-      </span>
-      <select
-        className="font-control"
-        aria-label="Font family"
-        title={`Font style: ${family ? fonts[family].label : 'Mixed'}`}
-        value={value('fontFamily') ?? ''}
-        onChange={(e) => patch({ fontFamily: e.target.value as FontFamily })}
-        onKeyDown={(e) => {
-          if (e.key === 'Escape') e.stopPropagation();
-        }}
-      >
-        {value('fontFamily') === undefined && (
-          <option value="" disabled>
-            Mixed
-          </option>
-        )}
-        {Object.entries(fonts).map(([id, font]) => (
-          <option key={id} value={id} style={{ fontFamily: font.css }}>
-            {font.label}
-          </option>
-        ))}
-      </select>
-    </span>
+    <button
+      type="button"
+      className={`font-picker ${active ? 'active' : ''}`}
+      aria-label="Font family"
+      title={`Font style: ${family ? fonts[family].label : 'Mixed'}`}
+      aria-expanded={active}
+      aria-controls={active ? controlsId : undefined}
+      data-popover-trigger="font-family"
+      onClick={onClick}
+    >
+      <FontStyleIcon family={family} />
+      <ChevronDown size={10} aria-hidden="true" />
+    </button>
+  );
+}
+export function FontDropdown({ value, patch, onChoose }: ControlProps & { onChoose: () => void }) {
+  return (
+    <div className="font-dropdown-options" role="group" aria-label="Font styles">
+      {(Object.keys(fonts) as FontFamily[]).map((id) => (
+        <button
+          type="button"
+          key={id}
+          aria-label={fonts[id].label + ' font style'}
+          aria-pressed={value('fontFamily') === id}
+          onClick={() => {
+            patch({ fontFamily: id });
+            onChoose();
+          }}
+        >
+          <FontStyleIcon family={id} />
+          <span style={{ fontFamily: fonts[id].css }}>{fonts[id].label}</span>
+          <span className="font-choice-check" aria-hidden="true">
+            {value('fontFamily') === id && <Check size={14} />}
+          </span>
+        </button>
+      ))}
+    </div>
   );
 }
 export function FontChoices({ value, patch }: ControlProps) {
@@ -210,6 +225,7 @@ function FontStyleIcon({ family }: { family?: FontFamily }) {
       width="24"
       height="22"
       viewBox="0 0 24 22"
+      aria-hidden="true"
       className="font-style-icon"
       data-font-style={family ?? 'mixed'}
     >

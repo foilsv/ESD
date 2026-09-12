@@ -33,6 +33,7 @@ import {
   ColorButton,
   EmphasisControls,
   FontControl,
+  FontDropdown,
   FontChoices,
   SizeDropdown,
   SizeChoices,
@@ -66,6 +67,7 @@ export default function FormattingToolbar(props: Props) {
   const panelId = useId();
   const [color, setColor] = useState<ColorKey | null>(null);
   const [sizeOpen, setSizeOpen] = useState(false);
+  const [fontOpen, setFontOpen] = useState(false);
   const [flatText, setFlatText] = useState(false);
   const textMode = behavior === 'flat' && (editing || flatText || context.textOnly);
   const flatDetail =
@@ -76,17 +78,20 @@ export default function FormattingToolbar(props: Props) {
       (detail === 'arrows' && context.direction))
       ? detail
       : null;
-  const activeTrigger = sizeOpen
-    ? 'font-size'
-    : color
-      ? `color-${color}`
-      : behavior === 'grouped'
-        ? detail
-        : null;
+  const activeTrigger = fontOpen
+    ? 'font-family'
+    : sizeOpen
+      ? 'font-size'
+      : color
+        ? `color-${color}`
+        : behavior === 'grouped'
+          ? detail
+          : null;
   const placement = usePanelPlacement(toolbar, panel, selection, viewport, activeTrigger);
   // Browsing text formatting is distinct from editing the actual label.
   useEffect(() => {
     setSizeOpen(false);
+    setFontOpen(false);
     setColor(null);
     setFlatText(false);
   }, [behavior, editing]);
@@ -94,6 +99,7 @@ export default function FormattingToolbar(props: Props) {
     const dismiss = (event: PointerEvent) => {
       if (root.current?.contains(event.target as Node)) return;
       setSizeOpen(false);
+      setFontOpen(false);
       setColor(null);
     };
     document.addEventListener('pointerdown', dismiss);
@@ -101,11 +107,13 @@ export default function FormattingToolbar(props: Props) {
   }, []);
   const toggleGroup = (next: Detail) => {
     setSizeOpen(false);
+    setFontOpen(false);
     setColor(null);
     setDetail(detail === next ? null : next);
   };
   const showColor = (key: ColorKey) => {
     setSizeOpen(false);
+    setFontOpen(false);
     if (behavior === 'grouped') setDetail(null);
     setColor(color === key ? null : key);
   };
@@ -126,6 +134,33 @@ export default function FormattingToolbar(props: Props) {
   const textMixed = ['fontFamily', 'fontSize', 'bold', 'italic', 'underline', 'strikethrough'].some(
     (key) => value(key as keyof Style) === undefined,
   );
+  const closeFont = () => {
+    setFontOpen(false);
+    toolbar.current
+      ?.querySelector<HTMLButtonElement>('[data-popover-trigger="font-family"]')
+      ?.focus({ preventScroll: true });
+  };
+  useEffect(() => {
+    if (fontOpen) {
+      const options = panel.current?.querySelector('.font-dropdown-options');
+      (
+        options?.querySelector<HTMLButtonElement>('[aria-pressed="true"]') ??
+        options?.querySelector<HTMLButtonElement>('button')
+      )?.focus({ preventScroll: true });
+    }
+  }, [fontOpen]);
+  const fontControl = (
+    <FontControl
+      value={value}
+      active={fontOpen}
+      controlsId={panelId}
+      onClick={() => {
+        setSizeOpen(false);
+        setColor(null);
+        setFontOpen(!fontOpen);
+      }}
+    />
+  );
   const sizeControl = (
     <button
       className={`property-button size-dropdown-trigger ${sizeOpen ? 'active' : ''}`}
@@ -136,6 +171,7 @@ export default function FormattingToolbar(props: Props) {
       data-popover-trigger="font-size"
       onClick={() => {
         setColor(null);
+        setFontOpen(false);
         setSizeOpen(!sizeOpen);
       }}
     >
@@ -148,7 +184,7 @@ export default function FormattingToolbar(props: Props) {
     <div className={inline ? 'inline-text-controls' : 'grouped-text-controls'}>
       <div className="detail-row">
         <span>Font</span>
-        {inline ? <FontControl {...controls} /> : <FontChoices {...controls} />}
+        {inline ? fontControl : <FontChoices {...controls} />}
         {inline && sizeControl}
       </div>
       {!inline && (
@@ -328,6 +364,7 @@ export default function FormattingToolbar(props: Props) {
   );
   const returnToObject = () => {
     setSizeOpen(false);
+    setFontOpen(false);
     setFlatText(false);
     setColor(null);
     setDetail(null);
@@ -346,7 +383,7 @@ export default function FormattingToolbar(props: Props) {
   const flatTextRow = (
     <>
       {!context.textOnly && backToObject}
-      <FontControl {...controls} />
+      {fontControl}
       {sizeControl}
       <span className="divider" />
       <EmphasisControls {...controls} />
@@ -424,22 +461,24 @@ export default function FormattingToolbar(props: Props) {
       )}
     </>
   );
-  const popoverTitle = sizeOpen
-    ? 'Font size'
-    : color
-      ? color === 'fill'
-        ? 'Fill color'
-        : color === 'stroke'
-          ? 'Stroke color'
-          : 'Text color'
-      : detail === 'text'
-        ? 'Text formatting'
-        : detail === 'arrows'
-          ? 'Connection arrows'
-          : detail === 'alignment'
-            ? 'Alignment'
-            : 'Stroke';
-  const popover = sizeOpen || color || (detail && behavior === 'grouped');
+  const popoverTitle = fontOpen
+    ? 'Font style'
+    : sizeOpen
+      ? 'Font size'
+      : color
+        ? color === 'fill'
+          ? 'Fill color'
+          : color === 'stroke'
+            ? 'Stroke color'
+            : 'Text color'
+        : detail === 'text'
+          ? 'Text formatting'
+          : detail === 'arrows'
+            ? 'Connection arrows'
+            : detail === 'alignment'
+              ? 'Alignment'
+              : 'Stroke';
+  const popover = fontOpen || sizeOpen || color || (detail && behavior === 'grouped');
   return (
     <div
       ref={root}
@@ -458,7 +497,8 @@ export default function FormattingToolbar(props: Props) {
       onKeyDown={(e) => {
         if (e.key !== 'Escape') return;
         e.stopPropagation();
-        if (sizeOpen) setSizeOpen(false);
+        if (fontOpen) closeFont();
+        else if (sizeOpen) setSizeOpen(false);
         else if (color) setColor(null);
         else if (detail) setDetail(null);
         else if (textMode && !context.textOnly) returnToObject();
@@ -496,7 +536,7 @@ export default function FormattingToolbar(props: Props) {
           key={activeTrigger}
           ref={panel}
           id={panelId}
-          className={`formatting-popover ${sizeOpen ? 'size-popover' : color ? 'color-popover' : ''}`}
+          className={`formatting-popover ${fontOpen ? 'font-popover' : sizeOpen ? 'size-popover' : color ? 'color-popover' : ''}`}
           role="group"
           aria-label={popoverTitle}
           data-testid="formatting-popover"
@@ -504,7 +544,7 @@ export default function FormattingToolbar(props: Props) {
             left: placement?.popover ? placement.popover.x - placement.toolbar.x : 0,
             top: placement?.popover ? placement.popover.y - placement.toolbar.y : 0,
             width: Math.min(
-              sizeOpen
+              fontOpen || sizeOpen
                 ? 192
                 : color
                   ? 304
@@ -526,14 +566,22 @@ export default function FormattingToolbar(props: Props) {
                 className="icon-button small"
                 aria-label="Close popover"
                 onClick={() =>
-                  sizeOpen ? setSizeOpen(false) : color ? setColor(null) : setDetail(null)
+                  fontOpen
+                    ? closeFont()
+                    : sizeOpen
+                      ? setSizeOpen(false)
+                      : color
+                        ? setColor(null)
+                        : setDetail(null)
                 }
               >
                 <X size={14} />
               </button>
             </div>
           )}
-          {sizeOpen ? (
+          {fontOpen ? (
+            <FontDropdown {...controls} onChoose={closeFont} />
+          ) : sizeOpen ? (
             <SizeDropdown {...controls} onChoose={() => setSizeOpen(false)} />
           ) : color ? (
             <ColorPalette
