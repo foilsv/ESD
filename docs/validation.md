@@ -1,5 +1,11 @@
 # Toolbar solutions validation · 2026-09-11
 
+## Default custom colors and simpler lab · 2026-09-12
+
+Added four Octopart-derived custom defaults and replaced the old accumulated palette without deleting its backup storage key. Custom selection now listens to the native commit event instead of React's drag-preview changes; stored colors normalize case and remove exact duplicates. Removed the Current context block and Try it guidance, retaining Reset scene.
+
+The local build and all 35 tests pass. Regression coverage checks initial/default recovery, duplicate handling, persistence, and multiple picker input events followed by a single committed color. Browser verification confirmed four custom swatches followed by the circular plus, and the shorter sidebar with both requested blocks absent. Further dialog interaction was not completed because the preview selection changed during checking. Changes remain local; no deployment was performed.
+
 ## Direct choices and lighter popovers · 2026-09-12
 
 Grouped text formatting now exposes four font-style icon buttons directly; numeric font-size arrows remain visible. The Show popover headers modifier removes or restores the title and close button across formatting popovers and persists in local saves and exported experiments, defaulting to enabled for old files.

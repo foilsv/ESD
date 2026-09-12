@@ -11,7 +11,6 @@ import {
   ArrowUpFromLine,
   Box,
   ChevronDown,
-  ChevronUp,
   Circle,
   Cpu,
   FlaskConical,
@@ -758,44 +757,7 @@ export default function App() {
                 <span className="switch" />
               </label>
             </div>
-            <div className="experiment-section selection-info">
-              <div className="eyebrow">CURRENT CONTEXT</div>
-              <strong>
-                {chosen.length === 1
-                  ? kinds[chosen[0].kind]
-                  : chosen.length
-                    ? `${chosen.length} objects`
-                    : 'Canvas'}
-              </strong>
-              <span className={`context-mode ${editing ? 'editing' : ''}`}>
-                {editing ? 'Editing label' : chosen.length ? 'Object selected' : 'No selection'}
-              </span>
-              {chosen.length === 1 && canEditLabel(chosen[0]) && (
-                <button
-                  className="edit-label-button"
-                  onClick={() => (editing ? finishEdit() : edit(chosen[0].id))}
-                >
-                  {editing ? 'Finish label editing' : 'Edit label'}
-                  {editing ? <ChevronUp size={14} /> : <Type size={14} />}
-                </button>
-              )}
-              {chosen.length === 1 && chosen[0].kind === 'connection' && (
-                <div className="connection-info">
-                  {objects.find((o) => o.id === chosen[0].source)?.label}{' '}
-                  {{ none: '—', left: '←', right: '→', both: '↔' }[connectionArrows(chosen[0])]}{' '}
-                  {objects.find((o) => o.id === chosen[0].target)?.label}
-                </div>
-              )}
-            </div>
-            <div className="experiment-section try-section">
-              <div className="eyebrow">TRY IT</div>
-              <p>
-                Select a block. Open its fill color.
-                <br />
-                Double-click its label to format text.
-                <br />
-                Shift-click to format several objects.
-              </p>
+            <div className="experiment-section reset-section">
               <button
                 className="plain-button reset-button"
                 onClick={() => {

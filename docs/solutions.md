@@ -30,6 +30,10 @@ Grouped Alignment uses a 3×3 position picker. Each cell sets horizontal and ver
 - Underline, strikethrough and top/middle/bottom alignment were added because they appear in the reference controls. Alignment is omitted for connection and port labels whose position follows geometry.
 - The user's latest correction replaces direction toggle/reverse with two controls in all three solutions: an arrow-style group and a separate iterator button. Arrow selection follows the active behavior: Flat replaces the row with four icon buttons and Back, Grouped opens a connected popover with those buttons, and Inline expands them in the row. The current choice is highlighted; choices stay open for experimentation and the iterator remains separate. The iterator cycles None → Left → Right → Both → None. Left means the path's source end and right its target end. Endpoints stay attached. Mixed selections start at None, then cycle together; each click is one undoable edit. Legacy directional/reversed fields remain readable, and new optional `arrowStyle` values persist in version 2 snapshots.
 
+The default custom palette starts with four colors observed on [Octopart](https://octopart.com/) on 2026-09-12: blue `#0A70CF`, charcoal `#303336`, pale blue `#E8F3FE`, and white `#FFFFFF`. The revised palette uses a new browser-storage key to replace the old row of accidental intermediate shades; the old key is retained as a recoverable backup. New additions save on the native color dialog's committed change, not on drag-preview input events. Stored swatches are normalized and deduplicated, with the most recent eight retained.
+
+The Interaction Lab contains the scene selector, behavior choices, the two modifiers, and Reset scene. The Current context block and Try it instructions have been removed; label editing remains available by double-clicking a label or pressing Enter on a selected object.
+
 ## Persistence
 
 Version 2 snapshots use `flat`, `grouped`, and `inline`. Version 1 JSON and browser storage migrate without resetting the diagram: `replace` → `flat`, `stack` → `grouped`, `inline` → `inline`. Missing new text properties receive neutral defaults.

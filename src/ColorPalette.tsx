@@ -1,6 +1,12 @@
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Check, Plus, Pipette } from 'lucide-react';
 import { type ColorKey } from './FormattingControls';
+import {
+  addCustomColor,
+  customColorKey,
+  listenForColorCommit,
+  parseCustomColors,
+} from './customColors';
 
 const neutrals = [
   '#ffffff',
@@ -38,19 +44,14 @@ const hues = [
   '#2563eb',
   '#7c3aed',
 ];
-const customKey = 'esd-formatting-lab.custom-colors';
 function readCustomColors(): string[] {
   try {
-    const saved: unknown = JSON.parse(localStorage.getItem(customKey) ?? '[]');
-    return Array.isArray(saved)
-      ? saved
-          .filter((c): c is string => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c))
-          .slice(0, 8)
-      : [];
+    return parseCustomColors(localStorage.getItem(customColorKey));
   } catch {
-    return [];
+    return parseCustomColors(null);
   }
 }
+
 type EyeDropperWindow = Window & {
   EyeDropper?: new () => { open: () => Promise<{ sRGBHex: string }> };
 };
@@ -74,17 +75,24 @@ export default function ColorPalette({
     ...(kind === 'fill' ? ['transparent', ...neutrals.slice(0, 6), '#0f172a'] : neutrals),
     ...hues,
   ];
-  const chooseCustom = (color: string) => {
-    const normalized = color.toLowerCase();
-    const next = [normalized, ...custom.filter((c) => c !== normalized)].slice(0, 8);
-    setCustom(next);
-    try {
-      localStorage.setItem(customKey, JSON.stringify(next));
-    } catch {
-      /* Palette still works without storage. */
-    }
-    onChange(normalized);
-  };
+  const chooseCustom = useCallback(
+    (color: string) => {
+      const normalized = color.toLowerCase();
+      const next = addCustomColor(custom, normalized);
+      setCustom(next);
+      try {
+        localStorage.setItem(customColorKey, JSON.stringify(next));
+      } catch {
+        /* Palette still works without storage. */
+      }
+      onChange(normalized);
+    },
+    [custom, onChange],
+  );
+  useEffect(() => {
+    const picker = customPicker.current;
+    if (picker) return listenForColorCommit(picker, chooseCustom);
+  }, [chooseCustom]);
   const swatch = (color: string) => {
     const selected = value?.toLowerCase() === color;
     const rgb =
@@ -149,7 +157,12 @@ export default function ColorPalette({
           type="button"
           aria-label="Add custom color"
           title="Add custom color"
-          onClick={() => customPicker.current?.click()}
+          onClick={() => {
+            if (customPicker.current) {
+              customPicker.current.value = value?.startsWith('#') ? value : '#ffffff';
+              customPicker.current.click();
+            }
+          }}
         >
           <Plus size={14} aria-hidden="true" />
         </button>
@@ -160,8 +173,7 @@ export default function ColorPalette({
         type="color"
         aria-label="Choose custom color"
         tabIndex={-1}
-        value={value?.startsWith('#') ? value : '#ffffff'}
-        onChange={(event) => chooseCustom(event.target.value)}
+        defaultValue={value?.startsWith('#') ? value : '#ffffff'}
         onKeyDown={(event) => {
           if (event.key === 'Escape') event.stopPropagation();
         }}

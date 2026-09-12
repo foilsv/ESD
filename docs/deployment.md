@@ -60,6 +60,18 @@ Every development change stays local until an explicit deployment command. Do no
 
 Credentials expire. None are stored here, in the manifest, or in Git configuration. Renew them for this Site instead of registering a duplicate.
 
-## Pending toolbar-placement update · 2026-09-12
+## Latest successful publication · 2026-09-12
 
-The fixed-toolbar placement change is built, tested, and saved locally, but has not been republished. Both `get_site` and `create_source_repository_write_credential` returned `NOT_FOUND / project_not_found` for the saved project ID; `search_sites` for `esd-formatting-lab` returned no results. Preserve the existing manifest, project ID, and public URL. The user clarified that deployment uses their personal account. Leave this update local; only after a new explicit deployment command should access be checked in that personal account and publication resumed. Do not create a replacement Site to work around this error.
+Published after the user's explicit "let's deploy" command using the personal account that owns the existing Site. Public access and the original URL were preserved.
+
+- Live URL: https://esd-formatting-lab.pnv82g.chatgpt.site
+- Status: `succeeded`, confirmed at `2026-09-12T14:46:34.074441+00:00`.
+- Version number: `2`
+- Saved version ID: `appgprj_6aa4aab0520481919cf3aefa1df1cda0~appgver_aabae9ac4c1881918087196ec0160d61`
+- Deployment ID: `appgdep_6aa565b82f908191ac298f450d5d42d4`
+- Source commit: `bfae194c809b6127e939728528f1b146773c0347`
+- Archive SHA-256: `3e0fe20d3cf35c01395481ceedb9da3e6b5be2e26d6827b5cfd6185f24482d64`
+
+Includes stable toolbar and edge placement fixes, compact custom colors, direct Grouped font choices, visible font-size arrows, the saved popover-header modifier, and 1 / 2 / 4 / 8 px stroke choices. The source passed the build and all 32 tests before publication.
+
+The earlier project-not-found blocker is resolved in the personal account. Future development remains local, and every future deployment still requires an explicit user command.
