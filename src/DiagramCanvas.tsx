@@ -230,6 +230,7 @@ export default function DiagramCanvas(props: Props) {
                     .filter(Boolean)
                     .join(' '),
                   color: style.textColor,
+                  backgroundColor: !isLine(object) && kind !== 'text' ? style.fill : '#ffffff',
                   textAlign: style.align,
                 }}
               />
@@ -262,6 +263,7 @@ export default function DiagramCanvas(props: Props) {
             y={label.y + label.h + 12}
             textAnchor="middle"
             className="object-subtitle"
+            style={object.originalColors ? { fill: style.textColor } : undefined}
           >
             {object.subtitle}
           </text>

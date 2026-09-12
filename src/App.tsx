@@ -48,14 +48,20 @@ import {
   type Style,
 } from './model';
 import { createScene, scenes, type Scene } from './fixtures';
+import {
+  applyManufacturerStyle,
+  manufacturerStyles,
+  type ManufacturerStyle,
+} from './manufacturerStyles';
 import { loadSnapshot, saveSnapshot, parseSnapshot, type Snapshot } from './storage';
 import { behaviors, compatibleDetail, detailOnTextEntry, toolbarContext } from './toolbarModel';
 
 type Tool = 'select' | 'hand' | 'connect';
-type History = { past: DiagramObject[][]; present: DiagramObject[]; future: DiagramObject[][] };
+type DiagramState = { objects: DiagramObject[]; manufacturer: ManufacturerStyle };
+type History = { past: DiagramState[]; present: DiagramState; future: DiagramState[] };
 type Drag = {
   point: Point;
-  before: DiagramObject[];
+  before: DiagramState;
   ids: string[];
   kind: 'move' | 'pan' | 'resize';
   view: View;
@@ -66,10 +72,13 @@ export default function App() {
   const [scene, setScene] = useState<Scene>(initial?.scene ?? 'system');
   const [history, setHistory] = useState<History>({
     past: [],
-    present: initial?.objects ?? createScene('system'),
+    present: {
+      objects: initial?.objects ?? createScene('system'),
+      manufacturer: initial?.manufacturer ?? 'default',
+    },
     future: [],
   });
-  const objects = history.present;
+  const { objects, manufacturer } = history.present;
   const [selected, setSelected] = useState<string[]>(
     objects.some((o) => o.id === 'mcu') ? ['mcu'] : [],
   );
@@ -93,12 +102,13 @@ export default function App() {
   const chosen = objects.filter((o) => selected.includes(o.id));
   const selectedBounds = union(chosen.map((o) => bounds(o, objects)));
   const commit = useCallback(
-    (next: DiagramObject[]) =>
-      setHistory((h) =>
-        JSON.stringify(h.present) === JSON.stringify(next)
+    (objects: DiagramObject[], manufacturer?: ManufacturerStyle) =>
+      setHistory((h) => {
+        const next = { objects, manufacturer: manufacturer ?? h.present.manufacturer };
+        return JSON.stringify(h.present) === JSON.stringify(next)
           ? h
-          : { past: [...h.past.slice(-49), h.present], present: next, future: [] },
-      ),
+          : { past: [...h.past.slice(-49), h.present], present: next, future: [] };
+      }),
     [],
   );
   const announce = (message: string) => setNotice(message);
@@ -140,12 +150,20 @@ export default function App() {
     const timeout = window.setTimeout(
       () =>
         setSaved(
-          saveSnapshot({ version: 2, objects, scene, behavior, sticky, showPopoverHeaders }),
+          saveSnapshot({
+            version: 2,
+            objects,
+            scene,
+            behavior,
+            sticky,
+            showPopoverHeaders,
+            manufacturer,
+          }),
         ),
       300,
     );
     return () => clearTimeout(timeout);
-  }, [objects, scene, behavior, sticky, showPopoverHeaders]);
+  }, [objects, scene, behavior, sticky, showPopoverHeaders, manufacturer]);
   useEffect(() => {
     if (!notice) return;
     const timeout = window.setTimeout(() => setNotice(''), 4000);
@@ -190,8 +208,21 @@ export default function App() {
   function patchObjects(patch: Partial<DiagramObject>) {
     commit(objects.map((o) => (selected.includes(o.id) ? { ...o, ...patch } : o)));
   }
+  function changeManufacturer(next: ManufacturerStyle) {
+    const current = editing
+      ? objects.map((o) => (o.id === editing ? { ...o, label: draft.trim() || o.label } : o))
+      : objects;
+    commit(applyManufacturerStyle(current, next), next);
+    setEditing(null);
+    setDetail(null);
+    announce(
+      next === 'default'
+        ? 'Original diagram colors restored.'
+        : manufacturerStyles[next].label + ' colors applied to the diagram.',
+    );
+  }
   function changeScene(next: Scene) {
-    const items = createScene(next);
+    const items = applyManufacturerStyle(createScene(next), manufacturer);
     commit(items);
     setScene(next);
     setSelected(items.some((o) => o.id === 'mcu') ? ['mcu'] : ['block']);
@@ -226,7 +257,7 @@ export default function App() {
     const existing = editing
       ? objects.map((o) => (o.id === editing ? { ...o, label: draft.trim() || o.label } : o))
       : objects;
-    commit([...existing, object]);
+    commit([...existing, ...applyManufacturerStyle([object], manufacturer)]);
     setSelected([id]);
     setDetail(kind === 'text' ? detailOnTextEntry(behavior) : null);
     setTool('select');
@@ -261,7 +292,7 @@ export default function App() {
         reversed: false,
         style: { ...defaultStyle, stroke: '#2563eb', width: 2, fontSize: 13 },
       };
-      commit([...objects, line]);
+      commit([...objects, ...applyManufacturerStyle([line], manufacturer)]);
       setSelected([line.id]);
       setConnectSource(null);
       setTool('select');
@@ -282,7 +313,7 @@ export default function App() {
         : objects;
       drag.current = {
         point: { x: event.clientX, y: event.clientY },
-        before,
+        before: { objects: before, manufacturer },
         ids,
         kind: resize ? 'resize' : 'move',
         view,
@@ -294,7 +325,7 @@ export default function App() {
   function startPan(event: ReactPointerEvent) {
     drag.current = {
       point: { x: event.clientX, y: event.clientY },
-      before: objects,
+      before: history.present,
       ids: [],
       kind: 'pan',
       view,
@@ -324,14 +355,14 @@ export default function App() {
       setView({ ...current.view, x: current.view.x + dx, y: current.view.y + dy });
       return;
     }
-    const next = current.before.map((o) =>
+    const next = current.before.objects.map((o) =>
       current.ids.includes(o.id)
         ? current.kind === 'resize'
           ? { ...o, w: Math.max(50, o.w + dx / view.zoom), h: Math.max(30, o.h + dy / view.zoom) }
           : { ...o, x: o.x + dx / view.zoom, y: o.y + dy / view.zoom }
         : o,
     );
-    setHistory((h) => ({ ...h, present: next }));
+    setHistory((h) => ({ ...h, present: { ...h.present, objects: next } }));
   }
   function end() {
     const current = drag.current;
@@ -431,6 +462,7 @@ export default function App() {
       behavior,
       sticky,
       showPopoverHeaders,
+      manufacturer,
     };
     const url = URL.createObjectURL(
       new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' }),
@@ -451,7 +483,7 @@ export default function App() {
     try {
       const snapshot = parseSnapshot(JSON.parse(await file.text()));
       if (!snapshot) throw new Error('Invalid file');
-      commit(snapshot.objects);
+      commit(snapshot.objects, snapshot.manufacturer ?? 'default');
       setScene(snapshot.scene);
       setBehavior(snapshot.behavior);
       setSticky(snapshot.sticky);
@@ -702,6 +734,42 @@ export default function App() {
                 </select>
                 <ChevronDown size={15} />
               </div>
+            </div>
+            <div className="experiment-section">
+              <label className="eyebrow" htmlFor="manufacturer-style">
+                MANUFACTURER STYLE
+              </label>
+              <div className="select-wrap">
+                <select
+                  id="manufacturer-style"
+                  value={manufacturer}
+                  aria-describedby="manufacturer-style-note"
+                  onChange={(e) => changeManufacturer(e.target.value as ManufacturerStyle)}
+                >
+                  {Object.entries(manufacturerStyles).map(([id, palette]) => (
+                    <option key={id} value={id}>
+                      {palette.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown size={15} />
+              </div>
+              <div className="manufacturer-swatches" aria-hidden="true">
+                {[
+                  ...new Set([
+                    manufacturerStyles[manufacturer].primary,
+                    manufacturerStyles[manufacturer].control,
+                    manufacturerStyles[manufacturer].sensor,
+                    manufacturerStyles[manufacturer].surface,
+                    manufacturerStyles[manufacturer].connection,
+                  ]),
+                ].map((color) => (
+                  <i key={color} style={{ backgroundColor: color }} />
+                ))}
+              </div>
+              <p id="manufacturer-style-note" className="manufacturer-note">
+                Applies to all objects. Individual colors remain editable.
+              </p>
             </div>
             <div className="experiment-section">
               <div className="eyebrow">PANEL BEHAVIOR</div>

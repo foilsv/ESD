@@ -54,3 +54,11 @@ The table above captures capability families from the initial discussions; the c
 ## Technical decision
 
 Local React + TypeScript + Vite, SVG rendering, plain CSS and HTML controls. This is a small code project meant for agent-assisted iteration, not a hosted website deliverable. Keep it independent of ESD production and private Drive data. Browser storage is versioned; JSON export captures reproducible experiments. Reconsider a diagram engine only when experiments actually require richer routing/geometry.
+
+## Manufacturer style experiment — 2026-09-12
+
+The Lab now offers Original colors, STM, Infineon, Renesas, NXP, and TI in a single manufacturer-style dropdown. Palettes follow the five screenshots supplied in this request, not official brand specifications. STM uses cyan blocks and magenta connections; Infineon uses teal components, magenta control, and orange sensing; Renesas uses blue; NXP uses blue with orange control; TI uses teal and pale aqua surfaces. Labels choose contrasting light or dark ink.
+
+Applying a palette changes only object colors, across the entire scene, while preserving geometry, endpoints, arrow states, and typography. Individual color controls continue editing actual object styles. The palette preference and object changes share an undo entry; new objects, scene changes, and resets use the current palette. Original colors restores each object's saved pre-palette colors. Snapshot v2 adds optional manufacturer, originalColors, and colorRole fields, keeping older imports readable and preserving their styling. Fixture roles identify control and sensor accents independently of label text; older synthetic fixtures acquire those roles by scene, ID, and kind. Manufacturer names never become real part data or electrical semantics.
+
+Verify all five choices on Motor controller and Object families; check mixed selections, white labels and subtitles, text editing, new blocks/connections, undo/redo, reload, JSON import/export, and Original colors restoration. Development and preview remain local.

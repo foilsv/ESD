@@ -10,8 +10,9 @@ function item(
   h = 92,
   style: Partial<Style> = {},
   subtitle?: string,
+  colorRole?: DiagramObject['colorRole'],
 ): DiagramObject {
-  return { id, kind, label, x, y, w, h, subtitle, style: { ...defaultStyle, ...style } };
+  return { id, kind, label, x, y, w, h, subtitle, colorRole, style: { ...defaultStyle, ...style } };
 }
 function connection(
   id: string,
@@ -93,6 +94,7 @@ export function createScene(scene: Scene): DiagramObject[] {
       100,
       { fill: '#dcfce7', stroke: '#67a583' },
       'Magnetic encoder',
+      'sensor',
     ),
     item(
       'mcu',
@@ -104,6 +106,7 @@ export function createScene(scene: Scene): DiagramObject[] {
       130,
       { fill: '#dbeafe', stroke: '#7296c7', bold: true, fontSize: 18 },
       'MCU · control & monitoring',
+      'control',
     ),
     item(
       'driver',
@@ -163,6 +166,7 @@ export function createScene(scene: Scene): DiagramObject[] {
         90,
         { fill: '#dcfce7' },
         'Thermistor input',
+        'sensor',
       ),
     );
     nodes.push(connection('can', 'CAN', 'regulator', 'comm', '#7c3aed'));

@@ -1,5 +1,6 @@
 import { kinds, fonts, type DiagramObject, type PanelBehavior } from './model';
-import { type Scene, scenes } from './fixtures';
+import { createScene, type Scene, scenes } from './fixtures';
+import { manufacturerStyles, type ManufacturerStyle } from './manufacturerStyles';
 
 const key = 'esd-formatting-lab.v2';
 export interface Snapshot {
@@ -9,6 +10,7 @@ export interface Snapshot {
   behavior: PanelBehavior;
   sticky: boolean;
   showPopoverHeaders?: boolean;
+  manufacturer?: ManufacturerStyle;
 }
 export function validSnapshot(input: unknown): input is Snapshot {
   if (!input || typeof input !== 'object') return false;
@@ -19,6 +21,9 @@ export function validSnapshot(input: unknown): input is Snapshot {
     ['flat', 'grouped', 'inline'].includes(data.behavior) &&
     typeof data.sticky === 'boolean' &&
     (data.showPopoverHeaders === undefined || typeof data.showPopoverHeaders === 'boolean') &&
+    (data.manufacturer === undefined ||
+      (typeof data.manufacturer === 'string' &&
+        Object.hasOwn(manufacturerStyles, data.manufacturer))) &&
     Array.isArray(data.objects) &&
     data.objects.length <= 200 &&
     new Set(data.objects.map((o) => o?.id)).size === data.objects.length &&
@@ -35,6 +40,12 @@ export function validSnapshot(input: unknown): input is Snapshot {
         ) &&
         o.w >= 0 &&
         o.h >= 0 &&
+        (o.colorRole === undefined || ['control', 'sensor'].includes(o.colorRole)) &&
+        (o.originalColors === undefined ||
+          (o.originalColors &&
+            [o.originalColors.fill, o.originalColors.stroke, o.originalColors.textColor].every(
+              (c) => typeof c === 'string' && (/^#[0-9a-f]{6}$/i.test(c) || c === 'transparent'),
+            ))) &&
         o.style &&
         [o.style.fill, o.style.stroke, o.style.textColor].every(
           (c) => typeof c === 'string' && (/^#[0-9a-f]{6}$/i.test(c) || c === 'transparent'),
@@ -68,9 +79,14 @@ export function parseSnapshot(input: unknown): Snapshot | null {
   const data = input as Record<string, unknown>;
   if (![1, 2].includes(Number(data.version)) || !Array.isArray(data.objects)) return null;
   const legacyNames: Record<string, PanelBehavior> = { replace: 'flat', stack: 'grouped' };
+  const fixture =
+    typeof data.scene === 'string' && Object.hasOwn(scenes, data.scene)
+      ? createScene(data.scene as Scene)
+      : [];
   const migrated = {
     ...data,
     version: 2,
+    manufacturer: data.manufacturer === undefined ? 'default' : data.manufacturer,
     showPopoverHeaders: data.showPopoverHeaders === undefined ? true : data.showPopoverHeaders,
     behavior:
       typeof data.behavior === 'string'
@@ -80,6 +96,11 @@ export function parseSnapshot(input: unknown): Snapshot | null {
       object && typeof object === 'object'
         ? {
             ...object,
+            colorRole:
+              object.colorRole === undefined
+                ? fixture.find((item) => item.id === object.id && item.kind === object.kind)
+                    ?.colorRole
+                : object.colorRole,
             style: {
               underline: false,
               strikethrough: false,

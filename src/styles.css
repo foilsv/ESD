@@ -563,6 +563,23 @@ button[aria-pressed='true']:not(.swatch):not(.color-swatch) {
   pointer-events: none;
   color: #6d7c90;
 }
+.manufacturer-swatches {
+  display: flex;
+  gap: 5px;
+  margin-top: 10px;
+}
+.manufacturer-swatches i {
+  width: 22px;
+  height: 9px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+.manufacturer-note {
+  margin: 7px 0 0;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--muted);
+}
 .behavior-options {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

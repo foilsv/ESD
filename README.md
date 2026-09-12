@@ -25,6 +25,7 @@ npm test        # Formatting, geometry, and snapshot checks
 ## Try
 
 - Select a block, open Fill color, and choose a swatch. Double-click its label (or press Enter) to reveal text controls. Enter finishes label editing; Escape cancels the label draft.
+- Choose **Manufacturer style** in the Interaction lab: STM, Infineon, Renesas, NXP, or TI. The screenshot-inspired palette recolors the entire diagram and new objects; individual colors remain editable. **Original colors** restores the colors from before the first manufacturer switch. Palette changes support undo/redo and save with the experiment.
 - Switch **Flat / Grouped / Inline** in the Interaction lab. These implement the three [document-defined solutions](docs/solutions.md): dedicated Stroke/Text/Alignment sub-toolbars with Back, stable compound controls with grouped popovers, and actual expansion within one toolbar row.
 - Open Stroke to compare patterns and Small / Medium / Large / Extra large widths (1 / 2 / 4 / 8 px).
 - Select a connection and open its arrow-style group to choose None, Left, Right, or Both, or use the separate cycle button to iterate None → Left → Right → Both. The group icon shows the current state; the cycle button tooltip names the next state. Left and right refer to the source and target ends of the drawn path, even when moved around the canvas.
@@ -56,6 +57,7 @@ There is no server, account, production ESD connection, or runtime access to Goo
 | `src/fixtures.ts`            | Adding realistic scenarios or object examples                               |
 | `src/DiagramCanvas.tsx`      | Changing rendering, labels, and selection affordances                       |
 | `src/App.tsx`                | Changing selection, interaction state, history, and experiment controls     |
+| `src/manufacturerStyles.ts`  | Changing screenshot-inspired manufacturer palettes and color application    |
 | `src/storage.ts`             | Changing snapshot validation and local persistence                          |
 | `docs/context.md`            | Understanding the prior discussions and open decisions                      |
 | `docs/experiments.md`        | Planning and recording the next design experiments                          |

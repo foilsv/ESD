@@ -47,6 +47,8 @@ export interface DiagramObject {
   w: number;
   h: number;
   style: Style;
+  colorRole?: 'control' | 'sensor';
+  originalColors?: Pick<Style, 'fill' | 'stroke' | 'textColor'>;
   source?: string;
   target?: string;
   directional?: boolean;
