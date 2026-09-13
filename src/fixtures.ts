@@ -140,6 +140,15 @@ export function createScene(scene: Scene): DiagramObject[] {
     connection('spi', 'SPI', 'sensor', 'mcu', '#15803d'),
     connection('pwm', 'PWM × 3', 'mcu', 'driver', '#2563eb'),
   ];
+  if (scene === 'system') {
+    nodes.push(
+      item('control-note', 'text', 'Position feedback closes the loop', 680, 625, 310, 54, {
+        fontSize: 16,
+        align: 'left',
+        textColor: '#475569',
+      }),
+    );
+  }
   if (scene === 'dense') {
     nodes.push(
       item(

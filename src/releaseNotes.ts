@@ -33,7 +33,7 @@ export const releaseNotes: ReleaseNote[] = [
       {
         title: 'Scenes visible at a glance',
         description:
-          'Four icon buttons expose the complete test-scene set at once and keep the current scene visibly selected.',
+          'Four icon buttons expose the complete test-scene set at once and keep the current scene visibly selected; the Motor controller scene adds a selectable closed-loop control annotation for text-tool comparisons.',
       },
     ],
   },

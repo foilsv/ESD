@@ -4,6 +4,14 @@ import { createScene } from '../src/fixtures';
 import { commonCapabilities, commonValue, ends } from '../src/model';
 import { validSnapshot } from '../src/storage';
 
+test('motor controller scene includes a meaningful text annotation', () => {
+  const annotation = createScene('system').find((object) => object.id === 'control-note');
+  assert.equal(annotation?.kind, 'text');
+  assert.equal(annotation?.label, 'Position feedback closes the loop');
+  assert.equal(createScene('dense').some((object) => object.id === 'control-note'), false);
+  assert.equal(createScene('edge').some((object) => object.id === 'control-note'), false);
+});
+
 test('mixed selection exposes only shared capabilities and preserves mixed fill state', () => {
   const objects = createScene('system');
   const blocks = objects.filter((o) => ['mcu', 'sensor'].includes(o.id));
