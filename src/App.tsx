@@ -95,6 +95,9 @@ export default function App() {
   const [mergeStrokeControls, setMergeStrokeControls] = useState(
     initial?.mergeStrokeControls ?? true,
   );
+  const [showMoreActions, setShowMoreActions] = useState(initial?.showMoreActions ?? false);
+  const [styleClipboard, setStyleClipboard] = useState<Style | null>(null);
+  const [styleDefaults, setStyleDefaults] = useState<Partial<Record<ObjectKind, Style>>>({});
   const [labOpen, setLabOpen] = useState(() => window.innerWidth > 900);
   const [grid, setGrid] = useState(false);
   const [tool, setTool] = useState<Tool>('select');
@@ -166,13 +169,23 @@ export default function App() {
             sticky,
             showPopoverHeaders,
             mergeStrokeControls,
+            showMoreActions,
             manufacturer,
           }),
         ),
       300,
     );
     return () => clearTimeout(timeout);
-  }, [objects, scene, behavior, sticky, showPopoverHeaders, mergeStrokeControls, manufacturer]);
+  }, [
+    objects,
+    scene,
+    behavior,
+    sticky,
+    showPopoverHeaders,
+    mergeStrokeControls,
+    showMoreActions,
+    manufacturer,
+  ]);
   useEffect(() => {
     if (!notice) return;
     const timeout = window.setTimeout(() => setNotice(''), 4000);
@@ -261,7 +274,9 @@ export default function App() {
               : kind === 'text'
                 ? 48
                 : 100,
-      style: { ...defaultStyle, fontSize: kind === 'text' ? 24 : 16 },
+      style: styleDefaults[kind]
+        ? { ...styleDefaults[kind] }
+        : { ...defaultStyle, fontSize: kind === 'text' ? 24 : 16 },
     };
     const existing = editing
       ? objects.map((o) => (o.id === editing ? { ...o, label: draft.trim() || o.label } : o))
@@ -301,7 +316,9 @@ export default function App() {
         target: object.id,
         directional: true,
         reversed: false,
-        style: { ...defaultStyle, stroke: '#2563eb', width: 2, fontSize: 13 },
+        style: styleDefaults.connection
+          ? { ...styleDefaults.connection }
+          : { ...defaultStyle, stroke: '#2563eb', width: 2, fontSize: 13 },
       };
       commit([...objects, ...applyManufacturerStyle([line], manufacturer)]);
       setSelected([line.id]);
@@ -512,6 +529,7 @@ export default function App() {
       sticky,
       showPopoverHeaders,
       mergeStrokeControls,
+      showMoreActions,
       manufacturer,
     };
     const url = URL.createObjectURL(
@@ -539,6 +557,7 @@ export default function App() {
       setSticky(snapshot.sticky);
       setShowPopoverHeaders(snapshot.showPopoverHeaders ?? true);
       setMergeStrokeControls(snapshot.mergeStrokeControls ?? true);
+      setShowMoreActions(snapshot.showMoreActions ?? false);
       setSelected([]);
       setEditing(null);
       setDetail(null);
@@ -742,6 +761,7 @@ export default function App() {
             behavior={behavior}
             showPopoverHeaders={showPopoverHeaders}
             mergeStrokeControls={mergeStrokeControls}
+            showMoreActions={showMoreActions}
             detail={detail}
             setDetail={setDetail}
             patch={patch}
@@ -757,6 +777,23 @@ export default function App() {
             selection={selectionScreen}
             viewport={panelViewport}
             finishEditing={() => finishEdit()}
+            setDefaultStyle={() => {
+              const first = chosen[0];
+              if (!first || !chosen.every((object) => object.kind === first.kind)) return;
+              setStyleDefaults((current) => ({ ...current, [first.kind]: { ...first.style } }));
+              announce(`Default ${kinds[first.kind].toLowerCase()} style set for this session.`);
+            }}
+            copyStyle={() => {
+              if (!chosen[0]) return;
+              setStyleClipboard({ ...chosen[0].style });
+              announce('Style copied.');
+            }}
+            pasteStyle={() => {
+              if (!styleClipboard) return;
+              patch(styleClipboard);
+              announce('Style pasted.');
+            }}
+            canPasteStyle={Boolean(styleClipboard)}
           />
         )}
         {labOpen && (
@@ -896,6 +933,18 @@ export default function App() {
                   aria-label="Show popover headers"
                   checked={showPopoverHeaders}
                   onChange={(e) => setShowPopoverHeaders(e.target.checked)}
+                />
+                <span className="switch" />
+              </label>
+              <label className="switch-row">
+                <span>
+                  Show more actions<span className="field-note">Rare style operations</span>
+                </span>
+                <input
+                  type="checkbox"
+                  aria-label="Show more formatting actions"
+                  checked={showMoreActions}
+                  onChange={(e) => setShowMoreActions(e.target.checked)}
                 />
                 <span className="switch" />
               </label>

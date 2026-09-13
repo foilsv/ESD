@@ -17,7 +17,19 @@ test('older experiments keep popover headers visible', () => {
     assert.ok(restored);
     assert.equal(restored.showPopoverHeaders, true);
     assert.equal(restored.mergeStrokeControls, true);
+    assert.equal(restored.showMoreActions, false);
     assert.deepEqual(restored.objects, snapshot.objects);
+  }
+});
+
+test('more-actions preference defaults off, survives round trips, and rejects invalid values', () => {
+  for (const showMoreActions of [false, true]) {
+    const restored = parseSnapshot(JSON.parse(JSON.stringify({ ...snapshot, showMoreActions })));
+    assert.ok(restored);
+    assert.equal(restored.showMoreActions, showMoreActions);
+  }
+  for (const showMoreActions of [null, 'true', 1, {}]) {
+    assert.equal(parseSnapshot({ ...snapshot, showMoreActions }), null);
   }
 });
 

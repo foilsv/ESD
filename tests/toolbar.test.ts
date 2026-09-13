@@ -29,11 +29,45 @@ function render(
       patchObjects() {},
       cycleArrows() {},
       finishEditing() {},
+      setDefaultStyle() {},
+      copyStyle() {},
+      pasteStyle() {},
+      canPasteStyle: false,
       selection: { x: 300, y: 300, w: 180, h: 100 },
       viewport: { x: 0, y: 0, w: 1200, h: 800 },
     }),
   );
 }
+test('rare style actions are opt-in and the menu trigger stays at the end of every toolbar row', () => {
+  for (const behavior of ['flat', 'grouped', 'inline'] as const) {
+    const hidden = render(behavior, false);
+    assert.doesNotMatch(hidden, /aria-label="More formatting actions"/);
+
+    const shown = renderToStaticMarkup(
+      createElement(FormattingToolbar, {
+        objects: [mcu],
+        behavior,
+        showMoreActions: true,
+        editing: false,
+        detail: behavior === 'flat' ? 'stroke' : behavior === 'inline' ? 'text' : null,
+        setDetail() {},
+        patch() {},
+        patchObjects() {},
+        cycleArrows() {},
+        finishEditing() {},
+        setDefaultStyle() {},
+        copyStyle() {},
+        pasteStyle() {},
+        canPasteStyle: false,
+        selection: { x: 300, y: 300, w: 180, h: 100 },
+        viewport: { x: 0, y: 0, w: 1200, h: 800 },
+      }),
+    );
+    assert.match(shown, /aria-label="More formatting actions"/);
+    assert.match(shown, /aria-haspopup="menu"/);
+    assert.ok(shown.lastIndexOf('More formatting actions') > shown.lastIndexOf('Stroke color'));
+  }
+});
 test('Flat automatically replaces object tools with a full text row and Back', () => {
   const markup = render('flat', true);
   assert.match(markup, /aria-label="Back to object formatting"/);

@@ -28,6 +28,7 @@ npm test        # Formatting, geometry, and snapshot checks
 - Choose **Manufacturer style** in the Interaction lab: STM, Infineon, Renesas, NXP, or TI. The screenshot-inspired palette recolors the entire diagram and new objects; individual colors remain editable. **Original colors** restores the colors from before the first manufacturer switch. Palette changes support undo/redo and save with the experiment.
 - Switch **Flat / Grouped / Inline** in the Interaction lab. These implement the three [document-defined solutions](docs/solutions.md): dedicated Stroke/Text/Alignment sub-toolbars with Back, stable compound controls with grouped popovers, and actual expansion within one toolbar row.
 - Toggle **Merge stroke color and style** to compare combined and independent controls. It defaults on for Flat and Inline; Grouped keeps color separate.
+- Toggle **Show more actions** to add an overflow menu at the end of every formatting row. It defaults off; when shown, the menu holds Set default style, Copy style, and Paste style.
 - Open Stroke to compare patterns and Small / Medium / Large / Extra large widths (1 / 2 / 4 / 8 px).
 - Select a connection and open its arrow-style group to choose None, Left, Right, or Both, or use the separate cycle button to iterate None → Left → Right → Both. The group icon shows the current state; the cycle button tooltip names the next state. Left and right refer to the source and target ends of the drawn path, even when moved around the canvas.
 - Shift-click objects to apply shared formatting together. Different values appear as Mixed.
@@ -35,7 +36,7 @@ npm test        # Formatting, geometry, and snapshot checks
 - In the edge scenes, open and switch Grouped popovers: the toolbar stays fixed, while a popover can flip toward the selection when it lacks space to open away from it.
 - Switch to **Object families** to test block, hardware, software, port, connection, simple line, rectangle, ellipse, text, and symbol contexts.
 - B adds a block, T adds text, C connects two objects, and V selects. Delete removes the selection; Ctrl/Cmd+Z undoes; Ctrl/Cmd+Shift+Z redoes.
-- Changes save in this browser. **Save experiment** exports JSON; **Open** restores it. Reset scene is undoable. Changing a scene replaces the current sample; export to keep several experiments.
+- Changes and Lab display preferences save in this browser. **Save experiment** exports JSON; **Open** restores it. Reset scene is undoable. Changing a scene replaces the current sample; export to keep several experiments. Copied and default styles last for the current session.
 - Earlier experiments migrate automatically: Replace → Flat, Stack → Grouped, Expand → Inline. Object styling is preserved. New exports use snapshot version 2.
 
 ## Why this format
@@ -66,7 +67,7 @@ There is no server, account, production ESD connection, or runtime access to Goo
 
 ## Deliberate limits
 
-This is a formatting test harness, not a production editor. Labels use whole-object formatting and truncate long single-line content; rich text, wrapping, routing edits, marquee selection, clipboard operations, object grouping, real parts data, image import, blankets, and collaboration are outside the initial scope. The toolbar sits above the selection when it fits, otherwise below, and never moves when a popover opens, switches, or closes. Popovers open away from the selection when space permits; near viewport edges they may flip toward and cover it. Oversized selections use a viewport-edge fallback. Desktop pointer interaction is the primary target.
+This is a formatting test harness, not a production editor. Labels use whole-object formatting and truncate long single-line content; rich text, wrapping, routing edits, marquee selection, object clipboard operations, object grouping, real parts data, image import, blankets, and collaboration are outside the initial scope. The optional formatting overflow menu supports a session-scoped style clipboard and per-kind defaults. The toolbar sits above the selection when it fits, otherwise below, and never moves when a popover opens, switches, or closes. Popovers open away from the selection when space permits; near viewport edges they may flip toward and cover it. Oversized selections use a viewport-edge fallback. Desktop pointer interaction is the primary target.
 
 Expanded Inline controls stay in one row and scroll horizontally when the viewport is too narrow. Underline, strikethrough, and vertical text alignment are available to match the reference controls; vertical alignment moves the label and its subtitle together.
 

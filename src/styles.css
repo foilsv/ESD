@@ -1337,6 +1337,29 @@ button[aria-pressed='true']:not(.swatch):not(.color-swatch) {
     0 4px 18px #26395712,
     0 1px 3px #2639570b;
 }
+.more-actions-popover {
+  padding: 5px;
+}
+.more-actions-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.more-actions-menu > button {
+  justify-content: flex-start;
+  width: 100%;
+  height: 34px;
+  padding: 0 9px;
+  border-radius: 5px;
+  color: #445268;
+  font-size: 12px;
+}
+.more-actions-menu > button:disabled {
+  background: transparent;
+}
+.more-actions-trigger {
+  color: #64748b;
+}
 .popover-connector {
   position: absolute;
   pointer-events: none;

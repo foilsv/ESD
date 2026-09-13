@@ -28,6 +28,7 @@ Previous chat images were not available in the initial text retrieval. In the su
 8. Support shared-property multi-selection with explicit mixed state.
 9. Grid defaults off; blankets are excluded from this exploration.
 10. Use four functional font roles rather than a long font list.
+11. Keep rare style operations in an optional overflow menu at the end of the formatting row. The Lab toggle defaults off; the menu contains session-scoped Set default style, Copy style, and Paste style actions.
 
 ## Object capabilities
 

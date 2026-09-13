@@ -2,8 +2,12 @@ import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
+  ClipboardPaste,
+  Copy,
+  EllipsisVertical,
   Minus,
   IterationCw,
+  Paintbrush,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -68,6 +72,7 @@ interface Props {
   behavior: PanelBehavior;
   showPopoverHeaders?: boolean;
   mergeStrokeControls?: boolean;
+  showMoreActions?: boolean;
   detail: Detail;
   setDetail: (detail: Detail) => void;
   patch: (patch: Partial<Style>) => void;
@@ -76,6 +81,10 @@ interface Props {
   selection: Rect;
   viewport: Rect;
   finishEditing: () => void;
+  setDefaultStyle: () => void;
+  copyStyle: () => void;
+  pasteStyle: () => void;
+  canPasteStyle: boolean;
 }
 export default function FormattingToolbar(props: Props) {
   const { objects, editing, behavior, detail, setDetail, patch, selection, viewport } = props;
@@ -93,6 +102,7 @@ export default function FormattingToolbar(props: Props) {
   const [color, setColor] = useState<ColorKey | null>(null);
   const [sizeOpen, setSizeOpen] = useState(false);
   const [fontOpen, setFontOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [flatText, setFlatText] = useState(false);
   const textMode = behavior === 'flat' && (editing || flatText || context.textOnly);
   const flatDetail =
@@ -103,29 +113,36 @@ export default function FormattingToolbar(props: Props) {
       (detail === 'arrows' && context.direction))
       ? detail
       : null;
-  const activeTrigger = fontOpen
-    ? 'font-family'
-    : sizeOpen
-      ? 'font-size'
-      : color
-        ? `color-${color}`
-        : behavior === 'grouped'
-          ? detail
-          : null;
+  const activeTrigger = moreOpen
+    ? 'more-actions'
+    : fontOpen
+      ? 'font-family'
+      : sizeOpen
+        ? 'font-size'
+        : color
+          ? `color-${color}`
+          : behavior === 'grouped'
+            ? detail
+            : null;
   const placement = usePanelPlacement(toolbar, panel, selection, viewport, activeTrigger);
   // Browsing text formatting is distinct from editing the actual label.
   useEffect(() => {
     setSizeOpen(false);
     setFontOpen(false);
     setColor(null);
+    setMoreOpen(false);
     setFlatText(false);
   }, [behavior, editing]);
+  useEffect(() => {
+    if (!props.showMoreActions) setMoreOpen(false);
+  }, [props.showMoreActions]);
   useEffect(() => {
     const dismiss = (event: PointerEvent) => {
       if (root.current?.contains(event.target as Node)) return;
       setSizeOpen(false);
       setFontOpen(false);
       setColor(null);
+      setMoreOpen(false);
     };
     document.addEventListener('pointerdown', dismiss);
     return () => document.removeEventListener('pointerdown', dismiss);
@@ -134,11 +151,13 @@ export default function FormattingToolbar(props: Props) {
     setSizeOpen(false);
     setFontOpen(false);
     setColor(null);
+    setMoreOpen(false);
     setDetail(detail === next ? null : next);
   };
   const showColor = (key: ColorKey) => {
     setSizeOpen(false);
     setFontOpen(false);
+    setMoreOpen(false);
     if (behavior === 'grouped') setDetail(null);
     setColor(color === key ? null : key);
   };
@@ -165,6 +184,12 @@ export default function FormattingToolbar(props: Props) {
       ?.querySelector<HTMLButtonElement>('[data-popover-trigger="font-family"]')
       ?.focus({ preventScroll: true });
   };
+  const closeMore = () => {
+    setMoreOpen(false);
+    toolbar.current
+      ?.querySelector<HTMLButtonElement>('[data-popover-trigger="more-actions"]')
+      ?.focus({ preventScroll: true });
+  };
   useEffect(() => {
     if (fontOpen) {
       const options = panel.current?.querySelector('.font-dropdown-options');
@@ -174,6 +199,12 @@ export default function FormattingToolbar(props: Props) {
       )?.focus({ preventScroll: true });
     }
   }, [fontOpen]);
+  useEffect(() => {
+    if (moreOpen)
+      panel.current?.querySelector<HTMLButtonElement>('[role="menuitem"]:not(:disabled)')?.focus({
+        preventScroll: true,
+      });
+  }, [moreOpen]);
   const fontControl = (
     <FontControl
       value={value}
@@ -182,6 +213,7 @@ export default function FormattingToolbar(props: Props) {
       onClick={() => {
         setSizeOpen(false);
         setColor(null);
+        setMoreOpen(false);
         setFontOpen(!fontOpen);
       }}
     />
@@ -197,6 +229,7 @@ export default function FormattingToolbar(props: Props) {
       onClick={() => {
         setColor(null);
         setFontOpen(false);
+        setMoreOpen(false);
         setSizeOpen(!sizeOpen);
       }}
     >
@@ -412,6 +445,7 @@ export default function FormattingToolbar(props: Props) {
     setFontOpen(false);
     setFlatText(false);
     setColor(null);
+    setMoreOpen(false);
     setDetail(null);
     if (editing) props.finishEditing();
   };
@@ -491,6 +525,7 @@ export default function FormattingToolbar(props: Props) {
                 setFlatText(true);
                 setDetail(null);
                 setColor(null);
+                setMoreOpen(false);
               }}
             >
               <Type size={17} />
@@ -506,24 +541,97 @@ export default function FormattingToolbar(props: Props) {
       )}
     </>
   );
+  const styleKeys = Object.keys(objects[0]?.style ?? {}) as (keyof Style)[];
+  const uniformStyle = styleKeys.length > 0 && styleKeys.every((key) => value(key) !== undefined);
+  const uniformKind = objects.length > 0 && objects.every((object) => object.kind === objects[0].kind);
+  const moreActionsControl = props.showMoreActions && (
+    <>
+      <span className="divider toolbar-end-divider" />
+      <button
+        className={`icon-button more-actions-trigger ${moreOpen ? 'active' : ''}`}
+        aria-label="More formatting actions"
+        title="More formatting actions"
+        aria-haspopup="menu"
+        aria-expanded={moreOpen}
+        aria-controls={moreOpen ? panelId : undefined}
+        data-popover-trigger="more-actions"
+        onClick={() => {
+          const opening = !moreOpen;
+          setSizeOpen(false);
+          setFontOpen(false);
+          setColor(null);
+          if (opening && behavior === 'grouped') setDetail(null);
+          setMoreOpen(opening);
+        }}
+      >
+        <EllipsisVertical size={18} />
+      </button>
+    </>
+  );
+  const moreActionsMenu = (
+    <div className="more-actions-menu">
+      <button
+        role="menuitem"
+        disabled={!uniformStyle || !uniformKind}
+        title={
+          uniformStyle && uniformKind
+            ? 'Use this style for new objects of the same kind'
+            : 'Select objects of one kind with the same style'
+        }
+        onClick={() => {
+          props.setDefaultStyle();
+          closeMore();
+        }}
+      >
+        <Paintbrush size={16} />
+        Set default style
+      </button>
+      <button
+        role="menuitem"
+        disabled={!uniformStyle}
+        title={uniformStyle ? 'Copy the selected formatting' : 'Select objects with the same style'}
+        onClick={() => {
+          props.copyStyle();
+          closeMore();
+        }}
+      >
+        <Copy size={16} />
+        Copy style
+      </button>
+      <button
+        role="menuitem"
+        disabled={!props.canPasteStyle}
+        title={props.canPasteStyle ? 'Apply the copied formatting' : 'Copy a style first'}
+        onClick={() => {
+          props.pasteStyle();
+          closeMore();
+        }}
+      >
+        <ClipboardPaste size={16} />
+        Paste style
+      </button>
+    </div>
+  );
   const popoverTitle = fontOpen
     ? 'Font style'
-    : sizeOpen
-      ? 'Font size'
-      : color
-        ? color === 'fill'
-          ? 'Fill color'
-          : color === 'stroke'
-            ? 'Stroke color'
-            : 'Text color'
-        : detail === 'text'
-          ? 'Text formatting'
-          : detail === 'arrows'
-            ? 'Connection arrows'
-            : detail === 'alignment'
-              ? 'Alignment'
-              : 'Stroke';
-  const popover = fontOpen || sizeOpen || color || (detail && behavior === 'grouped');
+    : moreOpen
+      ? 'More actions'
+      : sizeOpen
+        ? 'Font size'
+        : color
+          ? color === 'fill'
+            ? 'Fill color'
+            : color === 'stroke'
+              ? 'Stroke color'
+              : 'Text color'
+          : detail === 'text'
+            ? 'Text formatting'
+            : detail === 'arrows'
+              ? 'Connection arrows'
+              : detail === 'alignment'
+                ? 'Alignment'
+                : 'Stroke';
+  const popover = moreOpen || fontOpen || sizeOpen || color || (detail && behavior === 'grouped');
   return (
     <div
       ref={root}
@@ -543,6 +651,7 @@ export default function FormattingToolbar(props: Props) {
         if (e.key !== 'Escape') return;
         e.stopPropagation();
         if (fontOpen) closeFont();
+        else if (moreOpen) closeMore();
         else if (sizeOpen) setSizeOpen(false);
         else if (color) setColor(null);
         else if (detail) setDetail(null);
@@ -575,21 +684,24 @@ export default function FormattingToolbar(props: Props) {
         ) : (
           objectRow
         )}
+        {moreActionsControl}
       </div>
       {popover && (
         <div
           key={activeTrigger}
           ref={panel}
           id={panelId}
-          className={`formatting-popover ${fontOpen ? 'font-popover' : sizeOpen ? 'size-popover' : color ? 'color-popover' : ''}`}
-          role="group"
+          className={`formatting-popover ${moreOpen ? 'more-actions-popover' : fontOpen ? 'font-popover' : sizeOpen ? 'size-popover' : color ? 'color-popover' : ''}`}
+          role={moreOpen ? 'menu' : 'group'}
           aria-label={popoverTitle}
           data-testid="formatting-popover"
           style={{
             left: placement?.popover ? placement.popover.x - placement.toolbar.x : 0,
             top: placement?.popover ? placement.popover.y - placement.toolbar.y : 0,
             width: Math.min(
-              fontOpen || sizeOpen
+              moreOpen
+                ? 204
+                : fontOpen || sizeOpen
                 ? 192
                 : color
                   ? 304
@@ -604,7 +716,7 @@ export default function FormattingToolbar(props: Props) {
             visibility: placement?.popover ? undefined : 'hidden',
           }}
         >
-          {props.showPopoverHeaders !== false && (
+          {!moreOpen && props.showPopoverHeaders !== false && (
             <div className="detail-heading">
               <span>{popoverTitle}</span>
               <button
@@ -624,7 +736,9 @@ export default function FormattingToolbar(props: Props) {
               </button>
             </div>
           )}
-          {fontOpen ? (
+          {moreOpen ? (
+            moreActionsMenu
+          ) : fontOpen ? (
             <FontDropdown {...controls} onChoose={closeFont} />
           ) : sizeOpen ? (
             <SizeDropdown {...controls} onChoose={() => setSizeOpen(false)} />
