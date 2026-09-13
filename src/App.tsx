@@ -921,15 +921,20 @@ export default function App() {
               <label className="switch-row">
                 <span>
                   Use one-line text toolbar
-                  <span className="field-note">Grouped label editing</span>
+                  <span className="field-note">Grouped editing and text objects</span>
                 </span>
                 <input
                   type="checkbox"
-                  aria-label="Use one-line text toolbar for Grouped label editing"
+                  aria-label="Use one-line text toolbar for Grouped editing and text objects"
                   checked={groupedTextToolbar}
                   onChange={(e) => {
                     setGroupedTextToolbar(e.target.checked);
-                    if (!e.target.checked && editing && behavior === 'grouped') setDetail('text');
+                    if (
+                      !e.target.checked &&
+                      behavior === 'grouped' &&
+                      (editing || toolbarContext(chosen).textOnly)
+                    )
+                      setDetail('text');
                   }}
                 />
                 <span className="switch" />

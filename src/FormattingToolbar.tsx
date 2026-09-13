@@ -105,11 +105,19 @@ export default function FormattingToolbar(props: Props) {
   const [fontOpen, setFontOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [flatText, setFlatText] = useState(false);
+  const [groupedTextObjectFlat, setGroupedTextObjectFlat] = useState(true);
   const groupedEditingTextMode =
     behavior === 'grouped' && editing && (props.groupedTextToolbar ?? true);
+  const groupedTextObjectMode =
+    behavior === 'grouped' &&
+    !editing &&
+    context.textOnly &&
+    (props.groupedTextToolbar ?? true) &&
+    groupedTextObjectFlat;
+  const groupedFlatTextMode = groupedEditingTextMode || groupedTextObjectMode;
   const textMode =
-    (behavior === 'flat' && (editing || flatText || context.textOnly)) || groupedEditingTextMode;
-  const visibleDetail = groupedEditingTextMode ? null : detail;
+    (behavior === 'flat' && (editing || flatText || context.textOnly)) || groupedFlatTextMode;
+  const visibleDetail = groupedFlatTextMode ? null : detail;
   const flatDetail =
     behavior === 'flat' &&
     !textMode &&
@@ -138,6 +146,9 @@ export default function FormattingToolbar(props: Props) {
     setMoreOpen(false);
     setFlatText(false);
   }, [behavior, editing]);
+  useEffect(() => {
+    setGroupedTextObjectFlat(true);
+  }, [behavior, props.groupedTextToolbar]);
   useEffect(() => {
     if (!props.showMoreActions) setMoreOpen(false);
   }, [props.showMoreActions]);
@@ -449,6 +460,7 @@ export default function FormattingToolbar(props: Props) {
     setSizeOpen(false);
     setFontOpen(false);
     setFlatText(false);
+    setGroupedTextObjectFlat(false);
     setColor(null);
     setMoreOpen(false);
     setDetail(null);
@@ -466,7 +478,7 @@ export default function FormattingToolbar(props: Props) {
   );
   const flatTextRow = (
     <>
-      {!context.textOnly && backToObject}
+      {(!context.textOnly || behavior === 'grouped') && backToObject}
       {fontControl}
       {sizeControl}
       <span className="divider" />
@@ -662,7 +674,7 @@ export default function FormattingToolbar(props: Props) {
         else if (sizeOpen) setSizeOpen(false);
         else if (color) setColor(null);
         else if (visibleDetail) setDetail(null);
-        else if (textMode && !context.textOnly) returnToObject();
+        else if (textMode && (!context.textOnly || groupedFlatTextMode)) returnToObject();
       }}
     >
       <div

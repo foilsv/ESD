@@ -10,6 +10,7 @@ import { parseSnapshot } from '../src/storage';
 
 const objects = createScene('system');
 const mcu = objects.find((o) => o.id === 'mcu')!;
+const textObject = objects.find((o) => o.kind === 'text')!;
 function render(
   behavior: PanelBehavior,
   editing: boolean,
@@ -99,6 +100,18 @@ test('Grouped keeps the text popover for manual formatting and when the modifier
     assert.match(markup, /aria-label="Font family"/);
     assert.doesNotMatch(markup, /aria-label="Back to object formatting"/);
   }
+});
+test('Grouped opens selected text objects in the one-line row with a path back to the object', () => {
+  const markup = render('grouped', false, 'text', [textObject]);
+  assert.match(markup, /role="toolbar" aria-label="Text formatting"/);
+  assert.match(markup, /aria-label="Back to object formatting"/);
+  assert.match(markup, /aria-label="Font family"/);
+  assert.doesNotMatch(markup, /data-testid="formatting-popover"/);
+
+  const disabled = render('grouped', false, 'text', [textObject], true, false);
+  assert.match(disabled, /role="toolbar" aria-label="Object formatting"/);
+  assert.match(disabled, /data-testid="formatting-popover"/);
+  assert.doesNotMatch(disabled, /aria-label="Back to object formatting"/);
 });
 test('Flat stroke and alignment replace the object row with dedicated tools and Back', () => {
   for (const detail of ['stroke', 'alignment'] as const) {
