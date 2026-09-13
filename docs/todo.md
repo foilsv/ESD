@@ -1,7 +1,7 @@
 [ ] 
 [ ] 
 [ ] text object lost the full menu mode in flat mode. Let's make sure text object also has fill and border attributes.
-[ ] lets' make trasperent color circles for Stroke looks as no-line, rather than just transparent - could be an crossed red circle with transparent background
+[ ] lets' make trasperent color circles for Stroke looks as no-line, rather than just transparent - could be an crossed circle with transparent background or similar easy to understand visualization.
 [ ] let's  add a right mouse click menu, with typical operations for diagram drawing tools. Do not implement the actions themselves yet, we just testing the visual appearance.
 
 

@@ -14,6 +14,7 @@ export const releaseNotes: ReleaseNote[] = [
     title: 'Label editing and keyboard controls',
     summary:
       'This iteration compares compact and direct text controls and adds a shared keyboard scheme that separates typing labels from choosing canvas tools.',
+    publishedOn: '2026-09-13',
     changes: [
       {
         title: 'Compare compact and direct text controls',
