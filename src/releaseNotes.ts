@@ -10,10 +10,11 @@ export type ReleaseNote = {
 // maintenance rules that keep this intentionally different from a commit log.
 export const releaseNotes: ReleaseNote[] = [
   {
-    version: '3',
+    version: '5',
     title: 'More expressive diagrams',
     summary:
-      'The next release broadens the visual experiments, makes connections and label editing easier to read, and adds this visible, curated release history.',
+      'This release broadens the visual experiments, makes connections and label editing easier to read, and adds this visible, curated release history.',
+    publishedOn: '2026-09-12',
     changes: [
       {
         title: 'Manufacturer-inspired styles',
