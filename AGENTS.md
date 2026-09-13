@@ -37,10 +37,12 @@ User instruction, 2026-09-12:
 ## Version and What's new maintenance
 
 - `src/releaseNotes.ts` is the source of truth for the version shown in the app and the What's new page. Its version numbers follow OpenAI Sites deployment versions, not package or commit versions.
-- During local development after a deployment, maintain one topmost unpublished entry for the next deployment. Consolidate user-visible work into 2–5 meaningful themes. Update an existing theme when related work continues; do not add a line for every commit, code cleanup, test, or internal fix.
-- Describe outcomes a person evaluating the prototype can notice. Include an internal fix only when it materially changes reliability or behavior, and name that outcome rather than the implementation.
+- Treat What's new as a concise product-creation record for the design, product, and engineering team. Its purpose is to preserve the train of thought behind the prototype: what we intended to learn or improve, what behavior changed, and why that change matters to the experiment. It is not release marketing or end-user persuasion.
+- During local development after a deployment, maintain one topmost unpublished entry for the next deployment. Consolidate work into 2–5 meaningful product themes. Update an existing theme when related work continues; do not add a line for every commit, code cleanup, test, or internal fix.
+- Write in plain, neutral language. Pair the product intent or question with the observable behavior change and, when useful, the decision, comparison, or tradeoff it supports. Prefer precise descriptions over benefit claims; avoid hype, superlatives, sales language, and unsupported claims that something is faster, easier, clearer, or better.
+- Include an internal fix only when it materially changes reliability or observable behavior. Describe the resulting product behavior and relevant rationale, not implementation details.
 - Preserve earlier deployed entries. Before an explicitly requested deployment, confirm the unpublished version is the next Sites version and set its `publishedOn` date before the final build and package. If a deployment does not complete, do not describe it as successfully published in deployment documentation.
-- Start the next unpublished entry only when meaningful post-deployment work begins. Keep the entry concise enough that the page remains a release overview rather than a changelog archive.
+- Start the next unpublished entry only when meaningful post-deployment work begins. Keep it concise enough to scan as a sequence of product decisions rather than a changelog archive.
 
 Use CSS variables for shared visual decisions. Preserve accessible names, focus feedback, keyboard shortcuts, and reduced-motion behavior. Do not replace design experimentation with an oversized settings/inspector product.
 
