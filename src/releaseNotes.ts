@@ -30,6 +30,11 @@ export const releaseNotes: ReleaseNote[] = [
         description:
           'Square-cornered shapes, cleaner arrow joins, and refined inline label editing make the fixture easier to evaluate.',
       },
+      {
+        title: 'Faster canvas navigation',
+        description:
+          'Right-drag anywhere on the diagram to pan without changing tools, and zoom around the cursor with the mouse wheel.',
+      },
     ],
   },
   {

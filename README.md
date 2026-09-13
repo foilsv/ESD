@@ -30,10 +30,10 @@ npm test        # Formatting, geometry, and snapshot checks
 - Open Stroke to compare patterns and Small / Medium / Large / Extra large widths (1 / 2 / 4 / 8 px).
 - Select a connection and open its arrow-style group to choose None, Left, Right, or Both, or use the separate cycle button to iterate None → Left → Right → Both. The group icon shows the current state; the cycle button tooltip names the next state. Left and right refer to the source and target ends of the drawn path, even when moved around the canvas.
 - Shift-click objects to apply shared formatting together. Different values appear as Mixed.
-- Drag objects, resize from the bottom-right handle, use H to pan or the zoom controls, and try the dense and edge scenes.
+- Drag objects, resize from the bottom-right handle, right-drag to pan, use the mouse wheel or zoom controls, and try the dense and edge scenes.
 - In the edge scenes, open and switch Grouped popovers: the toolbar stays fixed, while a popover can flip toward the selection when it lacks space to open away from it.
 - Switch to **Object families** to test block, hardware, software, port, connection, simple line, rectangle, ellipse, text, and symbol contexts.
-- B adds a block, T adds text, C connects two objects, V selects, H pans. Delete removes the selection; Ctrl/Cmd+Z undoes; Ctrl/Cmd+Shift+Z redoes.
+- B adds a block, T adds text, C connects two objects, and V selects. Delete removes the selection; Ctrl/Cmd+Z undoes; Ctrl/Cmd+Shift+Z redoes.
 - Changes save in this browser. **Save experiment** exports JSON; **Open** restores it. Reset scene is undoable. Changing a scene replaces the current sample; export to keep several experiments.
 - Earlier experiments migrate automatically: Replace → Flat, Stack → Grouped, Expand → Inline. Object styling is preserved. New exports use snapshot version 2.
 

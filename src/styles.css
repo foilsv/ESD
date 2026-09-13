@@ -297,10 +297,9 @@ button[aria-pressed='true']:not(.swatch):not(.color-swatch) {
   height: 100%;
   touch-action: none;
 }
-.hand-mode {
-  cursor: grab;
-}
-.hand-mode:active {
+.diagram-canvas.panning,
+.diagram-canvas.panning .diagram-object,
+.diagram-canvas.panning .line-hit {
   cursor: grabbing;
 }
 .scene-caption {
@@ -360,9 +359,6 @@ button[aria-pressed='true']:not(.swatch):not(.color-swatch) {
 .diagram-object:focus-visible > rect:first-child {
   stroke: var(--accent);
   stroke-width: 3;
-}
-.hand-mode .diagram-object {
-  cursor: grab;
 }
 .line-hit {
   cursor: pointer;

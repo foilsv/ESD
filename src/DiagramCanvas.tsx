@@ -8,10 +8,7 @@ import {
   type DiagramObject,
   type Point,
 } from './model';
-import type {
-  PointerEvent as ReactPointerEvent,
-  WheelEvent as ReactWheelEvent,
-} from 'react';
+import type { PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent } from 'react';
 import { connectionGeometry } from './connectionGeometry';
 import type { View } from './viewport';
 interface Props {
