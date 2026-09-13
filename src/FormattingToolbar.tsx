@@ -86,6 +86,7 @@ interface Props {
   showPopoverHeaders?: boolean;
   mergeStrokeControls?: boolean;
   groupedTextToolbar?: boolean;
+  compactTextAlignment?: boolean;
   showMoreActions?: boolean;
   detail: Detail;
   setDetail: (detail: Detail) => void;
@@ -110,6 +111,7 @@ export default function FormattingToolbar(props: Props) {
     (props.mergeStrokeControls ?? true) &&
     context.stroke &&
     (behavior === 'flat' || behavior === 'inline');
+  const compactTextAlignmentPreference = props.compactTextAlignment ?? true;
   const value = <K extends keyof Style>(key: K) => commonValue(objects, key);
   const controls = { value, patch };
   const root = useRef<HTMLDivElement>(null);
@@ -131,14 +133,18 @@ export default function FormattingToolbar(props: Props) {
     (props.groupedTextToolbar ?? true) &&
     groupedTextObjectFlat;
   const groupedFlatTextMode = groupedEditingTextMode || groupedTextObjectMode;
+  const compactTextAlignment =
+    compactTextAlignmentPreference &&
+    (behavior === 'flat' || behavior === 'inline' || groupedFlatTextMode);
   const textMode =
     (behavior === 'flat' && (editing || flatText || context.textOnly)) || groupedFlatTextMode;
-  const visibleDetail = groupedFlatTextMode ? null : detail;
+  const visibleDetail = groupedFlatTextMode && detail === 'text' ? null : detail;
+  const alignmentPopoverOpen = compactTextAlignment && visibleDetail === 'alignment';
   const flatDetail =
     behavior === 'flat' &&
     !textMode &&
     ((detail === 'stroke' && context.stroke) ||
-      (detail === 'alignment' && context.alignment) ||
+      (detail === 'alignment' && context.alignment && !compactTextAlignment) ||
       (detail === 'arrows' && context.direction))
       ? detail
       : null;
@@ -150,7 +156,7 @@ export default function FormattingToolbar(props: Props) {
         ? 'font-size'
         : color
           ? `color-${color}`
-          : behavior === 'grouped'
+          : behavior === 'grouped' || alignmentPopoverOpen
             ? visibleDetail
             : null;
   const placement = usePanelPlacement(toolbar, panel, selection, viewport, activeTrigger);
@@ -190,7 +196,7 @@ export default function FormattingToolbar(props: Props) {
     setSizeOpen(false);
     setFontOpen(false);
     setMoreOpen(false);
-    if (behavior === 'grouped') setDetail(null);
+    if (behavior === 'grouped' || alignmentPopoverOpen) setDetail(null);
     setColor(color === key ? null : key);
   };
   const colorControl = (key: ColorKey, label: string) => (
@@ -246,6 +252,7 @@ export default function FormattingToolbar(props: Props) {
         setSizeOpen(false);
         setColor(null);
         setMoreOpen(false);
+        if (alignmentPopoverOpen) setDetail(null);
         setFontOpen(!fontOpen);
       }}
     />
@@ -262,6 +269,7 @@ export default function FormattingToolbar(props: Props) {
         setColor(null);
         setFontOpen(false);
         setMoreOpen(false);
+        if (alignmentPopoverOpen) setDetail(null);
         setSizeOpen(!sizeOpen);
       }}
     >
@@ -301,11 +309,17 @@ export default function FormattingToolbar(props: Props) {
       </div>
     </div>
   );
-  function group(id: Exclude<Detail, null>, label: string, summary: ReactNode, content: ReactNode) {
+  function group(
+    id: Exclude<Detail, null>,
+    label: string,
+    summary: ReactNode,
+    content: ReactNode,
+    presentation: PanelBehavior = behavior,
+  ) {
     const expanded = detail === id;
     return (
       <div
-        className={`format-group ${expanded && behavior === 'inline' ? 'expanded-inline-group' : ''}`}
+        className={`format-group ${expanded && presentation === 'inline' ? 'expanded-inline-group' : ''}`}
         data-group={id}
       >
         <button
@@ -321,20 +335,20 @@ export default function FormattingToolbar(props: Props) {
                   : `${label} settings`
           }
           aria-expanded={expanded}
-          aria-controls={expanded && behavior === 'grouped' ? panelId : undefined}
+          aria-controls={expanded && presentation === 'grouped' ? panelId : undefined}
           data-popover-trigger={id}
           onClick={() => toggleGroup(id)}
         >
           {summary}
-          {behavior === 'flat' ? (
+          {presentation === 'flat' ? (
             <ChevronRight size={11} />
-          ) : expanded && behavior === 'inline' ? (
+          ) : expanded && presentation === 'inline' ? (
             <ChevronLeft size={11} />
           ) : (
             <ChevronDown size={11} />
           )}
         </button>
-        {expanded && behavior === 'inline' && (
+        {expanded && presentation === 'inline' && (
           <div
             className="inline-controls"
             data-testid="inline-controls"
@@ -405,6 +419,7 @@ export default function FormattingToolbar(props: Props) {
     'Alignment',
     <AlignmentStateIcon align={value('align')} verticalAlign={value('verticalAlign')} />,
     alignment(true),
+    compactTextAlignment ? 'grouped' : behavior,
   );
 
   const arrowState =
@@ -439,6 +454,7 @@ export default function FormattingToolbar(props: Props) {
                 directional: arrowStyle !== 'none',
                 reversed: arrowStyle === 'left',
               });
+              if (behavior === 'grouped') setDetail(null);
             }}
           >
             <Icon size={20} />
@@ -501,11 +517,15 @@ export default function FormattingToolbar(props: Props) {
       <EmphasisControls {...controls} />
       {colorControl('textColor', 'Text')}
       {context.alignment && (
-        <>
-          <span className="divider" />
-          <AlignmentControls {...controls} />
-          <AlignmentControls {...controls} vertical />
-        </>
+        compactTextAlignment ? (
+          alignGroup
+        ) : (
+          <>
+            <span className="divider" />
+            <AlignmentControls {...controls} />
+            <AlignmentControls {...controls} vertical />
+          </>
+        )
       )}
     </>
   );
@@ -594,7 +614,7 @@ export default function FormattingToolbar(props: Props) {
           setSizeOpen(false);
           setFontOpen(false);
           setColor(null);
-          if (opening && behavior === 'grouped') setDetail(null);
+          if (opening && (behavior === 'grouped' || alignmentPopoverOpen)) setDetail(null);
           setMoreOpen(opening);
         }}
       >
@@ -680,14 +700,24 @@ export default function FormattingToolbar(props: Props) {
                 ? 'Alignment'
                 : 'Stroke';
   const popover =
-    moreOpen || fontOpen || sizeOpen || color || (visibleDetail && behavior === 'grouped');
+    moreOpen ||
+    fontOpen ||
+    sizeOpen ||
+    color ||
+    alignmentPopoverOpen ||
+    (visibleDetail && behavior === 'grouped');
   const dismiss = () => {
     if (fontOpen) closeFont();
     else if (moreOpen) closeMore();
-    else if (sizeOpen || color || (visibleDetail && behavior === 'grouped')) {
+    else if (
+      sizeOpen ||
+      color ||
+      alignmentPopoverOpen ||
+      (visibleDetail && behavior === 'grouped')
+    ) {
       setSizeOpen(false);
       setColor(null);
-      if (visibleDetail && behavior === 'grouped') setDetail(null);
+      if (alignmentPopoverOpen || (visibleDetail && behavior === 'grouped')) setDetail(null);
       toolbar.current
         ?.querySelector<HTMLButtonElement>(`[data-popover-trigger="${activeTrigger}"]`)
         ?.focus({ preventScroll: true });
@@ -826,7 +856,7 @@ export default function FormattingToolbar(props: Props) {
           ) : detail === 'arrows' ? (
             arrowChoices
           ) : (
-            <AlignmentGrid {...controls} />
+            <AlignmentGrid {...controls} onChoose={() => setDetail(null)} />
           )}
         </div>
       )}

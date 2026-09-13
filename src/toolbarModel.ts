@@ -13,7 +13,7 @@ export const behaviors: { id: PanelBehavior; label: string; title: string; descr
       label: 'Flat',
       title: 'Flat toolbar + popovers',
       description:
-        'Stroke, arrows, text, and alignment replace the row with their own tools. Back returns to the object; colors use compact dropdowns.',
+        'Stroke and text replace the row. Alignment can use one compact position popover or its direct sub-toolbar.',
     },
     {
       id: 'grouped',
@@ -27,7 +27,7 @@ export const behaviors: { id: PanelBehavior; label: string; title: string; descr
       label: 'Inline',
       title: 'Inline expansion',
       description:
-        'A group expands into a highlighted section of the same row. Color and font retain compact dropdowns.',
+        'Groups expand in the same row. Alignment can instead use one compact position popover.',
     },
   ];
 

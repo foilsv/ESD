@@ -7,11 +7,11 @@ Use the same scene and tasks for Flat, Grouped, and Inline. Keep viewport size a
 1. Select the MCU and make it green.
 2. Edit its label, make it 20 px and bold, then change its text color.
 3. Change the border to dashed, then return to the label.
-4. Select the PWM connection and cycle through Right → Both → None → Left → Right. Confirm both endpoints render arrows in Both, and undo returns to the preceding state.
+4. Select the PWM connection and cycle through Right → Both → None → Left → Right. Confirm both endpoints render arrows in Both, undo returns to the preceding state, and Grouped's direct-choice popover closes after selection.
 5. Shift-select two different blocks and apply a shared fill.
 6. Keep Stroke open while switching among blocks, then select a port.
 7. Repeat in Dense diagram and Canvas edges; drag selections toward the viewport boundary.
-8. In Flat, open Stroke, change its color and width, and use Back; repeat with Alignment and Text. Confirm color dropdowns preserve the current sub-toolbar. In Grouped, enter label editing with the one-line text modifier on, then turn it off and compare the automatic Text popover. Select a text object, confirm its one-line row opens immediately, use Back to reach whole-object mode, and manually open Text to confirm it remains a popover. In Inline, open a color dropdown while Text stays expanded.
+8. In Flat, Inline, and Grouped's one-line text row, edit a label with compact text alignment on, open the 3×3 Alignment popover, choose a position, and confirm the popover closes. Then switch the modifier off and compare the six direct axis buttons. Confirm font, size, B/I/U/S, and text color stay directly available. Repeat from whole-object Alignment in Flat and Inline. In Flat, also open Stroke, change its color and width, and use Back. In Grouped, turn the one-line text modifier off and compare the automatic Text popover. Select a text object, confirm its one-line row opens immediately, use Back to reach whole-object mode, and manually open Text to confirm it remains a popover.
 9. Compare horizontal/vertical alignment, underline, and strikethrough in all three solutions.
 
 Record clicks, unexpected mode changes, whether state was visible, whether the panel covered the target, and whether the control was easy to find. These are manual study notes; the app does not collect telemetry.

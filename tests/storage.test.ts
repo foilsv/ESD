@@ -18,6 +18,7 @@ test('older experiments keep popover headers visible', () => {
     assert.equal(restored.showPopoverHeaders, true);
     assert.equal(restored.mergeStrokeControls, true);
     assert.equal(restored.groupedTextToolbar, true);
+    assert.equal(restored.compactTextAlignment, true);
     assert.equal(restored.showMoreActions, false);
     assert.equal(restored.showShortcutHints, false);
     assert.deepEqual(restored.objects, snapshot.objects);
@@ -32,6 +33,19 @@ test('Grouped text toolbar preference defaults on, survives round trips, and rej
   }
   for (const groupedTextToolbar of [null, 'true', 1, {}]) {
     assert.equal(parseSnapshot({ ...snapshot, groupedTextToolbar }), null);
+  }
+});
+
+test('compact text alignment defaults on, survives round trips, and rejects invalid values', () => {
+  for (const compactTextAlignment of [false, true]) {
+    const restored = parseSnapshot(
+      JSON.parse(JSON.stringify({ ...snapshot, compactTextAlignment })),
+    );
+    assert.ok(restored);
+    assert.equal(restored.compactTextAlignment, compactTextAlignment);
+  }
+  for (const compactTextAlignment of [null, 'true', 1, {}]) {
+    assert.equal(parseSnapshot({ ...snapshot, compactTextAlignment }), null);
   }
 });
 

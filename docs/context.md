@@ -22,13 +22,14 @@ Previous chat images were not available in the initial text retrieval. In the su
 2. Floating, contextual toolbar; no irrelevant disabled controls.
 3. Colors use stateful compact dropdowns. The Lab can merge stroke/line color into the Stroke control for Flat and Inline, enabled by default, or expose it independently in all three solutions. Grouped always keeps color separate.
 4. Avoid unnecessary category navigation. Uncommon related settings belong in one secondary surface or inline group according to the selected solution.
-5. Label editing is unambiguous intent: expose text controls without another navigation click. By default, Grouped label editing and a newly selected text object use Flat's explicit one-line text row to avoid the larger Text popover; a saved Lab modifier restores the original automatic popover for comparison. Back from a selected text object's row reveals whole-object mode. Manually opening Text from the Grouped object row always remains a popover.
+5. Label editing is unambiguous intent: expose text controls automatically. By default, Flat, Inline, and Grouped's one-line text toolbar keep font, size, emphasis, and text color direct while condensing the six horizontal/vertical alignment buttons into the 3×3 Alignment popover; a saved Lab modifier restores the separate axis buttons in each row. Grouped label editing and a newly selected text object use Flat's explicit one-line text row by default, with a separate saved modifier that restores the automatic Text popover. Back from a selected text object's Grouped row reveals whole-object mode. Manually opening Text from the Grouped object row always remains a popover.
 6. Format by shared capabilities, consistently across object families.
 7. Place the toolbar above the selection if the toolbar alone fits, otherwise below; use a viewport-edge fallback when neither side fits or the selection is oversized. Opening, switching, or closing a popover must never move the toolbar. Popovers prefer opening away from the selection (upward above, downward below), but may flip independently toward it and overlap when outward space is insufficient. If neither direction fits, cap the panel to available space and scroll its contents. Visually connect the panel to its originating button. This supersedes the earlier rule to flip or shift the toolbar and popover together.
 8. Support shared-property multi-selection with explicit mixed state.
 9. Grid defaults off; blankets are excluded from this exploration.
 10. Use four functional font roles rather than a long font list.
 11. Keep rare style operations in an optional overflow menu at the end of the formatting row. The Lab toggle defaults off; the menu contains session-scoped Set default style, Copy style, and Paste style actions.
+12. Popover dismissal follows action cardinality. A single-property choice closes its popover after selection (color, font, size, alignment, and Grouped arrow style); compound Text and Stroke popovers remain open so several related properties can be changed in sequence. Flat sub-toolbars and Inline expansions are not popovers and stay open.
 
 ## Object capabilities
 

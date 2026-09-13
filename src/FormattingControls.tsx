@@ -450,7 +450,11 @@ export function AlignmentStateIcon({
     </svg>
   );
 }
-export function AlignmentGrid({ value, patch }: ControlProps) {
+export function AlignmentGrid({
+  value,
+  patch,
+  onChoose,
+}: ControlProps & { onChoose?: () => void }) {
   return (
     <div className="alignment-grid" role="group" aria-label="Text position">
       {(['top', 'middle', 'bottom'] as const).flatMap((verticalAlign) =>
@@ -460,7 +464,10 @@ export function AlignmentGrid({ value, patch }: ControlProps) {
             title={`Align ${verticalAlign} ${align}`}
             aria-label={`Align ${verticalAlign} ${align}`}
             aria-pressed={value('align') === align && value('verticalAlign') === verticalAlign}
-            onClick={() => patch({ align, verticalAlign })}
+            onClick={() => {
+              patch({ align, verticalAlign });
+              onChoose?.();
+            }}
           >
             <AlignmentStateIcon align={align} verticalAlign={verticalAlign} size={24} />
           </button>

@@ -111,6 +111,9 @@ export default function App() {
     initial?.mergeStrokeControls ?? true,
   );
   const [groupedTextToolbar, setGroupedTextToolbar] = useState(initial?.groupedTextToolbar ?? true);
+  const [compactTextAlignment, setCompactTextAlignment] = useState(
+    initial?.compactTextAlignment ?? true,
+  );
   const [showMoreActions, setShowMoreActions] = useState(initial?.showMoreActions ?? false);
   const [showShortcutHints, setShowShortcutHints] = useState(initial?.showShortcutHints ?? false);
   const [styleClipboard, setStyleClipboard] = useState<Style | null>(null);
@@ -192,6 +195,7 @@ export default function App() {
             showPopoverHeaders,
             mergeStrokeControls,
             groupedTextToolbar,
+            compactTextAlignment,
             showMoreActions,
             showShortcutHints,
             manufacturer,
@@ -208,6 +212,7 @@ export default function App() {
     showPopoverHeaders,
     mergeStrokeControls,
     groupedTextToolbar,
+    compactTextAlignment,
     showMoreActions,
     showShortcutHints,
     manufacturer,
@@ -694,6 +699,7 @@ export default function App() {
       showPopoverHeaders,
       mergeStrokeControls,
       groupedTextToolbar,
+      compactTextAlignment,
       showMoreActions,
       showShortcutHints,
       manufacturer,
@@ -724,6 +730,7 @@ export default function App() {
       setShowPopoverHeaders(snapshot.showPopoverHeaders ?? true);
       setMergeStrokeControls(snapshot.mergeStrokeControls ?? true);
       setGroupedTextToolbar(snapshot.groupedTextToolbar ?? true);
+      setCompactTextAlignment(snapshot.compactTextAlignment ?? true);
       setShowMoreActions(snapshot.showMoreActions ?? false);
       setShowShortcutHints(snapshot.showShortcutHints ?? false);
       setSelected([]);
@@ -1211,6 +1218,7 @@ export default function App() {
             showPopoverHeaders={showPopoverHeaders}
             mergeStrokeControls={mergeStrokeControls}
             groupedTextToolbar={groupedTextToolbar}
+            compactTextAlignment={compactTextAlignment}
             showMoreActions={showMoreActions}
             detail={detail}
             setDetail={setDetail}
@@ -1353,6 +1361,19 @@ export default function App() {
                     setMergeStrokeControls(e.target.checked);
                     if (detail === 'stroke') setDetail(null);
                   }}
+                />
+                <span className="switch" />
+              </label>
+              <label className="switch-row">
+                <span>
+                  Use compact text alignment
+                  <span className="field-note">Flat, Grouped text row, Inline</span>
+                </span>
+                <input
+                  type="checkbox"
+                  aria-label="Use compact text alignment"
+                  checked={compactTextAlignment}
+                  onChange={(event) => setCompactTextAlignment(event.target.checked)}
                 />
                 <span className="switch" />
               </label>

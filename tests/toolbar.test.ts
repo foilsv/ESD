@@ -1,10 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createElement } from 'react';
+import { Children, createElement, type ReactElement, type ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import FormattingToolbar from '../src/FormattingToolbar';
 import { createScene } from '../src/fixtures';
-import { labelBounds, type Detail, type PanelBehavior } from '../src/model';
+import { labelBounds, type Detail, type PanelBehavior, type Style } from '../src/model';
+import { AlignmentGrid } from '../src/FormattingControls';
 import { compatibleDetail, detailOnTextEntry } from '../src/toolbarModel';
 import { parseSnapshot } from '../src/storage';
 
@@ -18,6 +19,7 @@ function render(
   selection = [mcu],
   mergeStrokeControls = true,
   groupedTextToolbar = true,
+  compactTextAlignment = true,
 ) {
   return renderToStaticMarkup(
     createElement(FormattingToolbar, {
@@ -26,6 +28,7 @@ function render(
       behavior,
       mergeStrokeControls,
       groupedTextToolbar,
+      compactTextAlignment,
       editing,
       detail,
       setDetail() {},
@@ -73,22 +76,68 @@ test('rare style actions are opt-in and the menu trigger stays at the end of eve
     assert.ok(shown.lastIndexOf('More formatting actions') > shown.lastIndexOf('Stroke color'));
   }
 });
-test('Flat automatically replaces object tools with a full text row and Back', () => {
+test('Flat keeps typography direct and groups text alignment into a popover by default', () => {
   const markup = render('flat', true);
   assert.match(markup, /aria-label="Back to object formatting"/);
   assert.match(markup, /aria-label="Font family"/);
   assert.match(markup, /aria-label="Underline"/);
   assert.match(markup, /data-popover-trigger="font-size"/);
-  assert.doesNotMatch(markup, /class="font-size-input"/);
+  assert.match(markup, /aria-label="Alignment settings"/);
+  assert.doesNotMatch(markup, /aria-label="Horizontal alignment"/);
   assert.doesNotMatch(markup, /aria-label="Fill color"/);
   assert.doesNotMatch(markup, /data-testid="formatting-popover"/);
+
+  const expanded = render('flat', true, 'alignment');
+  assert.match(expanded, /aria-label="Alignment settings"/);
+  assert.match(expanded, /data-testid="formatting-popover"/);
+  assert.match(expanded, /aria-label="Text position"/);
+  assert.doesNotMatch(expanded, /aria-label="Horizontal alignment"/);
 });
-test('Grouped uses the one-line text toolbar during label editing by default', () => {
+test('Flat restores the six direct alignment buttons when the compact modifier is off', () => {
+  const markup = render('flat', true, null, [mcu], true, true, false);
+  assert.match(markup, /aria-label="Font family"/);
+  assert.match(markup, /aria-label="Underline"/);
+  assert.match(markup, /aria-label="Horizontal alignment"/);
+  assert.match(markup, /aria-label="Vertical alignment"/);
+  assert.doesNotMatch(markup, /aria-label="Alignment settings"/);
+  assert.doesNotMatch(markup, /data-testid="formatting-popover"/);
+});
+test('the single-action alignment grid reports completion after applying one position', () => {
+  const patches: Partial<Style>[] = [];
+  let choices = 0;
+  const grid = AlignmentGrid({
+    value: (key) => mcu.style[key],
+    patch: (next) => patches.push(next),
+    onChoose: () => choices++,
+  });
+  const buttons = Children.toArray(
+    (grid.props as { children: ReactNode }).children,
+  ) as ReactElement<{ onClick: () => void }>[];
+
+  buttons[0].props.onClick();
+
+  assert.deepEqual(patches, [{ align: 'left', verticalAlign: 'top' }]);
+  assert.equal(choices, 1);
+});
+test('Grouped one-line text mode also uses compact alignment by default', () => {
   const markup = render('grouped', true);
   assert.match(markup, /aria-label="Back to object formatting"/);
   assert.match(markup, /aria-label="Font family"/);
   assert.match(markup, /aria-label="Underline"/);
+  assert.match(markup, /aria-label="Alignment settings"/);
+  assert.doesNotMatch(markup, /aria-label="Horizontal alignment"/);
   assert.doesNotMatch(markup, /aria-label="Fill color"/);
+  assert.doesNotMatch(markup, /data-testid="formatting-popover"/);
+
+  const expanded = render('grouped', true, 'alignment');
+  assert.match(expanded, /data-testid="formatting-popover"/);
+  assert.match(expanded, /aria-label="Text position"/);
+});
+test('Grouped one-line text mode restores direct alignment when compact mode is off', () => {
+  const markup = render('grouped', true, 'text', [mcu], true, true, false);
+  assert.match(markup, /aria-label="Horizontal alignment"/);
+  assert.match(markup, /aria-label="Vertical alignment"/);
+  assert.doesNotMatch(markup, /aria-label="Alignment settings"/);
   assert.doesNotMatch(markup, /data-testid="formatting-popover"/);
 });
 test('Grouped keeps the text popover for manual formatting and when the modifier is off', () => {
@@ -108,6 +157,7 @@ test('Grouped opens selected text objects in the one-line row with a path back t
   assert.match(markup, /role="toolbar" aria-label="Text formatting"/);
   assert.match(markup, /aria-label="Back to object formatting"/);
   assert.match(markup, /aria-label="Font family"/);
+  assert.match(markup, /aria-label="Alignment settings"/);
   assert.doesNotMatch(markup, /data-testid="formatting-popover"/);
 
   const disabled = render('grouped', false, 'text', [textObject], true, false);
@@ -115,23 +165,30 @@ test('Grouped opens selected text objects in the one-line row with a path back t
   assert.match(disabled, /data-testid="formatting-popover"/);
   assert.doesNotMatch(disabled, /aria-label="Back to object formatting"/);
 });
-test('Flat stroke and alignment replace the object row with dedicated tools and Back', () => {
-  for (const detail of ['stroke', 'alignment'] as const) {
-    const markup = render('flat', false, detail);
-    assert.match(markup, /aria-label="Back to object formatting"/);
-    assert.match(markup, /data-testid="flat-detail-controls"/);
-    assert.doesNotMatch(markup, /data-testid="formatting-popover"/);
-    assert.doesNotMatch(markup, /aria-label="Fill color"/);
-    assert.doesNotMatch(markup, /aria-label="Text formatting"/);
-    if (detail === 'stroke') {
-      assert.match(markup, /aria-label="dashed stroke"/);
-      assert.match(markup, /aria-label="Large stroke width"/);
-      assert.match(markup, /aria-label="Stroke color"/);
-    } else {
-      assert.match(markup, /aria-label="Horizontal alignment"/);
-      assert.match(markup, /aria-label="Vertical alignment"/);
-    }
-  }
+test('Flat stroke replaces the object row with dedicated tools and Back', () => {
+  const markup = render('flat', false, 'stroke');
+  assert.match(markup, /aria-label="Back to object formatting"/);
+  assert.match(markup, /data-testid="flat-detail-controls"/);
+  assert.doesNotMatch(markup, /data-testid="formatting-popover"/);
+  assert.doesNotMatch(markup, /aria-label="Fill color"/);
+  assert.doesNotMatch(markup, /aria-label="Text formatting"/);
+  assert.match(markup, /aria-label="dashed stroke"/);
+  assert.match(markup, /aria-label="Large stroke width"/);
+  assert.match(markup, /aria-label="Stroke color"/);
+});
+test('Flat object alignment uses a popover by default and its sub-toolbar when disabled', () => {
+  const compact = render('flat', false, 'alignment');
+  assert.match(compact, /aria-label="Fill color"/);
+  assert.match(compact, /data-testid="formatting-popover"/);
+  assert.match(compact, /aria-label="Text position"/);
+  assert.doesNotMatch(compact, /aria-label="Back to object formatting"/);
+
+  const direct = render('flat', false, 'alignment', [mcu], true, true, false);
+  assert.match(direct, /aria-label="Back to object formatting"/);
+  assert.match(direct, /data-testid="flat-detail-controls"/);
+  assert.match(direct, /aria-label="Horizontal alignment"/);
+  assert.match(direct, /aria-label="Vertical alignment"/);
+  assert.doesNotMatch(direct, /data-testid="formatting-popover"/);
 });
 test('Grouped stroke and alignment keep the object row and use a popover', () => {
   for (const detail of ['stroke', 'alignment'] as const) {
@@ -193,16 +250,23 @@ test('Stroke summary uses line weight instead of pixels and compacts the no-bord
   assert.match(noBorder, /class="no-border-sample"/);
   assert.doesNotMatch(noBorder, /data-testid="stroke-summary-line"/);
 });
-test('Inline expands compound controls inside the row without a compound popover', () => {
-  for (const detail of ['text', 'stroke', 'alignment'] as const) {
+test('Inline keeps Text and Stroke in-row while alignment uses a popover by default', () => {
+  for (const detail of ['text', 'stroke'] as const) {
     const markup = render('inline', false, detail);
     assert.match(markup, /data-testid="inline-controls"/);
     assert.doesNotMatch(markup, /data-testid="formatting-popover"/);
-    if (detail === 'text') {
-      assert.match(markup, /data-popover-trigger="font-size"/);
-      assert.doesNotMatch(markup, /class="font-size-input"/);
-    }
   }
+
+  const compactAlignment = render('inline', false, 'alignment');
+  assert.match(compactAlignment, /data-testid="formatting-popover"/);
+  assert.match(compactAlignment, /aria-label="Text position"/);
+  assert.doesNotMatch(compactAlignment, /data-testid="inline-controls"/);
+
+  const directAlignment = render('inline', false, 'alignment', [mcu], true, true, false);
+  assert.match(directAlignment, /data-testid="inline-controls"/);
+  assert.match(directAlignment, /aria-label="Horizontal alignment"/);
+  assert.match(directAlignment, /aria-label="Vertical alignment"/);
+  assert.doesNotMatch(directAlignment, /data-testid="formatting-popover"/);
 });
 test('sticky groups transfer only to compatible selections, and switching off closes them', () => {
   const port = objects.find((o) => o.kind === 'port')!;

@@ -12,6 +12,7 @@ export interface Snapshot {
   showPopoverHeaders?: boolean;
   mergeStrokeControls?: boolean;
   groupedTextToolbar?: boolean;
+  compactTextAlignment?: boolean;
   showMoreActions?: boolean;
   showShortcutHints?: boolean;
   manufacturer?: ManufacturerStyle;
@@ -27,6 +28,7 @@ export function validSnapshot(input: unknown): input is Snapshot {
     (data.showPopoverHeaders === undefined || typeof data.showPopoverHeaders === 'boolean') &&
     (data.mergeStrokeControls === undefined || typeof data.mergeStrokeControls === 'boolean') &&
     (data.groupedTextToolbar === undefined || typeof data.groupedTextToolbar === 'boolean') &&
+    (data.compactTextAlignment === undefined || typeof data.compactTextAlignment === 'boolean') &&
     (data.showMoreActions === undefined || typeof data.showMoreActions === 'boolean') &&
     (data.showShortcutHints === undefined || typeof data.showShortcutHints === 'boolean') &&
     (data.manufacturer === undefined ||
@@ -98,6 +100,8 @@ export function parseSnapshot(input: unknown): Snapshot | null {
     showPopoverHeaders: data.showPopoverHeaders === undefined ? true : data.showPopoverHeaders,
     mergeStrokeControls: data.mergeStrokeControls === undefined ? true : data.mergeStrokeControls,
     groupedTextToolbar: data.groupedTextToolbar === undefined ? true : data.groupedTextToolbar,
+    compactTextAlignment:
+      data.compactTextAlignment === undefined ? true : data.compactTextAlignment,
     showMoreActions: data.showMoreActions === undefined ? false : data.showMoreActions,
     showShortcutHints: data.showShortcutHints === undefined ? false : data.showShortcutHints,
     behavior:

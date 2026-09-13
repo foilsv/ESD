@@ -13,12 +13,12 @@ export const releaseNotes: ReleaseNote[] = [
     version: '6',
     title: 'Label editing and keyboard controls',
     summary:
-      'This iteration compares a one-line Grouped text toolbar and adds a shared keyboard scheme that separates typing labels from choosing canvas tools.',
+      'This iteration compares compact and direct text alignment and adds a shared keyboard scheme that separates typing labels from choosing canvas tools.',
     changes: [
       {
-        title: 'Compare one-line Grouped text tools',
+        title: 'Compare compact and direct alignment',
         description:
-          'Grouped label editing and selected text objects show the Flat-style text row by default. A saved Lab switch restores the original automatic Text popover for comparison; manual Text formatting keeps its Grouped popover.',
+          'Flat, Inline, and Grouped’s one-line text row use the 3×3 Alignment popover by default, while a saved Lab switch restores six direct axis controls. Single-action popovers close after a choice; compound Text and Stroke popovers remain open.',
       },
       {
         title: 'Type on the selection',
