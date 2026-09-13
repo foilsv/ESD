@@ -10,6 +10,7 @@
   --border: #e2e7ee;
   --muted: #758195;
   --surface: #fff;
+  --canvas-background: #f7f8fa;
   --shadow: 0 4px 18px #16243a0a, 0 1px 4px #16243a08;
 }
 * {
@@ -161,7 +162,7 @@ button[aria-pressed='true']:not(.swatch):not(.color-swatch) {
   height: calc(100% - 62px);
   isolation: isolate;
   overflow: hidden;
-  background: #f7f8fa;
+  background: var(--canvas-background);
 }
 .whats-new-page {
   height: calc(100% - 62px);

@@ -30,6 +30,8 @@ Previous chat images were not available in the initial text retrieval. In the su
 10. Use four functional font roles rather than a long font list.
 11. Keep rare style operations in an optional overflow menu at the end of the formatting row. The Lab toggle defaults off; the menu contains session-scoped Set default style, Copy style, and Paste style actions.
 12. Popover dismissal follows action cardinality. A single-property choice closes its popover after selection (color, font, size, alignment, and Grouped arrow style); compound Text and Stroke popovers remain open so several related properties can be changed in sequence. Flat sub-toolbars and Inline expansions are not popovers and stay open.
+13. Choosing a stroke pattern or width restores each transparent stroke with a color derived from that object’s fill. The generated color preserves the fill hue where useful and adjusts perceptual lightness to target 3:1 contrast against both the fill and canvas; if that is impossible, it maximizes the weaker contrast. Transparent fills and connections derive a neutral canvas border. Existing visible strokes remain unchanged, including in mixed selections.
+14. Choosing a Fill color also derives each selected object’s text color from that fill by default. It uses the same hue-preserving perceptual-lightness search with a 4.5:1 ordinary-text contrast target; transparent fills use the canvas background. A saved, default-on Lab modifier controls this coupling, and disabling it leaves the current text color unchanged when Fill changes. Manual text-color choices remain independent.
 
 ## Object capabilities
 

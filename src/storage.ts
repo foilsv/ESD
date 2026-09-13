@@ -11,6 +11,7 @@ export interface Snapshot {
   sticky: boolean;
   showPopoverHeaders?: boolean;
   mergeStrokeControls?: boolean;
+  matchTextColorToFill?: boolean;
   groupedTextToolbar?: boolean;
   compactTextAlignment?: boolean;
   fontSizeStepper?: boolean;
@@ -28,6 +29,7 @@ export function validSnapshot(input: unknown): input is Snapshot {
     typeof data.sticky === 'boolean' &&
     (data.showPopoverHeaders === undefined || typeof data.showPopoverHeaders === 'boolean') &&
     (data.mergeStrokeControls === undefined || typeof data.mergeStrokeControls === 'boolean') &&
+    (data.matchTextColorToFill === undefined || typeof data.matchTextColorToFill === 'boolean') &&
     (data.groupedTextToolbar === undefined || typeof data.groupedTextToolbar === 'boolean') &&
     (data.compactTextAlignment === undefined || typeof data.compactTextAlignment === 'boolean') &&
     (data.fontSizeStepper === undefined || typeof data.fontSizeStepper === 'boolean') &&
@@ -101,6 +103,8 @@ export function parseSnapshot(input: unknown): Snapshot | null {
     manufacturer: data.manufacturer === undefined ? 'default' : data.manufacturer,
     showPopoverHeaders: data.showPopoverHeaders === undefined ? true : data.showPopoverHeaders,
     mergeStrokeControls: data.mergeStrokeControls === undefined ? true : data.mergeStrokeControls,
+    matchTextColorToFill:
+      data.matchTextColorToFill === undefined ? true : data.matchTextColorToFill,
     groupedTextToolbar: data.groupedTextToolbar === undefined ? true : data.groupedTextToolbar,
     compactTextAlignment:
       data.compactTextAlignment === undefined ? true : data.compactTextAlignment,

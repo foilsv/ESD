@@ -17,12 +17,26 @@ test('older experiments keep popover headers visible', () => {
     assert.ok(restored);
     assert.equal(restored.showPopoverHeaders, true);
     assert.equal(restored.mergeStrokeControls, true);
+    assert.equal(restored.matchTextColorToFill, true);
     assert.equal(restored.groupedTextToolbar, true);
     assert.equal(restored.compactTextAlignment, true);
     assert.equal(restored.fontSizeStepper, false);
     assert.equal(restored.showMoreActions, false);
     assert.equal(restored.showShortcutHints, false);
     assert.deepEqual(restored.objects, snapshot.objects);
+  }
+});
+
+test('fill-to-text color matching defaults on, survives round trips, and rejects invalid values', () => {
+  for (const matchTextColorToFill of [false, true]) {
+    const restored = parseSnapshot(
+      JSON.parse(JSON.stringify({ ...snapshot, matchTextColorToFill })),
+    );
+    assert.ok(restored);
+    assert.equal(restored.matchTextColorToFill, matchTextColorToFill);
+  }
+  for (const matchTextColorToFill of [null, 'true', 1, {}]) {
+    assert.equal(parseSnapshot({ ...snapshot, matchTextColorToFill }), null);
   }
 });
 

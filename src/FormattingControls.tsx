@@ -31,6 +31,7 @@ export interface ControlProps {
   patch: (patch: Partial<Style>) => void;
 }
 export type ColorKey = 'fill' | 'stroke' | 'textColor';
+export type StrokeChoicePatch = Pick<Style, 'pattern'> | Pick<Style, 'width'>;
 
 export function StrokeSample({
   color = '#475569',
@@ -547,8 +548,13 @@ export function AlignmentGrid({
 export function StrokeControls({
   value,
   patch,
+  patchStroke,
   inline = false,
-}: ControlProps & { inline?: boolean }) {
+}: ControlProps & { patchStroke?: (patch: StrokeChoicePatch) => void; inline?: boolean }) {
+  const choose = (choice: StrokeChoicePatch) => {
+    if (patchStroke) patchStroke(choice);
+    else patch(choice);
+  };
   return (
     <div className={inline ? 'inline-stroke-controls' : 'grouped-stroke-controls'}>
       <div className="detail-row">
@@ -560,7 +566,7 @@ export function StrokeControls({
               title={`${pattern} stroke`}
               aria-label={`${pattern} stroke`}
               aria-pressed={value('pattern') === pattern}
-              onClick={() => patch({ pattern })}
+              onClick={() => choose({ pattern })}
             >
               <StrokeSample pattern={pattern} />
             </button>
@@ -576,7 +582,7 @@ export function StrokeControls({
               title={`${label} · ${width} px`}
               aria-label={`${label} stroke width`}
               aria-pressed={value('width') === width}
-              onClick={() => patch({ width })}
+              onClick={() => choose({ width })}
             >
               <StrokeSample width={width} />
             </button>

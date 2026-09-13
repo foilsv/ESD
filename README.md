@@ -31,9 +31,10 @@ npm test        # Formatting, geometry, and snapshot checks
 - Toggle **Use compact text alignment** to replace six horizontal/vertical buttons with Grouped's 3×3 Alignment popover in Flat, Inline, and Grouped's one-line text toolbar. It defaults on; font, size, emphasis, and text color remain directly available.
 - Toggle **Use font size stepper** to replace the size dropdown with a Google-style − / numeric value / + control in Flat, Inline, and Grouped's one-line text toolbar. It defaults off, changes size by 2 px—half the gap between the 12, 16, and 20 px presets—and keeps Grouped's ordinary Text popover unchanged.
 - Toggle **Merge stroke color and style** to compare combined and independent controls. It defaults on for Flat and Inline; Grouped keeps color separate.
+- Toggle **Match text color to fill** to compare automatic and independent label colors. It defaults on; choosing a Fill color derives readable, fill-related text color, while switching it off preserves the current text color.
 - Toggle **Show more actions** to add an overflow menu at the end of every formatting row. It defaults off; when shown, the menu holds Set default style, Copy style, and Paste style.
 - Toggle **Show toolbar shortcuts** to place small V/B/L/T/R/O key hints on the canvas tool buttons. It defaults off and saves with the experiment.
-- Open Stroke to compare patterns and Small / Medium / Large / Extra large widths (1 / 2 / 4 / 8 px).
+- Open Stroke to compare patterns and Small / Medium / Large / Extra large widths (1 / 2 / 4 / 8 px). Choosing a pattern or width after No stroke derives a visible border from each object’s fill color.
 - Single-action popovers close after a choice, including color, font, size, alignment, and Grouped arrow style. Multi-action Text and Stroke popovers remain open for successive edits.
 - Select a connection and open its arrow-style group to choose None, Left, Right, or Both, or use the separate cycle button to iterate None → Left → Right → Both. The group icon shows the current state; the cycle button tooltip names the next state. Left and right refer to the source and target ends of the drawn path, even when moved around the canvas.
 - Shift-click objects to apply shared formatting together. Different values appear as Mixed.

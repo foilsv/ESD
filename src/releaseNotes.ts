@@ -35,6 +35,11 @@ export const releaseNotes: ReleaseNote[] = [
         description:
           'Four icon buttons expose the complete test-scene set at once and keep the current scene visibly selected; the Motor controller scene adds a selectable closed-loop control annotation for text-tool comparisons.',
       },
+      {
+        title: 'Make color changes visible',
+        description:
+          'Choosing a stroke pattern or width after No stroke derives a visible border from each object’s fill. Fill choices also derive readable, fill-related label color by default, with a saved Lab switch for keeping text color independent.',
+      },
     ],
   },
   {

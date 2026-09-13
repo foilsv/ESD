@@ -71,6 +71,8 @@ import { loadSnapshot, saveSnapshot, parseSnapshot, type Snapshot } from './stor
 import { behaviors, compatibleDetail, detailOnTextEntry, toolbarContext } from './toolbarModel';
 import { currentRelease } from './releaseNotes';
 import { zoomViewAt, type View } from './viewport';
+import { deriveTextColor, visibleStrokeColor } from './strokeColor';
+import type { ColorKey, StrokeChoicePatch } from './FormattingControls';
 
 type Tool = 'select' | 'connect';
 type DiagramState = { objects: DiagramObject[]; manufacturer: ManufacturerStyle };
@@ -109,6 +111,9 @@ export default function App() {
   const [showPopoverHeaders, setShowPopoverHeaders] = useState(initial?.showPopoverHeaders ?? true);
   const [mergeStrokeControls, setMergeStrokeControls] = useState(
     initial?.mergeStrokeControls ?? true,
+  );
+  const [matchTextColorToFill, setMatchTextColorToFill] = useState(
+    initial?.matchTextColorToFill ?? true,
   );
   const [groupedTextToolbar, setGroupedTextToolbar] = useState(initial?.groupedTextToolbar ?? true);
   const [compactTextAlignment, setCompactTextAlignment] = useState(
@@ -195,6 +200,7 @@ export default function App() {
             sticky,
             showPopoverHeaders,
             mergeStrokeControls,
+            matchTextColorToFill,
             groupedTextToolbar,
             compactTextAlignment,
             fontSizeStepper,
@@ -213,6 +219,7 @@ export default function App() {
     sticky,
     showPopoverHeaders,
     mergeStrokeControls,
+    matchTextColorToFill,
     groupedTextToolbar,
     compactTextAlignment,
     fontSizeStepper,
@@ -273,6 +280,46 @@ export default function App() {
   function patch(patch: Partial<Style>) {
     commit(
       objects.map((o) => (selected.includes(o.id) ? { ...o, style: { ...o.style, ...patch } } : o)),
+    );
+  }
+  function patchColor(key: ColorKey, value: string) {
+    if (key !== 'fill' || !matchTextColorToFill) {
+      patch({ [key]: value });
+      return;
+    }
+    const textColor = deriveTextColor(value);
+    commit(
+      objects.map((object) =>
+        selected.includes(object.id)
+          ? {
+              ...object,
+              style: {
+                ...object.style,
+                fill: value,
+                textColor,
+              },
+            }
+          : object,
+      ),
+    );
+  }
+  function patchStroke(patch: StrokeChoicePatch) {
+    commit(
+      objects.map((object) =>
+        selected.includes(object.id)
+          ? {
+              ...object,
+              style: {
+                ...object.style,
+                ...patch,
+                stroke: visibleStrokeColor(
+                  object.style.stroke,
+                  isLine(object) ? 'transparent' : object.style.fill,
+                ),
+              },
+            }
+          : object,
+      ),
     );
   }
   function patchObjects(patch: Partial<DiagramObject>) {
@@ -701,6 +748,7 @@ export default function App() {
       sticky,
       showPopoverHeaders,
       mergeStrokeControls,
+      matchTextColorToFill,
       groupedTextToolbar,
       compactTextAlignment,
       fontSizeStepper,
@@ -733,6 +781,7 @@ export default function App() {
       setSticky(snapshot.sticky);
       setShowPopoverHeaders(snapshot.showPopoverHeaders ?? true);
       setMergeStrokeControls(snapshot.mergeStrokeControls ?? true);
+      setMatchTextColorToFill(snapshot.matchTextColorToFill ?? true);
       setGroupedTextToolbar(snapshot.groupedTextToolbar ?? true);
       setCompactTextAlignment(snapshot.compactTextAlignment ?? true);
       setFontSizeStepper(snapshot.fontSizeStepper ?? false);
@@ -1229,6 +1278,8 @@ export default function App() {
             detail={detail}
             setDetail={setDetail}
             patch={patch}
+            patchColor={patchColor}
+            patchStroke={patchStroke}
             patchObjects={patchObjects}
             cycleArrows={() => {
               const next = cycleConnectionArrows(objects, selected);
@@ -1367,6 +1418,19 @@ export default function App() {
                     setMergeStrokeControls(e.target.checked);
                     if (detail === 'stroke') setDetail(null);
                   }}
+                />
+                <span className="switch" />
+              </label>
+              <label className="switch-row">
+                <span>
+                  Match text color to fill
+                  <span className="field-note">When Fill changes</span>
+                </span>
+                <input
+                  type="checkbox"
+                  aria-label="Match text color to fill"
+                  checked={matchTextColorToFill}
+                  onChange={(event) => setMatchTextColorToFill(event.target.checked)}
                 />
                 <span className="switch" />
               </label>

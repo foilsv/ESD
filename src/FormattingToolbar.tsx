@@ -52,6 +52,7 @@ import {
   StrokeControls,
   StrokeSample,
   type ColorKey,
+  type StrokeChoicePatch,
 } from './FormattingControls';
 
 function BidirectionalArrow({ size = 18 }: { size?: number }) {
@@ -93,6 +94,8 @@ interface Props {
   detail: Detail;
   setDetail: (detail: Detail) => void;
   patch: (patch: Partial<Style>) => void;
+  patchColor: (key: ColorKey, value: string) => void;
+  patchStroke: (patch: StrokeChoicePatch) => void;
   patchObjects: (patch: Partial<DiagramObject>) => void;
   cycleArrows: () => void;
   selection: Rect;
@@ -394,7 +397,7 @@ export default function FormattingToolbar(props: Props) {
     ),
     <>
       {strokeColorIsMerged && colorControl('stroke', context.lineColor ? 'Line' : 'Stroke')}
-      <StrokeControls {...controls} inline />
+      <StrokeControls {...controls} patchStroke={props.patchStroke} inline />
     </>,
   );
   const textGroup = group(
@@ -546,7 +549,7 @@ export default function FormattingToolbar(props: Props) {
         {flatDetail === 'stroke' ? (
           <>
             {strokeColorIsMerged && colorControl('stroke', context.lineColor ? 'Line' : 'Stroke')}
-            <StrokeControls {...controls} inline />
+            <StrokeControls {...controls} patchStroke={props.patchStroke} inline />
             {directionControls}
           </>
         ) : flatDetail === 'arrows' ? (
@@ -852,11 +855,11 @@ export default function FormattingToolbar(props: Props) {
             <ColorPalette
               value={value(color)}
               kind={color}
-              onChange={(v) => patch({ [color]: v })}
+              onChange={(v) => props.patchColor(color, v)}
               onChoose={() => setColor(null)}
             />
           ) : detail === 'stroke' ? (
-            <StrokeControls {...controls} />
+            <StrokeControls {...controls} patchStroke={props.patchStroke} />
           ) : detail === 'text' ? (
             typography(false)
           ) : detail === 'arrows' ? (
