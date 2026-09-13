@@ -95,6 +95,7 @@ export default function App() {
   const [mergeStrokeControls, setMergeStrokeControls] = useState(
     initial?.mergeStrokeControls ?? true,
   );
+  const [groupedTextToolbar, setGroupedTextToolbar] = useState(initial?.groupedTextToolbar ?? true);
   const [showMoreActions, setShowMoreActions] = useState(initial?.showMoreActions ?? false);
   const [styleClipboard, setStyleClipboard] = useState<Style | null>(null);
   const [styleDefaults, setStyleDefaults] = useState<Partial<Record<ObjectKind, Style>>>({});
@@ -169,6 +170,7 @@ export default function App() {
             sticky,
             showPopoverHeaders,
             mergeStrokeControls,
+            groupedTextToolbar,
             showMoreActions,
             manufacturer,
           }),
@@ -183,6 +185,7 @@ export default function App() {
     sticky,
     showPopoverHeaders,
     mergeStrokeControls,
+    groupedTextToolbar,
     showMoreActions,
     manufacturer,
   ]);
@@ -529,6 +532,7 @@ export default function App() {
       sticky,
       showPopoverHeaders,
       mergeStrokeControls,
+      groupedTextToolbar,
       showMoreActions,
       manufacturer,
     };
@@ -557,6 +561,7 @@ export default function App() {
       setSticky(snapshot.sticky);
       setShowPopoverHeaders(snapshot.showPopoverHeaders ?? true);
       setMergeStrokeControls(snapshot.mergeStrokeControls ?? true);
+      setGroupedTextToolbar(snapshot.groupedTextToolbar ?? true);
       setShowMoreActions(snapshot.showMoreActions ?? false);
       setSelected([]);
       setEditing(null);
@@ -761,6 +766,7 @@ export default function App() {
             behavior={behavior}
             showPopoverHeaders={showPopoverHeaders}
             mergeStrokeControls={mergeStrokeControls}
+            groupedTextToolbar={groupedTextToolbar}
             showMoreActions={showMoreActions}
             detail={detail}
             setDetail={setDetail}
@@ -908,6 +914,22 @@ export default function App() {
                   onChange={(e) => {
                     setMergeStrokeControls(e.target.checked);
                     if (detail === 'stroke') setDetail(null);
+                  }}
+                />
+                <span className="switch" />
+              </label>
+              <label className="switch-row">
+                <span>
+                  Use one-line text toolbar
+                  <span className="field-note">Grouped label editing</span>
+                </span>
+                <input
+                  type="checkbox"
+                  aria-label="Use one-line text toolbar for Grouped label editing"
+                  checked={groupedTextToolbar}
+                  onChange={(e) => {
+                    setGroupedTextToolbar(e.target.checked);
+                    if (!e.target.checked && editing && behavior === 'grouped') setDetail('text');
                   }}
                 />
                 <span className="switch" />

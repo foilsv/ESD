@@ -72,6 +72,7 @@ interface Props {
   behavior: PanelBehavior;
   showPopoverHeaders?: boolean;
   mergeStrokeControls?: boolean;
+  groupedTextToolbar?: boolean;
   showMoreActions?: boolean;
   detail: Detail;
   setDetail: (detail: Detail) => void;
@@ -104,7 +105,11 @@ export default function FormattingToolbar(props: Props) {
   const [fontOpen, setFontOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [flatText, setFlatText] = useState(false);
-  const textMode = behavior === 'flat' && (editing || flatText || context.textOnly);
+  const groupedEditingTextMode =
+    behavior === 'grouped' && editing && (props.groupedTextToolbar ?? true);
+  const textMode =
+    (behavior === 'flat' && (editing || flatText || context.textOnly)) || groupedEditingTextMode;
+  const visibleDetail = groupedEditingTextMode ? null : detail;
   const flatDetail =
     behavior === 'flat' &&
     !textMode &&
@@ -122,7 +127,7 @@ export default function FormattingToolbar(props: Props) {
         : color
           ? `color-${color}`
           : behavior === 'grouped'
-            ? detail
+            ? visibleDetail
             : null;
   const placement = usePanelPlacement(toolbar, panel, selection, viewport, activeTrigger);
   // Browsing text formatting is distinct from editing the actual label.
@@ -543,7 +548,8 @@ export default function FormattingToolbar(props: Props) {
   );
   const styleKeys = Object.keys(objects[0]?.style ?? {}) as (keyof Style)[];
   const uniformStyle = styleKeys.length > 0 && styleKeys.every((key) => value(key) !== undefined);
-  const uniformKind = objects.length > 0 && objects.every((object) => object.kind === objects[0].kind);
+  const uniformKind =
+    objects.length > 0 && objects.every((object) => object.kind === objects[0].kind);
   const moreActionsControl = props.showMoreActions && (
     <>
       <span className="divider toolbar-end-divider" />
@@ -631,7 +637,8 @@ export default function FormattingToolbar(props: Props) {
               : detail === 'alignment'
                 ? 'Alignment'
                 : 'Stroke';
-  const popover = moreOpen || fontOpen || sizeOpen || color || (detail && behavior === 'grouped');
+  const popover =
+    moreOpen || fontOpen || sizeOpen || color || (visibleDetail && behavior === 'grouped');
   return (
     <div
       ref={root}
@@ -654,7 +661,7 @@ export default function FormattingToolbar(props: Props) {
         else if (moreOpen) closeMore();
         else if (sizeOpen) setSizeOpen(false);
         else if (color) setColor(null);
-        else if (detail) setDetail(null);
+        else if (visibleDetail) setDetail(null);
         else if (textMode && !context.textOnly) returnToObject();
       }}
     >
@@ -702,14 +709,14 @@ export default function FormattingToolbar(props: Props) {
               moreOpen
                 ? 204
                 : fontOpen || sizeOpen
-                ? 192
-                : color
-                  ? 304
-                  : detail === 'arrows'
-                    ? 204
-                    : detail === 'alignment'
-                      ? 180
-                      : 288,
+                  ? 192
+                  : color
+                    ? 304
+                    : detail === 'arrows'
+                      ? 204
+                      : detail === 'alignment'
+                        ? 180
+                        : 288,
               viewport.w,
             ),
             maxHeight: placement?.popoverMaxHeight ?? Math.max(0, viewport.h - 44 - PANEL_GAP),

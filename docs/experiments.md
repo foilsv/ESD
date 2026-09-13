@@ -11,7 +11,7 @@ Use the same scene and tasks for Flat, Grouped, and Inline. Keep viewport size a
 5. Shift-select two different blocks and apply a shared fill.
 6. Keep Stroke open while switching among blocks, then select a port.
 7. Repeat in Dense diagram and Canvas edges; drag selections toward the viewport boundary.
-8. In Flat, open Stroke, change its color and width, and use Back; repeat with Alignment and Text. Confirm color dropdowns preserve the current sub-toolbar. In Grouped, compare the primary row before and after opening Text. In Inline, open a color dropdown while Text stays expanded.
+8. In Flat, open Stroke, change its color and width, and use Back; repeat with Alignment and Text. Confirm color dropdowns preserve the current sub-toolbar. In Grouped, enter label editing with the one-line text modifier on, then turn it off and compare the automatic Text popover. Finish editing and manually open Text to confirm it remains a popover in both settings. In Inline, open a color dropdown while Text stays expanded.
 9. Compare horizontal/vertical alignment, underline, and strikethrough in all three solutions.
 
 Record clicks, unexpected mode changes, whether state was visible, whether the panel covered the target, and whether the control was easy to find. These are manual study notes; the app does not collect telemetry.

@@ -27,6 +27,7 @@ npm test        # Formatting, geometry, and snapshot checks
 - Select a block, open Fill color, and choose a swatch. Double-click its label (or press Enter) to reveal text controls. Enter finishes label editing; Escape cancels the label draft.
 - Choose **Manufacturer style** in the Interaction lab: STM, Infineon, Renesas, NXP, or TI. The screenshot-inspired palette recolors the entire diagram and new objects; individual colors remain editable. **Original colors** restores the colors from before the first manufacturer switch. Palette changes support undo/redo and save with the experiment.
 - Switch **Flat / Grouped / Inline** in the Interaction lab. These implement the three [document-defined solutions](docs/solutions.md): dedicated Stroke/Text/Alignment sub-toolbars with Back, stable compound controls with grouped popovers, and actual expansion within one toolbar row.
+- Toggle **Use one-line text toolbar** to compare Grouped label editing in the Flat-style text row with the original automatic Text popover. It defaults on; manually opening Text from an object still uses the Grouped popover.
 - Toggle **Merge stroke color and style** to compare combined and independent controls. It defaults on for Flat and Inline; Grouped keeps color separate.
 - Toggle **Show more actions** to add an overflow menu at the end of every formatting row. It defaults off; when shown, the menu holds Set default style, Copy style, and Paste style.
 - Open Stroke to compare patterns and Small / Medium / Large / Extra large widths (1 / 2 / 4 / 8 px).

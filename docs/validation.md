@@ -1,5 +1,11 @@
 # Toolbar solutions validation · 2026-09-11
 
+## Grouped one-line text editing · 2026-09-12
+
+Grouped label editing now defaults to the same explicit one-line font, size, emphasis, color, and alignment row used by Flat, avoiding the larger automatic Text popover. A saved **Use one-line text toolbar** Lab modifier restores the original Grouped editing popover when disabled. Opening Text manually from the Grouped object row remains a popover in either setting.
+
+Automated rendering checks cover the default editing row, the disabled-modifier fallback, and the distinct manual Text path. Snapshot checks cover default migration, both saved values, and malformed input rejection.
+
 ## Arrow shaft termination · 2026-09-12
 
 The previous separate-marker change did not fix the reported defect: the visible stroke still ran to the tip underneath the filled triangle. The earlier clipping explanation and verification missed that overlap.

@@ -20,7 +20,7 @@ export const behaviors: { id: PanelBehavior; label: string; title: string; descr
       label: 'Grouped',
       title: 'Compact toolbar + grouped popovers',
       description:
-        'The main row stays compact and stable. Stroke, arrows, text, and alignment open their own grouped popover.',
+        'The object row stays compact and stable. Groups use popovers; label editing can switch to one-line text tools.',
     },
     {
       id: 'inline',

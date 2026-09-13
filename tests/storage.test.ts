@@ -17,8 +17,20 @@ test('older experiments keep popover headers visible', () => {
     assert.ok(restored);
     assert.equal(restored.showPopoverHeaders, true);
     assert.equal(restored.mergeStrokeControls, true);
+    assert.equal(restored.groupedTextToolbar, true);
     assert.equal(restored.showMoreActions, false);
     assert.deepEqual(restored.objects, snapshot.objects);
+  }
+});
+
+test('Grouped text toolbar preference defaults on, survives round trips, and rejects invalid values', () => {
+  for (const groupedTextToolbar of [false, true]) {
+    const restored = parseSnapshot(JSON.parse(JSON.stringify({ ...snapshot, groupedTextToolbar })));
+    assert.ok(restored);
+    assert.equal(restored.groupedTextToolbar, groupedTextToolbar);
+  }
+  for (const groupedTextToolbar of [null, 'true', 1, {}]) {
+    assert.equal(parseSnapshot({ ...snapshot, groupedTextToolbar }), null);
   }
 });
 

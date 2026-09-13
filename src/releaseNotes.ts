@@ -10,6 +10,24 @@ export type ReleaseNote = {
 // maintenance rules that keep this intentionally different from a commit log.
 export const releaseNotes: ReleaseNote[] = [
   {
+    version: '6',
+    title: 'More direct Grouped text editing',
+    summary:
+      'Grouped label editing can now use the same compact, one-line text toolbar as Flat while preserving Grouped popovers for manual formatting.',
+    changes: [
+      {
+        title: 'One-line label tools',
+        description:
+          'Entering label editing in Grouped reveals font, size, emphasis, color, and alignment together without opening the larger Text popover.',
+      },
+      {
+        title: 'A focused comparison switch',
+        description:
+          'Use the default-on Interaction Lab option to compare the one-line editing row with the original Grouped popover; the choice saves with experiments.',
+      },
+    ],
+  },
+  {
     version: '5',
     title: 'More expressive diagrams',
     summary:

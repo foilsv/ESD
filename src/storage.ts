@@ -11,6 +11,7 @@ export interface Snapshot {
   sticky: boolean;
   showPopoverHeaders?: boolean;
   mergeStrokeControls?: boolean;
+  groupedTextToolbar?: boolean;
   showMoreActions?: boolean;
   manufacturer?: ManufacturerStyle;
 }
@@ -24,6 +25,7 @@ export function validSnapshot(input: unknown): input is Snapshot {
     typeof data.sticky === 'boolean' &&
     (data.showPopoverHeaders === undefined || typeof data.showPopoverHeaders === 'boolean') &&
     (data.mergeStrokeControls === undefined || typeof data.mergeStrokeControls === 'boolean') &&
+    (data.groupedTextToolbar === undefined || typeof data.groupedTextToolbar === 'boolean') &&
     (data.showMoreActions === undefined || typeof data.showMoreActions === 'boolean') &&
     (data.manufacturer === undefined ||
       (typeof data.manufacturer === 'string' &&
@@ -93,6 +95,7 @@ export function parseSnapshot(input: unknown): Snapshot | null {
     manufacturer: data.manufacturer === undefined ? 'default' : data.manufacturer,
     showPopoverHeaders: data.showPopoverHeaders === undefined ? true : data.showPopoverHeaders,
     mergeStrokeControls: data.mergeStrokeControls === undefined ? true : data.mergeStrokeControls,
+    groupedTextToolbar: data.groupedTextToolbar === undefined ? true : data.groupedTextToolbar,
     showMoreActions: data.showMoreActions === undefined ? false : data.showMoreActions,
     behavior:
       typeof data.behavior === 'string'

@@ -16,12 +16,14 @@ function render(
   detail: Detail = detailOnTextEntry(behavior),
   selection = [mcu],
   mergeStrokeControls = true,
+  groupedTextToolbar = true,
 ) {
   return renderToStaticMarkup(
     createElement(FormattingToolbar, {
       objects: selection,
       behavior,
       mergeStrokeControls,
+      groupedTextToolbar,
       editing,
       detail,
       setDetail() {},
@@ -78,13 +80,25 @@ test('Flat automatically replaces object tools with a full text row and Back', (
   assert.doesNotMatch(markup, /aria-label="Fill color"/);
   assert.doesNotMatch(markup, /data-testid="formatting-popover"/);
 });
-test('Grouped retains primary object controls when text tools open automatically', () => {
+test('Grouped uses the one-line text toolbar during label editing by default', () => {
   const markup = render('grouped', true);
-  assert.match(markup, /aria-label="Fill color"/);
-  assert.match(markup, /aria-label="Stroke settings"/);
-  assert.match(markup, /data-testid="formatting-popover"/);
+  assert.match(markup, /aria-label="Back to object formatting"/);
   assert.match(markup, /aria-label="Font family"/);
-  assert.doesNotMatch(markup, /aria-label="Back to object formatting"/);
+  assert.match(markup, /aria-label="Underline"/);
+  assert.doesNotMatch(markup, /aria-label="Fill color"/);
+  assert.doesNotMatch(markup, /data-testid="formatting-popover"/);
+});
+test('Grouped keeps the text popover for manual formatting and when the modifier is off', () => {
+  for (const markup of [
+    render('grouped', false, 'text'),
+    render('grouped', true, 'text', [mcu], true, false),
+  ]) {
+    assert.match(markup, /aria-label="Fill color"/);
+    assert.match(markup, /aria-label="Stroke settings"/);
+    assert.match(markup, /data-testid="formatting-popover"/);
+    assert.match(markup, /aria-label="Font family"/);
+    assert.doesNotMatch(markup, /aria-label="Back to object formatting"/);
+  }
 });
 test('Flat stroke and alignment replace the object row with dedicated tools and Back', () => {
   for (const detail of ['stroke', 'alignment'] as const) {
