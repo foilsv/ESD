@@ -10,7 +10,8 @@ Use this repository-specific workflow together with the currently installed `sit
 ## Authorization and identity
 
 - Begin only when the user explicitly commands a deployment in the current conversation. Earlier deployments and ordinary requests to fix, finish, or continue do not authorize publishing.
-- The existing Site is owned by the user's personal account. The same checked-out skill is available from another Codex session, but a session using the separate work account cannot edit this personal Site. Verify access to the existing project with the native Sites tools before obtaining credentials or pushing.
+- Keep every Git operation local. A publish or deploy command does not authorize obtaining a source-write credential or pushing to the Site repository. If the current Sites tool contract requires a remote push and the exact local revision is not already available to Sites, stop and explain the conflict. Perform a push only after the user separately and explicitly authorizes that push in the current conversation.
+- The existing Site is owned by the user's personal account. The same checked-out skill is available from another Codex session, but a session using the separate work account cannot edit this personal Site. Verify access to the existing project with the native Sites tools before any publish operation.
 - If the project is unavailable, report the account mismatch and ask the user to switch Codex to the personal owner account, then run the publish request there. Do not register, create, transfer, or publish a replacement Site in the work workspace.
 - Never call `create_site` for this project.
 
@@ -31,10 +32,10 @@ Treat the manifest as authoritative and stop if its project ID differs from the 
 1. Inspect the intended changes. Confirm `src/releaseNotes.ts` has one topmost unpublished entry whose version is the next Sites version. Set its `publishedOn` to today's date before the final build. Do not add a release-note item for deployment mechanics.
 2. Resolve the current installed Sites plugin root instead of assuming a cached version. Run its execution-profile helper for this checkout.
 3. Run `npm run build` and `npm test`. Require `dist/index.html`. Stop on failure.
-4. Recheck the source diff and commit exactly the intended repository state. Do not rewrite or discard unrelated user changes. Do not publish from a source state that changes after this commit.
-5. Use the native Sites tools to verify the existing project and public audience, then obtain a fresh source write credential for that exact project. Use the endpoint and branch returned by the credential response.
-6. Push the commit using per-command HTTP authorization. Keep the bearer value out of files, prompts, command output, remote URLs, Git configuration, shell history, and user-facing messages. Do not persist the credential in any form.
-7. After the push succeeds, run `git rev-parse --verify HEAD` and use the complete output verbatim as `commit_sha`. Confirm it is the pushed branch head.
+4. Recheck the source diff and commit exactly the intended repository state locally. Do not rewrite or discard unrelated user changes. Do not publish from a source state that changes after this commit.
+5. Use the native Sites tools to verify the existing project and public audience. Use Sites version metadata to determine whether the exact local commit is already available remotely; do not probe or change the remote through Git.
+6. If the exact local commit is not already available to Sites and the current tool contract requires it to be pushed, stop and report that publishing cannot continue under the standing no-push policy. Do not obtain a source-write credential or push unless the user explicitly authorizes that separate action.
+7. When an exact already-available revision can be used, run `git rev-parse --verify HEAD` locally and use the complete output verbatim as `commit_sha`.
 8. Package the unchanged checkout with the current Sites `package-site.mjs` helper into `.local/esd-sites.tar.gz`. On Windows, prepend Git Bash directories only for that process if required; the Bash-form archive argument is `/c/projects/esd_prototype/.local/esd-sites.tar.gz`, while the native save tool receives `C:/projects/esd_prototype/.local/esd-sites.tar.gz`.
 9. Save one version with the exact project ID, commit SHA, and archive, then deploy that returned version through the public path. Reuse a saved version when recovering from a deployment-only failure; do not save duplicates.
 10. Poll the returned deployment ID to a terminal state. Success requires `succeeded` and the literal production URL from the native response. Open that URL in the existing Sites tab when available and report it concisely.
@@ -44,6 +45,6 @@ Treat the manifest as authoritative and stop if its project ID differs from the 
 - The only committed hosting values are the project ID and static configuration in `.openai/hosting.json`. `.env*` and `.local/` remain ignored. Before committing, inspect staged paths and staged text for accidental credentials.
 - A public audience grants visitor access, not editing rights.
 - On `project_not_found` or an ownership error, stop for an account switch; never create a duplicate.
-- On `stale_commit_sha`, verify the local and pushed branch heads. Rebuild, commit, push, and repackage if source changed.
+- On `stale_commit_sha`, verify the local state and Sites version metadata without remote Git. If resolving it requires a push, stop under the no-push policy and ask for direction.
 - If a save result is uncertain, reconcile versions for the pushed commit before retrying. If a response supplies a saved version ID, reuse it.
 - Record deployment history only after confirmed success. Never describe a failed or unknown deployment as published.

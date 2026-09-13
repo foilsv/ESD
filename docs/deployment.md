@@ -6,7 +6,7 @@ Use the checked-in `$esd-sites-publish` skill for routine updates. Codex discove
 
 The skill can be invoked from another Codex session, including one initially opened under the user's work account. Publishing the existing Site still requires the personal account that owns it: personal Sites cannot grant an external work account editor rights. If the native Sites preflight cannot access the project ID below, switch Codex to the personal account and issue the publish request there. Never create a work-workspace replacement.
 
-No credentials belong in this repository. Source write credentials are short-lived, obtained during an explicitly requested deployment, used only as per-command authorization, and never stored in source files, Git configuration, remote URLs, or this documentation.
+No credentials belong in this repository. The standing policy does not authorize obtaining source-write credentials or performing remote Git operations during a general publish request.
 
 ## Development and deployment policy
 
@@ -16,7 +16,7 @@ User instruction, 2026-09-12:
 - Never deploy to production or publish to OpenAI Sites without an explicit user command for that deployment. A request to fix, improve, finish, or continue development is not a deployment command.
 - Previous publication requests do not authorize future deployments. This rule overrides any Sites skill's default to publish after edits.
 - The existing Site belongs to the user's personal account. On an explicit deployment request, use that personal account and reuse the existing Site; do not create a workspace replacement.
-- Do not initiate Sites publishing preparation (remote pushes, write credentials, or hosted versions) during ordinary local development. Keep local changes ready for a later explicit deployment command.
+- Keep all Git operations local, including during publishing. A publish command authorizes native Sites save/deploy operations but not a remote Git push or source-write credential. If publishing requires a push and the exact revision is not already available to Sites, stop and explain the conflict unless the user separately authorizes that push in the current conversation.
 - Do not automatically resume a previously blocked deployment when access is restored; wait for an explicit command.
 
 ## Existing Site
@@ -52,10 +52,10 @@ Start this procedure only after the user explicitly commands deployment. Use the
 1. Read the current installed `sites:sites-hosting` skill and its publishing/handoff references. Use native Sites tools and the current plugin scripts.
 2. Read the manifest, reuse its project ID, and check the Site audience through `get_site` as required by the skill. Preserve public access; do not switch it to private to deploy.
 3. Reuse this checkout. Run the execution-profile helper when entering a new environment; the initial deployment used `portable`. Build changed app source with `npm run build` and run appropriate tests. Reuse an unchanged successful build when allowed.
-4. Obtain a current source write credential for the same Site. The initial repository was `https://git.chatgpt-team.site/4289fba2-7152-450b-a9d6-260d8b95d8e7/appgprj_6aa4aab0520481919cf3aefa1df1cda0.git`, branch `main`. Use the endpoint and branch returned by the current credential response. This checkout already has Git; the initial push used the URL directly, without configuring a remote.
-5. Commit the intended source and push using per-command authentication. The initial credential used `http_extra_header` with an `Authorization: Bearer` header. Never save or print the token. After push succeeds, run `git rev-parse --verify HEAD` and copy its complete SHA verbatim.
-6. Package only the built app using the Sites helper. The initial archive was `.local/esd-sites.tar.gz`, ignored by Git. Repackage changed source; an existing archive is not automatically current. Keep it unchanged until saving succeeds.
-7. Call `save_site_version` with the exact project ID, pushed SHA, and absolute archive path, then `deploy_site_version` with the returned version ID. This is the public deployment path.
+4. Commit the intended source locally and use Sites version metadata to determine whether that exact commit is already available remotely. Do not obtain a source-write credential or run remote Git commands under the publish request.
+5. If Sites does not already have the exact commit and its current contract requires a push, stop and explain the blocker. A push requires separate, explicit authorization in the current conversation.
+6. For an already-available exact commit, package only the built app using the Sites helper. The archive is `.local/esd-sites.tar.gz`, ignored by Git. Repackage changed source; an existing archive is not automatically current. Keep it unchanged until saving succeeds.
+7. Call `save_site_version` with the exact project ID, known available SHA, and absolute archive path, then `deploy_site_version` with the returned version ID. This is the public deployment path.
 8. Poll `get_deployment_status` with the returned deployment ID until terminal. Report success only for `succeeded` with a URL. Return the exact URL and use the app-opening tool for handoff.
 
 Every development change stays local until an explicit deployment command. Do not infer publishing authorization from app edits or documentation maintenance.
@@ -68,9 +68,25 @@ Every development change stays local until an explicit deployment command. Do no
 - If Git reports a sandbox ownership mismatch, use per-command `-c safe.directory=C:/projects/esd_prototype`; do not broadly trust unrelated directories.
 - The initial sandbox helper failed to start, so publication used reviewed elevated execution. Try normal execution first on future runs; that historical error does not imply elevation is always needed.
 
-Credentials expire. None are stored here, in the manifest, or in Git configuration. Renew them for this Site instead of registering a duplicate.
+Historical source credentials were never stored here, in the manifest, or in Git configuration. Do not obtain a new one under a general publish request.
 
 ## Latest successful publication · 2026-09-12
+
+Published after the user's explicit "let's publish" command using the personal account that owns the existing Site. Public access and the original URL were preserved.
+
+- Live URL: https://esd-formatting-lab.pnv82g.chatgpt.site
+- Status: `succeeded`, confirmed at `2026-09-13T03:12:32.266150+00:00`.
+- Version number: `5`
+- Saved version ID: `appgprj_6aa4aab0520481919cf3aefa1df1cda0~appgver_96aac6b9443c819182376ec3709d43da`
+- Deployment ID: `appgdep_6aa61496fd908191b345f20f2f778d65`
+- Source commit: `5f55e992b8ce76d1a68d40ba3b7b22a3a1f729d6`
+- Archive SHA-256: `a2e6730fc21186863e82f373e4a43832f3ea3f214a8ee565b2db01184cedeb37`
+
+Includes manufacturer-inspired styles, four-state connection arrows, canvas navigation refinements, flexible stroke controls, and the optional formatting overflow menu. The source passed the build and all 58 tests before publication.
+
+During this publication, the source push happened before the user clarified that future Git operations must remain local. That push completed before version saving; the subsequent version save and deployment reused it. This historical fact is not authorization for another push.
+
+## Previous successful publication · 2026-09-12
 
 Published after the user's explicit "let's deploy" command using the personal account that owns the existing Site. Public access and the original URL were preserved.
 

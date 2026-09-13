@@ -10,7 +10,7 @@ User instruction, 2026-09-12:
 - Never deploy to production or publish to OpenAI Sites without an explicit user command for that deployment. A request to fix, improve, finish, or continue development is not a deployment command.
 - Previous publication requests do not authorize future deployments. This rule overrides any Sites skill's default to publish after edits.
 - The existing Site belongs to the user's personal account. On an explicit deployment request, use that personal account and reuse the existing Site; do not create a workspace replacement.
-- Do not initiate Sites publishing preparation (remote pushes, write credentials, or hosted versions) during ordinary local development. Keep local changes ready for a later explicit deployment command.
+- Keep all Git operations local, including during publishing. An explicit publish command authorizes the native Sites save/deploy steps, but it does not authorize a remote Git push or obtaining a source-write credential. If the current Sites contract requires a remote push and the exact local revision is not already available to Sites, stop and explain the conflict; do not push unless the user separately and explicitly authorizes that push in the current conversation.
 - Do not automatically resume a previously blocked deployment when access is restored; wait for an explicit command.
 
 ## Scope and architecture
@@ -50,5 +50,5 @@ Use CSS variables for shared visual decisions. Preserve accessible names, focus 
 - Hosting: OpenAI Sites in the user's personal account. The existing audience is public; that access setting is not authorization to publish updates.
 - Use the repository skill at `.agents/skills/esd-sites-publish/SKILL.md` and the current installed Sites hosting skill before publishing updates. Read `docs/deployment.md` only for recovery details or deployment history.
 - Reuse the exact `project_id` in `.openai/hosting.json`; never create a duplicate Site for this app.
-- Preserve public access and the current URL. Obtain fresh credentials for the same Site when needed; never store tokens in instructions or Git configuration.
+- Preserve public access and the current URL. Do not obtain source-write credentials or push to the Site repository under a general publish request. Reuse an exact revision already available to Sites when possible; otherwise stop for direction.
 - The skill is available from any Codex session that opens this checkout, but the existing personal Site remains account-bound. A work-account session must switch to the personal owner account before publishing; it must not create a workspace replacement.
