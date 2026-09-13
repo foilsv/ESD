@@ -13,6 +13,7 @@ export interface Snapshot {
   mergeStrokeControls?: boolean;
   groupedTextToolbar?: boolean;
   compactTextAlignment?: boolean;
+  fontSizeStepper?: boolean;
   showMoreActions?: boolean;
   showShortcutHints?: boolean;
   manufacturer?: ManufacturerStyle;
@@ -29,6 +30,7 @@ export function validSnapshot(input: unknown): input is Snapshot {
     (data.mergeStrokeControls === undefined || typeof data.mergeStrokeControls === 'boolean') &&
     (data.groupedTextToolbar === undefined || typeof data.groupedTextToolbar === 'boolean') &&
     (data.compactTextAlignment === undefined || typeof data.compactTextAlignment === 'boolean') &&
+    (data.fontSizeStepper === undefined || typeof data.fontSizeStepper === 'boolean') &&
     (data.showMoreActions === undefined || typeof data.showMoreActions === 'boolean') &&
     (data.showShortcutHints === undefined || typeof data.showShortcutHints === 'boolean') &&
     (data.manufacturer === undefined ||
@@ -102,6 +104,7 @@ export function parseSnapshot(input: unknown): Snapshot | null {
     groupedTextToolbar: data.groupedTextToolbar === undefined ? true : data.groupedTextToolbar,
     compactTextAlignment:
       data.compactTextAlignment === undefined ? true : data.compactTextAlignment,
+    fontSizeStepper: data.fontSizeStepper === undefined ? false : data.fontSizeStepper,
     showMoreActions: data.showMoreActions === undefined ? false : data.showMoreActions,
     showShortcutHints: data.showShortcutHints === undefined ? false : data.showShortcutHints,
     behavior:

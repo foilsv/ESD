@@ -2,7 +2,7 @@
 [ ] 
 [ ] 
 [ ] 
-[ ] For flattened mode of the text let's add increase decrease font size controls as optional extension, controlled by the toggle in Lab panel.  I'm experimenting, trying to figure out if we can make the text line more useable. Use style the Google has - big plus and minus buttons
+[x] For flattened mode of the text let's add increase decrease font size controls as optional extension, controlled by the toggle in Lab panel.  I'm experimenting, trying to figure out if we can make the text line more useable. Use style the Google has - big plus and minus buttons
 [ ]
 [ ] 
 [ ] when border color selected as transparent, but user clicks onto one of the style controls - automatically select dark color, so there will be some visible reaction and people will not need to build a mental path - "select color first to show the border"

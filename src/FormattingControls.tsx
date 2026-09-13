@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import {
   AlignCenter,
   AlignLeft,
@@ -11,7 +12,9 @@ import {
   Strikethrough,
   Check,
   ChevronDown,
+  Minus,
   PaintBucket,
+  Plus,
   Type,
 } from 'lucide-react';
 import { fonts, patternDash, type FontFamily, type Pattern, type Style } from './model';
@@ -261,6 +264,11 @@ function FontStyleIcon({ family }: { family?: FontFamily }) {
   );
 }
 export function SizeControl({ value, patch, custom = false }: ControlProps & { custom?: boolean }) {
+  const apply = (rawValue: string) => {
+    const fontSize = Number(rawValue);
+    if (rawValue && Number.isFinite(fontSize))
+      patch({ fontSize: Math.max(8, Math.min(72, fontSize)) });
+  };
   return (
     <input
       className="font-size-input"
@@ -272,15 +280,75 @@ export function SizeControl({ value, patch, custom = false }: ControlProps & { c
       max="72"
       placeholder="—"
       defaultValue={value('fontSize')}
-      onBlur={(e) => {
-        const fontSize = Number(e.target.value);
-        if (e.target.value && Number.isFinite(fontSize))
-          patch({ fontSize: Math.max(8, Math.min(72, fontSize)) });
-      }}
+      onBlur={(event) => apply(event.target.value)}
       onKeyDown={(e) => {
         if (e.key === 'Enter') e.currentTarget.blur();
       }}
     />
+  );
+}
+export function stepFontSize(fontSize: number | undefined, delta: -1 | 1) {
+  return fontSize === undefined ? undefined : Math.max(8, Math.min(72, fontSize + delta * 2));
+}
+export function FontSizeStepper({ value, patch }: ControlProps) {
+  const fontSize = value('fontSize');
+  const [draft, setDraft] = useState(fontSize?.toString() ?? '');
+  useEffect(() => setDraft(fontSize?.toString() ?? ''), [fontSize]);
+  const numericDraft = draft === '' ? undefined : Number(draft);
+  const effectiveSize = Number.isFinite(numericDraft) ? numericDraft : fontSize;
+  const canDecrease = effectiveSize !== undefined && effectiveSize > 8;
+  const canIncrease = effectiveSize !== undefined && effectiveSize < 72;
+  const commitDraft = () => {
+    if (!Number.isFinite(numericDraft)) {
+      setDraft(fontSize?.toString() ?? '');
+      return;
+    }
+    const next = Math.max(8, Math.min(72, numericDraft!));
+    setDraft(next.toString());
+    if (next !== fontSize) patch({ fontSize: next });
+  };
+  const step = (delta: -1 | 1) => {
+    const next = stepFontSize(effectiveSize, delta);
+    if (next === undefined) return;
+    setDraft(next.toString());
+    patch({ fontSize: next });
+  };
+  return (
+    <div className="font-size-stepper" role="group" aria-label="Font size controls">
+      <button
+        className="icon-button font-size-step-button"
+        aria-label="Decrease font size"
+        title="Decrease font size by 2 px"
+        disabled={!canDecrease}
+        onClick={() => step(-1)}
+      >
+        <Minus size={16} />
+      </button>
+      <input
+        className="font-size-input"
+        aria-label="Font size"
+        title="Font size (8–72 px)"
+        type="number"
+        min="8"
+        max="72"
+        placeholder="—"
+        value={draft}
+        onChange={(event) => setDraft(event.target.value)}
+        onBlur={commitDraft}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') event.currentTarget.blur();
+        }}
+      />
+      <button
+        className="icon-button font-size-step-button"
+        aria-label="Increase font size"
+        title="Increase font size by 2 px"
+        disabled={!canIncrease}
+        onClick={() => step(1)}
+      >
+        <Plus size={16} />
+      </button>
+    </div>
   );
 }
 export const fontSizePresets = [

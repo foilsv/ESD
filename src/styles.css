@@ -1349,6 +1349,25 @@ button[aria-pressed='true']:not(.swatch):not(.color-swatch) {
   font-size: 12px;
   padding: 0 3px 0 6px;
 }
+.font-size-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.font-size-stepper .font-size-input {
+  width: 39px;
+  padding: 0 3px;
+  text-align: center;
+  appearance: textfield;
+}
+.font-size-stepper .font-size-input::-webkit-inner-spin-button,
+.font-size-stepper .font-size-input::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
+}
+.font-size-stepper .font-size-step-button {
+  color: #526176;
+}
 .formatting-bar .icon-button {
   min-width: 28px;
   width: 28px;

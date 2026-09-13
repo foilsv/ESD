@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import FormattingToolbar from '../src/FormattingToolbar';
 import { createScene } from '../src/fixtures';
 import { labelBounds, type Detail, type PanelBehavior, type Style } from '../src/model';
-import { AlignmentGrid } from '../src/FormattingControls';
+import { AlignmentGrid, FontSizeStepper, stepFontSize } from '../src/FormattingControls';
 import { compatibleDetail, detailOnTextEntry } from '../src/toolbarModel';
 import { parseSnapshot } from '../src/storage';
 
@@ -20,6 +20,7 @@ function render(
   mergeStrokeControls = true,
   groupedTextToolbar = true,
   compactTextAlignment = true,
+  fontSizeStepper = false,
 ) {
   return renderToStaticMarkup(
     createElement(FormattingToolbar, {
@@ -29,6 +30,7 @@ function render(
       mergeStrokeControls,
       groupedTextToolbar,
       compactTextAlignment,
+      fontSizeStepper,
       editing,
       detail,
       setDetail() {},
@@ -101,6 +103,37 @@ test('Flat restores the six direct alignment buttons when the compact modifier i
   assert.match(markup, /aria-label="Vertical alignment"/);
   assert.doesNotMatch(markup, /aria-label="Alignment settings"/);
   assert.doesNotMatch(markup, /data-testid="formatting-popover"/);
+});
+test('the optional font-size stepper appears only in direct text rows', () => {
+  for (const [behavior, detail] of [
+    ['flat', null],
+    ['grouped', null],
+    ['inline', 'text'],
+  ] as const) {
+    const markup = render(behavior, true, detail, [mcu], true, true, true, true);
+    assert.match(markup, /aria-label="Decrease font size"/);
+    assert.match(markup, /aria-label="Increase font size"/);
+    assert.match(markup, /class="font-size-input"/);
+    assert.doesNotMatch(markup, /data-popover-trigger="font-size"/);
+  }
+
+  const groupedPopover = render('grouped', false, 'text', [mcu], true, false, true, true);
+  assert.doesNotMatch(groupedPopover, /aria-label="Decrease font size"/);
+  assert.match(groupedPopover, /aria-label="Small font size"/);
+  assert.match(groupedPopover, /aria-label="Custom font size"/);
+});
+test('the font-size stepper changes two pixels at a time and avoids a mixed baseline', () => {
+  assert.equal(stepFontSize(mcu.style.fontSize, -1), mcu.style.fontSize - 2);
+  assert.equal(stepFontSize(mcu.style.fontSize, 1), mcu.style.fontSize + 2);
+  assert.equal(stepFontSize(8, -1), 8);
+  assert.equal(stepFontSize(72, 1), 72);
+  assert.equal(stepFontSize(undefined, 1), undefined);
+
+  const mixedMarkup = renderToStaticMarkup(
+    createElement(FontSizeStepper, { value: () => undefined, patch: () => assert.fail() }),
+  );
+  assert.match(mixedMarkup, /aria-label="Decrease font size"[^>]*disabled/);
+  assert.match(mixedMarkup, /aria-label="Increase font size"[^>]*disabled/);
 });
 test('the single-action alignment grid reports completion after applying one position', () => {
   const patches: Partial<Style>[] = [];

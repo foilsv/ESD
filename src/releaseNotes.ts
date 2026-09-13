@@ -13,12 +13,12 @@ export const releaseNotes: ReleaseNote[] = [
     version: '6',
     title: 'Label editing and keyboard controls',
     summary:
-      'This iteration compares compact and direct text alignment and adds a shared keyboard scheme that separates typing labels from choosing canvas tools.',
+      'This iteration compares compact and direct text controls and adds a shared keyboard scheme that separates typing labels from choosing canvas tools.',
     changes: [
       {
-        title: 'Compare compact and direct alignment',
+        title: 'Compare compact and direct text controls',
         description:
-          'Flat, Inline, and Grouped’s one-line text row use the 3×3 Alignment popover by default, while a saved Lab switch restores six direct axis controls. Single-action popovers close after a choice; compound Text and Stroke popovers remain open.',
+          'Flat, Inline, and Grouped’s one-line text row use the 3×3 Alignment popover by default, while saved Lab switches can restore six direct axis controls or replace the size dropdown with large − / value / + controls. Single-action popovers close after a choice; compound Text and Stroke popovers remain open.',
       },
       {
         title: 'Type on the selection',

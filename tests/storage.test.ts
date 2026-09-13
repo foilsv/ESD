@@ -19,6 +19,7 @@ test('older experiments keep popover headers visible', () => {
     assert.equal(restored.mergeStrokeControls, true);
     assert.equal(restored.groupedTextToolbar, true);
     assert.equal(restored.compactTextAlignment, true);
+    assert.equal(restored.fontSizeStepper, false);
     assert.equal(restored.showMoreActions, false);
     assert.equal(restored.showShortcutHints, false);
     assert.deepEqual(restored.objects, snapshot.objects);
@@ -46,6 +47,17 @@ test('compact text alignment defaults on, survives round trips, and rejects inva
   }
   for (const compactTextAlignment of [null, 'true', 1, {}]) {
     assert.equal(parseSnapshot({ ...snapshot, compactTextAlignment }), null);
+  }
+});
+
+test('font-size stepper defaults off, survives round trips, and rejects invalid values', () => {
+  for (const fontSizeStepper of [false, true]) {
+    const restored = parseSnapshot(JSON.parse(JSON.stringify({ ...snapshot, fontSizeStepper })));
+    assert.ok(restored);
+    assert.equal(restored.fontSizeStepper, fontSizeStepper);
+  }
+  for (const fontSizeStepper of [null, 'true', 1, {}]) {
+    assert.equal(parseSnapshot({ ...snapshot, fontSizeStepper }), null);
   }
 });
 

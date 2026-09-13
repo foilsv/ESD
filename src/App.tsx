@@ -114,6 +114,7 @@ export default function App() {
   const [compactTextAlignment, setCompactTextAlignment] = useState(
     initial?.compactTextAlignment ?? true,
   );
+  const [fontSizeStepper, setFontSizeStepper] = useState(initial?.fontSizeStepper ?? false);
   const [showMoreActions, setShowMoreActions] = useState(initial?.showMoreActions ?? false);
   const [showShortcutHints, setShowShortcutHints] = useState(initial?.showShortcutHints ?? false);
   const [styleClipboard, setStyleClipboard] = useState<Style | null>(null);
@@ -196,6 +197,7 @@ export default function App() {
             mergeStrokeControls,
             groupedTextToolbar,
             compactTextAlignment,
+            fontSizeStepper,
             showMoreActions,
             showShortcutHints,
             manufacturer,
@@ -213,6 +215,7 @@ export default function App() {
     mergeStrokeControls,
     groupedTextToolbar,
     compactTextAlignment,
+    fontSizeStepper,
     showMoreActions,
     showShortcutHints,
     manufacturer,
@@ -700,6 +703,7 @@ export default function App() {
       mergeStrokeControls,
       groupedTextToolbar,
       compactTextAlignment,
+      fontSizeStepper,
       showMoreActions,
       showShortcutHints,
       manufacturer,
@@ -731,6 +735,7 @@ export default function App() {
       setMergeStrokeControls(snapshot.mergeStrokeControls ?? true);
       setGroupedTextToolbar(snapshot.groupedTextToolbar ?? true);
       setCompactTextAlignment(snapshot.compactTextAlignment ?? true);
+      setFontSizeStepper(snapshot.fontSizeStepper ?? false);
       setShowMoreActions(snapshot.showMoreActions ?? false);
       setShowShortcutHints(snapshot.showShortcutHints ?? false);
       setSelected([]);
@@ -1219,6 +1224,7 @@ export default function App() {
             mergeStrokeControls={mergeStrokeControls}
             groupedTextToolbar={groupedTextToolbar}
             compactTextAlignment={compactTextAlignment}
+            fontSizeStepper={fontSizeStepper}
             showMoreActions={showMoreActions}
             detail={detail}
             setDetail={setDetail}
@@ -1395,6 +1401,19 @@ export default function App() {
                     )
                       setDetail('text');
                   }}
+                />
+                <span className="switch" />
+              </label>
+              <label className="switch-row">
+                <span>
+                  Use font size stepper
+                  <span className="field-note">Flat, Grouped text row, Inline</span>
+                </span>
+                <input
+                  type="checkbox"
+                  aria-label="Use font size stepper"
+                  checked={fontSizeStepper}
+                  onChange={(event) => setFontSizeStepper(event.target.checked)}
                 />
                 <span className="switch" />
               </label>

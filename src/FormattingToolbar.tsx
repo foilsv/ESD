@@ -46,6 +46,7 @@ import {
   FontControl,
   FontDropdown,
   FontChoices,
+  FontSizeStepper,
   SizeDropdown,
   SizeChoices,
   StrokeControls,
@@ -87,6 +88,7 @@ interface Props {
   mergeStrokeControls?: boolean;
   groupedTextToolbar?: boolean;
   compactTextAlignment?: boolean;
+  fontSizeStepper?: boolean;
   showMoreActions?: boolean;
   detail: Detail;
   setDetail: (detail: Detail) => void;
@@ -174,6 +176,9 @@ export default function FormattingToolbar(props: Props) {
   useEffect(() => {
     if (!props.showMoreActions) setMoreOpen(false);
   }, [props.showMoreActions]);
+  useEffect(() => {
+    if (props.fontSizeStepper && (behavior === 'inline' || textMode)) setSizeOpen(false);
+  }, [props.fontSizeStepper, behavior, textMode]);
   useEffect(() => {
     const dismiss = (event: PointerEvent) => {
       if (root.current?.contains(event.target as Node)) return;
@@ -277,13 +282,15 @@ export default function FormattingToolbar(props: Props) {
       <ChevronDown size={11} />
     </button>
   );
+  const fontSizeStepperControl = <FontSizeStepper {...controls} />;
 
   const typography = (inline: boolean) => (
     <div className={inline ? 'inline-text-controls' : 'grouped-text-controls'}>
       <div className="detail-row">
         <span>Font</span>
         {inline ? fontControl : <FontChoices {...controls} />}
-        {inline && sizeControl}
+        {inline &&
+          (props.fontSizeStepper && behavior === 'inline' ? fontSizeStepperControl : sizeControl)}
       </div>
       {!inline && (
         <div className="detail-row">
@@ -512,12 +519,12 @@ export default function FormattingToolbar(props: Props) {
     <>
       {(!context.textOnly || behavior === 'grouped') && backToObject}
       {fontControl}
-      {sizeControl}
+      {props.fontSizeStepper ? fontSizeStepperControl : sizeControl}
       <span className="divider" />
       <EmphasisControls {...controls} />
       {colorControl('textColor', 'Text')}
-      {context.alignment && (
-        compactTextAlignment ? (
+      {context.alignment &&
+        (compactTextAlignment ? (
           alignGroup
         ) : (
           <>
@@ -525,8 +532,7 @@ export default function FormattingToolbar(props: Props) {
             <AlignmentControls {...controls} />
             <AlignmentControls {...controls} vertical />
           </>
-        )
-      )}
+        ))}
     </>
   );
   const flatDetailRow = (

@@ -1,5 +1,11 @@
 # Toolbar solutions validation · 2026-09-11
 
+## Optional direct font-size stepper · 2026-09-13
+
+Flat, Inline, and Grouped's one-line text row can now replace the size dropdown with large decrease and increase buttons around an editable numeric value. The default-off **Use font size stepper** Lab modifier preserves the baseline for comparison, saves locally, and travels with exported experiments. Each button changes 2 px—half the gap between the 12, 16, and 20 px presets—within 8–72 px; mixed-size selections do not assume a baseline. Grouped's ordinary Text popover retains its existing size choices.
+
+Local browser checks confirmed direct multi-digit entry, 18 → 20 → 18 button stepping, disabled controls at 8 and 72 px, disabled mixed-selection stepping, and the intended controls in Flat, Inline, and Grouped's one-line text row. The ordinary Grouped Text popover retained its preset and custom choices. The Flat toolbar remained clear of the selection without horizontal overflow, and no browser warnings or errors appeared. The production build and all 85 tests pass. No deployment was performed.
+
 ## Grouped one-line text editing · 2026-09-12
 
 Grouped label editing and selected text objects now default to the same explicit one-line font, size, emphasis, color, and alignment row used by Flat, avoiding the larger automatic Text popover. Back from a text object reaches its whole-object row, where manually opening Text still uses the Grouped popover. A saved **Use one-line text toolbar** Lab modifier restores the original automatic popover when disabled.
@@ -32,7 +38,7 @@ Grouped text formatting now exposes four font-style icon buttons directly; numer
 
 Stroke widths now offer 1, 2, 4, and 8 px with line samples across all behaviors. Zero is absent from the choices; legacy saved widths still load. Added snapshot coverage for the header modifier and new width.
 
-Build and all 32 tests pass. Local browser checks confirmed one-click Compact font selection, the size stepper changing 18 to 19, header removal without moving the toolbar (x=78, y=162.0625), four visibly distinct width samples, and selecting 8 px. Test formatting changes were undone. No deployment was performed.
+Build and all 32 tests pass. Local browser checks confirmed one-click Compact font selection, the size stepper changing 18 to 20, header removal without moving the toolbar (x=78, y=162.0625), four visibly distinct width samples, and selecting 8 px. Test formatting changes were undone. No deployment was performed.
 
 ## Compact custom colors · 2026-09-12
 
