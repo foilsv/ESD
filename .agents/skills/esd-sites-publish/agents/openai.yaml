@@ -1,0 +1,4 @@
+interface:
+  display_name: "Publish ESD Formatting Lab"
+  short_description: "Publish this repo to its existing OpenAI Site"
+  default_prompt: "Use $esd-sites-publish to publish the current ESD Formatting Lab changes."

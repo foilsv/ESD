@@ -1,5 +1,13 @@
 # OpenAI Sites deployment
 
+## Preferred repeat workflow
+
+Use the checked-in `$esd-sites-publish` skill for routine updates. Codex discovers it from `.agents/skills/esd-sites-publish` whenever this repository is opened, so the project-specific procedure travels with the checkout instead of depending on one user's personal skill directory.
+
+The skill can be invoked from another Codex session, including one initially opened under the user's work account. Publishing the existing Site still requires the personal account that owns it: personal Sites cannot grant an external work account editor rights. If the native Sites preflight cannot access the project ID below, switch Codex to the personal account and issue the publish request there. Never create a work-workspace replacement.
+
+No credentials belong in this repository. Source write credentials are short-lived, obtained during an explicitly requested deployment, used only as per-command authorization, and never stored in source files, Git configuration, remote URLs, or this documentation.
+
 ## Development and deployment policy
 
 User instruction, 2026-09-12:
@@ -36,6 +44,8 @@ Confirmed by the native deployment status response on 2026-09-12 at 01:32:35 UTC
 These identify the first publication. Copy new version/deployment IDs directly from tool responses for subsequent revisions.
 
 ## Publishing an update after an explicit command
+
+The repository skill is the concise source for the normal path. The expanded procedure below remains as recovery context.
 
 Start this procedure only after the user explicitly commands deployment. Use the personal account that owns this Site.
 

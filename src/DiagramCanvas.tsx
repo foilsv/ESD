@@ -8,14 +8,12 @@ import {
   type DiagramObject,
   type Point,
 } from './model';
-import type { PointerEvent as ReactPointerEvent } from 'react';
+import type {
+  PointerEvent as ReactPointerEvent,
+  WheelEvent as ReactWheelEvent,
+} from 'react';
 import { connectionGeometry } from './connectionGeometry';
-
-export interface View {
-  x: number;
-  y: number;
-  zoom: number;
-}
+import type { View } from './viewport';
 interface Props {
   objects: DiagramObject[];
   selected: string[];
@@ -24,12 +22,13 @@ interface Props {
   setDraft: (value: string) => void;
   view: View;
   grid: boolean;
-  hand: boolean;
+  panning: boolean;
   select: (id: string, shift: boolean) => void;
   edit: (id: string) => void;
   finishEdit: (cancel?: boolean) => void;
   startObject: (e: ReactPointerEvent, object: DiagramObject, resize?: boolean) => void;
   startCanvas: (e: ReactPointerEvent<SVGSVGElement>) => void;
+  zoomWheel: (e: ReactWheelEvent<SVGSVGElement>) => void;
   move: (point: Point) => void;
   end: () => void;
 }
@@ -309,12 +308,13 @@ export default function DiagramCanvas(props: Props) {
   };
   return (
     <svg
-      className={`diagram-canvas ${props.hand ? 'hand-mode' : ''}`}
+      className={`diagram-canvas ${props.panning ? 'panning' : ''}`}
       aria-label="Electronics system diagram"
       onPointerDown={props.startCanvas}
       onPointerMove={(e) => props.move({ x: e.clientX, y: e.clientY })}
       onPointerUp={props.end}
       onPointerCancel={props.end}
+      onWheel={props.zoomWheel}
       onContextMenu={(e) => e.preventDefault()}
     >
       {props.grid && (

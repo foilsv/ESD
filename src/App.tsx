@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
+  type WheelEvent as ReactWheelEvent,
 } from 'react';
 import {
   ArrowDownToLine,
@@ -16,7 +17,6 @@ import {
   FlaskConical,
   Focus,
   Grid2X2,
-  Hand,
   Maximize2,
   Minus,
   MousePointer2,
@@ -29,7 +29,7 @@ import {
   Waypoints,
   X,
 } from 'lucide-react';
-import DiagramCanvas, { type View } from './DiagramCanvas';
+import DiagramCanvas from './DiagramCanvas';
 import FormattingToolbar from './FormattingToolbar';
 import WhatsNew from './WhatsNew';
 import {
@@ -57,8 +57,9 @@ import {
 import { loadSnapshot, saveSnapshot, parseSnapshot, type Snapshot } from './storage';
 import { behaviors, compatibleDetail, detailOnTextEntry, toolbarContext } from './toolbarModel';
 import { currentRelease } from './releaseNotes';
+import { zoomViewAt, type View } from './viewport';
 
-type Tool = 'select' | 'hand' | 'connect';
+type Tool = 'select' | 'connect';
 type DiagramState = { objects: DiagramObject[]; manufacturer: ManufacturerStyle };
 type History = { past: DiagramState[]; present: DiagramState; future: DiagramState[] };
 type Drag = {
@@ -94,6 +95,7 @@ export default function App() {
   const [labOpen, setLabOpen] = useState(() => window.innerWidth > 900);
   const [grid, setGrid] = useState(false);
   const [tool, setTool] = useState<Tool>('select');
+  const [panning, setPanning] = useState(false);
   const [connectSource, setConnectSource] = useState<string | null>(null);
   const [notice, setNotice] = useState('');
   const [saved, setSaved] = useState(true);
@@ -267,12 +269,14 @@ export default function App() {
   }
   function startObject(event: ReactPointerEvent, object: DiagramObject, resize = false) {
     if ((event.target as Element).closest('input')) return;
-    event.stopPropagation();
-    if (event.button !== 0) return;
-    if (tool === 'hand') {
+    if (event.button === 2) {
+      event.preventDefault();
+      event.stopPropagation();
       startPan(event);
       return;
     }
+    if (event.button !== 0) return;
+    event.stopPropagation();
     if (tool === 'connect' && !isLine(object)) {
       if (!connectSource) {
         setConnectSource(object.id);
@@ -326,6 +330,7 @@ export default function App() {
     }
   }
   function startPan(event: ReactPointerEvent) {
+    setPanning(true);
     drag.current = {
       point: { x: event.clientX, y: event.clientY },
       before: history.present,
@@ -337,7 +342,7 @@ export default function App() {
     event.currentTarget.setPointerCapture(event.pointerId);
   }
   function startCanvas(event: ReactPointerEvent<SVGSVGElement>) {
-    if (tool === 'hand' || event.button === 1) {
+    if (event.button === 1 || event.button === 2) {
       event.preventDefault();
       startPan(event);
       return;
@@ -370,6 +375,7 @@ export default function App() {
   function end() {
     const current = drag.current;
     drag.current = null;
+    setPanning(false);
     if (current?.moved && current.kind !== 'pan')
       setHistory((h) => ({ ...h, past: [...h.past.slice(-49), current.before], future: [] }));
   }
@@ -392,15 +398,21 @@ export default function App() {
     );
   }
   function zoomBy(factor: number) {
-    setView((v) => {
-      const zoom = Math.max(0.25, Math.min(2, v.zoom * factor));
-      const p = { x: viewport.w / 2, y: viewport.h / 2 };
-      return {
-        zoom,
-        x: p.x - ((p.x - v.x) * zoom) / v.zoom,
-        y: p.y - ((p.y - v.y) * zoom) / v.zoom,
-      };
-    });
+    setView((v) => zoomViewAt(v, factor, { x: viewport.w / 2, y: viewport.h / 2 }));
+  }
+  function zoomWheel(event: ReactWheelEvent<SVGSVGElement>) {
+    event.preventDefault();
+    const rect = stage.current?.getBoundingClientRect();
+    if (!rect) return;
+    const delta =
+      event.deltaY *
+      (event.deltaMode === WheelEvent.DOM_DELTA_LINE
+        ? 16
+        : event.deltaMode === WheelEvent.DOM_DELTA_PAGE
+          ? rect.height
+          : 1);
+    const point = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    setView((v) => zoomViewAt(v, Math.exp(-delta * 0.001), point));
   }
   useEffect(() => {
     const syncPage = () => setShowWhatsNew(window.location.hash === '#whats-new');
@@ -470,7 +482,6 @@ export default function App() {
       }
       if (!modifier && !(event.target as HTMLElement).closest('button')) {
         if (event.key.toLowerCase() === 'v') setTool('select');
-        if (event.key.toLowerCase() === 'h') setTool('hand');
         if (event.key.toLowerCase() === 'b') add('block');
         if (event.key.toLowerCase() === 't') add('text');
         if (event.key.toLowerCase() === 'c') {
@@ -638,12 +649,13 @@ export default function App() {
           setDraft={setDraft}
           view={view}
           grid={grid}
-          hand={tool === 'hand'}
+          panning={panning}
           select={select}
           edit={edit}
           finishEdit={finishEdit}
           startObject={startObject}
           startCanvas={startCanvas}
+          zoomWheel={zoomWheel}
           move={move}
           end={end}
         />
@@ -661,15 +673,6 @@ export default function App() {
           >
             <MousePointer2 size={20} />
           </button>
-          <button
-            className={`tool-button ${tool === 'hand' ? 'active' : ''}`}
-            title="Pan · H"
-            aria-label="Pan tool"
-            onClick={() => setTool('hand')}
-          >
-            <Hand size={20} />
-          </button>
-          <span className="horizontal-divider" />
           <button
             className="tool-button"
             title="Add functional block · B"
@@ -940,7 +943,7 @@ export default function App() {
                 : 'Select the source'
               : editing
                 ? 'Enter to finish · Escape to cancel label'
-                : 'Drag to move · Double-click to edit · Shift-click to select multiple'}
+                : 'Drag to move · Right-drag to pan · Wheel to zoom · Double-click to edit · Shift-click to select multiple'}
           </span>
         </div>
         {notice && (

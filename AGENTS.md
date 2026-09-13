@@ -48,6 +48,7 @@ Use CSS variables for shared visual decisions. Preserve accessible names, focus 
 
 - Public app: https://esd-formatting-lab.pnv82g.chatgpt.site
 - Hosting: OpenAI Sites in the user's personal account. The existing audience is public; that access setting is not authorization to publish updates.
-- Read `docs/deployment.md` and the current installed Sites hosting skill before publishing updates.
+- Use the repository skill at `.agents/skills/esd-sites-publish/SKILL.md` and the current installed Sites hosting skill before publishing updates. Read `docs/deployment.md` only for recovery details or deployment history.
 - Reuse the exact `project_id` in `.openai/hosting.json`; never create a duplicate Site for this app.
 - Preserve public access and the current URL. Obtain fresh credentials for the same Site when needed; never store tokens in instructions or Git configuration.
+- The skill is available from any Codex session that opens this checkout, but the existing personal Site remains account-bound. A work-account session must switch to the personal owner account before publishing; it must not create a workspace replacement.
