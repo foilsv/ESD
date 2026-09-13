@@ -1,5 +1,7 @@
+[ ] let's save some space on text editing toolbar - instead of 6 buttons on toolbar replace with popover we have in Grouped. Make it optional via Labs panel, enabled by default.
+[ ] add a text object to the Motor Control scene
 [ ] start text editing text for the selected object without double click or additional actions - just typing text should start updating the text of the object
-[ ] replace Test Scene dropdown control with 4 button switcher with expressive icons
+[ ] 
 [ ] For flattened mode of the text let's add increase decrease font size controls as optional extension, controlled by the toggle in Lab panel.  I'm experimenting, trying to figure out if we can make the text line more useable
 [ ]
 [ ] propose a good, reasonable and easy to learn shortcut schema. Where possible keep it consistent with the most popular tools in the industry 

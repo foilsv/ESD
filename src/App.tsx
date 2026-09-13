@@ -23,6 +23,7 @@ import {
   Plus,
   Redo2,
   RotateCcw,
+  Shapes,
   Square,
   Type,
   Undo2,
@@ -818,22 +819,28 @@ export default function App() {
               </button>
             </div>
             <div className="experiment-section">
-              <label className="eyebrow" htmlFor="scene">
-                TEST SCENE
-              </label>
-              <div className="select-wrap">
-                <select
-                  id="scene"
-                  value={scene}
-                  onChange={(e) => changeScene(e.target.value as Scene)}
-                >
-                  {Object.entries(scenes).map(([id, label]) => (
-                    <option key={id} value={id}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown size={15} />
+              <div className="eyebrow">TEST SCENE</div>
+              <div className="scene-switcher" role="group" aria-label="Test scene">
+                {(
+                  [
+                    ['system', Cpu],
+                    ['dense', Grid2X2],
+                    ['edge', Maximize2],
+                    ['objects', Shapes],
+                  ] as const
+                ).map(([id, Icon]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className={scene === id ? 'active' : ''}
+                    aria-label={scenes[id]}
+                    aria-pressed={scene === id}
+                    title={scenes[id]}
+                    onClick={() => changeScene(id)}
+                  >
+                    <Icon size={18} strokeWidth={1.8} />
+                  </button>
+                ))}
               </div>
             </div>
             <div className="experiment-section">

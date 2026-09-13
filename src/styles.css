@@ -710,6 +710,37 @@ button[aria-pressed='true']:not(.swatch):not(.color-swatch) {
   pointer-events: none;
   color: #6d7c90;
 }
+.scene-switcher {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+.scene-switcher button {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  height: 38px;
+  padding: 0;
+  border: 1px solid #e0e5ee;
+  border-radius: 6px;
+  color: #718096;
+  background: #fff;
+}
+.scene-switcher button:hover {
+  border-color: #c5d2e5;
+  color: #49617e;
+  background: #f8fafd;
+}
+.scene-switcher button.active {
+  border-color: #91b4ed;
+  color: #2467da;
+  background: #f3f7ff;
+  box-shadow: inset 0 0 0 1px #d7e5fb;
+}
+.scene-switcher button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 .manufacturer-swatches {
   display: flex;
   gap: 5px;

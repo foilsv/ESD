@@ -25,6 +25,11 @@ export const releaseNotes: ReleaseNote[] = [
         description:
           'Use the default-on Interaction Lab option to compare the one-line editing row with the original Grouped popover; the choice saves with experiments.',
       },
+      {
+        title: 'Scenes visible at a glance',
+        description:
+          'Four icon buttons expose the complete test-scene set at once and keep the current scene visibly selected.',
+      },
     ],
   },
   {
