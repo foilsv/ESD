@@ -20,7 +20,7 @@ Previous chat images were not available in the initial text retrieval. In the su
 
 1. Good default styling first; optimize the interaction needed to produce a clear diagram.
 2. Floating, contextual toolbar; no irrelevant disabled controls.
-3. Colors have independent stateful Tier-1 controls. The requested solutions use compact dropdowns for simple color/font choices.
+3. Colors use stateful compact dropdowns. The Lab can merge stroke/line color into the Stroke control for Flat and Inline, enabled by default, or expose it independently in all three solutions. Grouped always keeps color separate.
 4. Avoid unnecessary category navigation. Uncommon related settings belong in one secondary surface or inline group according to the selected solution.
 5. Label editing is unambiguous intent: expose text controls without another navigation click.
 6. Format by shared capabilities, consistently across object families.

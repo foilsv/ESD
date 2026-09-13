@@ -67,6 +67,7 @@ interface Props {
   editing: boolean;
   behavior: PanelBehavior;
   showPopoverHeaders?: boolean;
+  mergeStrokeControls?: boolean;
   detail: Detail;
   setDetail: (detail: Detail) => void;
   patch: (patch: Partial<Style>) => void;
@@ -79,6 +80,10 @@ interface Props {
 export default function FormattingToolbar(props: Props) {
   const { objects, editing, behavior, detail, setDetail, patch, selection, viewport } = props;
   const context = toolbarContext(objects);
+  const strokeColorIsMerged =
+    (props.mergeStrokeControls ?? true) &&
+    context.stroke &&
+    (behavior === 'flat' || behavior === 'inline');
   const value = <K extends keyof Style>(key: K) => commonValue(objects, key);
   const controls = { value, patch };
   const root = useRef<HTMLDivElement>(null);
@@ -246,7 +251,9 @@ export default function FormattingToolbar(props: Props) {
               ? `Alignment: ${alignmentMixed ? 'Mixed' : `${value('verticalAlign')} ${value('align')}`}`
               : id === 'arrows'
                 ? `Arrow style: ${arrowState}`
-                : `${label} settings`
+                : id === 'stroke'
+                  ? `Stroke: ${strokeMixed ? 'Mixed' : value('stroke') === 'transparent' ? 'No border' : value('pattern')}`
+                  : `${label} settings`
           }
           aria-expanded={expanded}
           aria-controls={expanded && behavior === 'grouped' ? panelId : undefined}
@@ -277,12 +284,30 @@ export default function FormattingToolbar(props: Props) {
   const strokeGroup = group(
     'stroke',
     'Stroke',
+    strokeMixed ? (
+      <span className="stroke-summary mixed">
+        <span className="property-value">Mixed</span>
+      </span>
+    ) : value('stroke') === 'transparent' ? (
+      <span className="stroke-summary no-border" data-testid="stroke-summary-none">
+        <svg
+          className="no-border-sample"
+          width="18"
+          height="18"
+          viewBox="0 0 18 18"
+          aria-hidden="true"
+        >
+          <rect x="3" y="3" width="12" height="12" rx="1" />
+          <path d="M3.5 14.5 14.5 3.5" />
+        </svg>
+      </span>
+    ) : (
+      <span className="stroke-summary" data-testid="stroke-summary-line">
+        <StrokeSample color={value('stroke')} width={value('width')} pattern={value('pattern')} />
+      </span>
+    ),
     <>
-      <StrokeSample color={value('stroke')} width={value('width')} pattern={value('pattern')} />
-      <span className="property-value">{strokeMixed ? 'Mixed' : `${value('width')} px`}</span>
-    </>,
-    <>
-      {!context.lineColor && colorControl('stroke', 'Stroke')}
+      {strokeColorIsMerged && colorControl('stroke', context.lineColor ? 'Line' : 'Stroke')}
       <StrokeControls {...controls} inline />
     </>,
   );
@@ -427,7 +452,7 @@ export default function FormattingToolbar(props: Props) {
       <div className="flat-detail-controls" data-testid="flat-detail-controls">
         {flatDetail === 'stroke' ? (
           <>
-            {colorControl('stroke', 'Stroke')}
+            {strokeColorIsMerged && colorControl('stroke', context.lineColor ? 'Line' : 'Stroke')}
             <StrokeControls {...controls} inline />
             {directionControls}
           </>
@@ -445,11 +470,11 @@ export default function FormattingToolbar(props: Props) {
   const objectRow = (
     <>
       {context.fill && colorControl('fill', 'Fill')}
-      {(context.lineColor || context.symbolColor) &&
+      {(context.symbolColor || (context.lineColor && !strokeColorIsMerged)) &&
         colorControl('stroke', context.symbolColor ? 'Symbol' : 'Line')}
       {context.stroke && (
         <>
-          {behavior !== 'inline' && !context.lineColor && colorControl('stroke', 'Stroke')}
+          {!context.lineColor && !strokeColorIsMerged && colorControl('stroke', 'Stroke')}
           {strokeGroup}
         </>
       )}

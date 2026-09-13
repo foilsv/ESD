@@ -1134,6 +1134,30 @@ button[aria-pressed='true']:not(.swatch):not(.color-swatch) {
 .property-value {
   font-size: 11px;
 }
+.stroke-summary {
+  display: inline-flex;
+  align-items: center;
+}
+.stroke-summary.no-border,
+.stroke-summary.mixed {
+  white-space: nowrap;
+}
+.no-border-sample {
+  color: var(--muted);
+}
+.no-border-sample rect {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+  opacity: 0.55;
+}
+.no-border-sample path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
 .color-state {
   display: grid;
   justify-items: center;

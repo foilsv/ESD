@@ -35,6 +35,11 @@ export const releaseNotes: ReleaseNote[] = [
         description:
           'Right-drag anywhere on the diagram to pan without changing tools, and zoom around the cursor with the mouse wheel.',
       },
+      {
+        title: 'Flexible stroke controls',
+        description:
+          'Compare merged or separate stroke color and style controls, use no-color strokes, and read width directly from compact line samples.',
+      },
     ],
   },
   {

@@ -71,8 +71,11 @@ export default function ColorPalette({
   const [notice, setNotice] = useState('');
   const customPicker = useRef<HTMLInputElement>(null);
   const label = kind === 'fill' ? 'Fill color' : kind === 'stroke' ? 'Stroke color' : 'Text color';
+  const noColorLabel = kind === 'fill' ? 'No fill' : 'No stroke';
   const colors = [
-    ...(kind === 'fill' ? ['transparent', ...neutrals.slice(0, 6), '#0f172a'] : neutrals),
+    ...(kind === 'fill' || kind === 'stroke'
+      ? ['transparent', ...neutrals.slice(0, 6), '#0f172a']
+      : neutrals),
     ...hues,
   ];
   const chooseCustom = useCallback(
@@ -104,8 +107,8 @@ export default function ColorPalette({
       <button
         key={color}
         className={`color-swatch ${selected ? 'selected' : ''} ${color === 'transparent' ? 'no-color' : ''}`}
-        aria-label={color === 'transparent' ? 'No fill' : `${label} ${color}`}
-        title={color === 'transparent' ? 'No fill' : color.toUpperCase()}
+        aria-label={color === 'transparent' ? noColorLabel : `${label} ${color}`}
+        title={color === 'transparent' ? noColorLabel : color.toUpperCase()}
         aria-pressed={selected}
         style={{ backgroundColor: color, color: dark ? '#fff' : '#263445' }}
         onClick={() => {

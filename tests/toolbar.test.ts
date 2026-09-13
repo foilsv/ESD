@@ -15,11 +15,13 @@ function render(
   editing: boolean,
   detail: Detail = detailOnTextEntry(behavior),
   selection = [mcu],
+  mergeStrokeControls = true,
 ) {
   return renderToStaticMarkup(
     createElement(FormattingToolbar, {
       objects: selection,
       behavior,
+      mergeStrokeControls,
       editing,
       detail,
       setDetail() {},
@@ -76,6 +78,57 @@ test('Grouped stroke and alignment keep the object row and use a popover', () =>
     assert.doesNotMatch(markup, /aria-label="Back to object formatting"/);
     assert.doesNotMatch(markup, /data-testid="flat-detail-controls"/);
   }
+});
+test('stroke color merging is optional for Flat and Inline while Grouped stays separate', () => {
+  const connection = objects.find((object) => object.kind === 'connection')!;
+  for (const behavior of ['flat', 'inline'] as const) {
+    assert.doesNotMatch(render(behavior, false), /aria-label="Stroke color"/);
+    assert.equal(
+      (render(behavior, false, null, [mcu], false).match(/aria-label="Stroke color"/g) ?? [])
+        .length,
+      1,
+    );
+    assert.doesNotMatch(render(behavior, false, null, [connection]), /aria-label="Line color"/);
+    assert.equal(
+      (render(behavior, false, null, [connection], false).match(/aria-label="Line color"/g) ?? [])
+        .length,
+      1,
+    );
+  }
+
+  for (const mergeStrokeControls of [true, false]) {
+    assert.equal(
+      (
+        render('grouped', false, 'stroke', [mcu], mergeStrokeControls).match(
+          /aria-label="Stroke color"/g,
+        ) ?? []
+      ).length,
+      1,
+    );
+  }
+
+  assert.equal(
+    (render('flat', false, 'stroke').match(/aria-label="Stroke color"/g) ?? []).length,
+    1,
+  );
+  assert.doesNotMatch(render('flat', false, 'stroke', [mcu], false), /aria-label="Stroke color"/);
+});
+test('Stroke summary uses line weight instead of pixels and compacts the no-border state', () => {
+  const visible = render('grouped', false);
+  const lineSummary = visible.match(
+    /<span class="stroke-summary" data-testid="stroke-summary-line">([\s\S]*?)<\/span>/,
+  );
+  assert.ok(lineSummary);
+  assert.match(lineSummary[1], /stroke-width="1\.5"/);
+  assert.doesNotMatch(visible, />1\.5 px</);
+
+  const noBorder = render('grouped', false, null, [
+    { ...mcu, style: { ...mcu.style, stroke: 'transparent' } },
+  ]);
+  assert.match(noBorder, /title="Stroke: No border"/);
+  assert.match(noBorder, /data-testid="stroke-summary-none"/);
+  assert.match(noBorder, /class="no-border-sample"/);
+  assert.doesNotMatch(noBorder, /data-testid="stroke-summary-line"/);
 });
 test('Inline expands compound controls inside the row without a compound popover', () => {
   for (const detail of ['text', 'stroke', 'alignment'] as const) {

@@ -16,6 +16,7 @@ test('older experiments keep popover headers visible', () => {
     const restored = parseSnapshot(experiment);
     assert.ok(restored);
     assert.equal(restored.showPopoverHeaders, true);
+    assert.equal(restored.mergeStrokeControls, true);
     assert.deepEqual(restored.objects, snapshot.objects);
   }
 });
@@ -32,6 +33,19 @@ test('popover header preference survives JSON round trips, including disabled he
 test('snapshot validation rejects malformed header preferences', () => {
   for (const showPopoverHeaders of [null, 'false', 0, {}]) {
     assert.equal(parseSnapshot({ ...snapshot, showPopoverHeaders }), null);
+  }
+});
+
+test('stroke control merging preference survives JSON round trips and rejects invalid values', () => {
+  for (const mergeStrokeControls of [false, true]) {
+    const restored = parseSnapshot(
+      JSON.parse(JSON.stringify({ ...snapshot, mergeStrokeControls })),
+    );
+    assert.ok(restored);
+    assert.equal(restored.mergeStrokeControls, mergeStrokeControls);
+  }
+  for (const mergeStrokeControls of [null, 'false', 0, {}]) {
+    assert.equal(parseSnapshot({ ...snapshot, mergeStrokeControls }), null);
   }
 });
 

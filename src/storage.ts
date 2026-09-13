@@ -10,6 +10,7 @@ export interface Snapshot {
   behavior: PanelBehavior;
   sticky: boolean;
   showPopoverHeaders?: boolean;
+  mergeStrokeControls?: boolean;
   manufacturer?: ManufacturerStyle;
 }
 export function validSnapshot(input: unknown): input is Snapshot {
@@ -21,6 +22,7 @@ export function validSnapshot(input: unknown): input is Snapshot {
     ['flat', 'grouped', 'inline'].includes(data.behavior) &&
     typeof data.sticky === 'boolean' &&
     (data.showPopoverHeaders === undefined || typeof data.showPopoverHeaders === 'boolean') &&
+    (data.mergeStrokeControls === undefined || typeof data.mergeStrokeControls === 'boolean') &&
     (data.manufacturer === undefined ||
       (typeof data.manufacturer === 'string' &&
         Object.hasOwn(manufacturerStyles, data.manufacturer))) &&
@@ -88,6 +90,7 @@ export function parseSnapshot(input: unknown): Snapshot | null {
     version: 2,
     manufacturer: data.manufacturer === undefined ? 'default' : data.manufacturer,
     showPopoverHeaders: data.showPopoverHeaders === undefined ? true : data.showPopoverHeaders,
+    mergeStrokeControls: data.mergeStrokeControls === undefined ? true : data.mergeStrokeControls,
     behavior:
       typeof data.behavior === 'string'
         ? (legacyNames[data.behavior] ?? data.behavior)

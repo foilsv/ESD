@@ -92,6 +92,9 @@ export default function App() {
   const [behavior, setBehavior] = useState<PanelBehavior>(initial?.behavior ?? 'flat');
   const [sticky, setSticky] = useState(initial?.sticky ?? true);
   const [showPopoverHeaders, setShowPopoverHeaders] = useState(initial?.showPopoverHeaders ?? true);
+  const [mergeStrokeControls, setMergeStrokeControls] = useState(
+    initial?.mergeStrokeControls ?? true,
+  );
   const [labOpen, setLabOpen] = useState(() => window.innerWidth > 900);
   const [grid, setGrid] = useState(false);
   const [tool, setTool] = useState<Tool>('select');
@@ -162,13 +165,14 @@ export default function App() {
             behavior,
             sticky,
             showPopoverHeaders,
+            mergeStrokeControls,
             manufacturer,
           }),
         ),
       300,
     );
     return () => clearTimeout(timeout);
-  }, [objects, scene, behavior, sticky, showPopoverHeaders, manufacturer]);
+  }, [objects, scene, behavior, sticky, showPopoverHeaders, mergeStrokeControls, manufacturer]);
   useEffect(() => {
     if (!notice) return;
     const timeout = window.setTimeout(() => setNotice(''), 4000);
@@ -507,6 +511,7 @@ export default function App() {
       behavior,
       sticky,
       showPopoverHeaders,
+      mergeStrokeControls,
       manufacturer,
     };
     const url = URL.createObjectURL(
@@ -533,6 +538,7 @@ export default function App() {
       setBehavior(snapshot.behavior);
       setSticky(snapshot.sticky);
       setShowPopoverHeaders(snapshot.showPopoverHeaders ?? true);
+      setMergeStrokeControls(snapshot.mergeStrokeControls ?? true);
       setSelected([]);
       setEditing(null);
       setDetail(null);
@@ -735,6 +741,7 @@ export default function App() {
             editing={Boolean(editing)}
             behavior={behavior}
             showPopoverHeaders={showPopoverHeaders}
+            mergeStrokeControls={mergeStrokeControls}
             detail={detail}
             setDetail={setDetail}
             patch={patch}
@@ -852,6 +859,22 @@ export default function App() {
               <p className="behavior-description">
                 {behaviors.find((b) => b.id === behavior)?.description}
               </p>
+              <label className="switch-row">
+                <span>
+                  Merge stroke color and style
+                  <span className="field-note">Flat and Inline</span>
+                </span>
+                <input
+                  type="checkbox"
+                  aria-label="Merge stroke color and style"
+                  checked={mergeStrokeControls}
+                  onChange={(e) => {
+                    setMergeStrokeControls(e.target.checked);
+                    if (detail === 'stroke') setDetail(null);
+                  }}
+                />
+                <span className="switch" />
+              </label>
               <label className="switch-row">
                 <span>
                   Keep details open
