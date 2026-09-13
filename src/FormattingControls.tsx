@@ -343,16 +343,16 @@ export function EmphasisControls({ value, patch }: ControlProps) {
     <div className="control-cluster" role="group" aria-label="Text emphasis">
       {(
         [
-          { key: 'bold', label: 'Bold', Icon: Bold },
-          { key: 'italic', label: 'Italic', Icon: Italic },
-          { key: 'underline', label: 'Underline', Icon: Underline },
-          { key: 'strikethrough', label: 'Strikethrough', Icon: Strikethrough },
+          { key: 'bold', label: 'Bold', shortcut: 'Ctrl/Cmd+B', Icon: Bold },
+          { key: 'italic', label: 'Italic', shortcut: 'Ctrl/Cmd+I', Icon: Italic },
+          { key: 'underline', label: 'Underline', shortcut: 'Ctrl/Cmd+U', Icon: Underline },
+          { key: 'strikethrough', label: 'Strikethrough', shortcut: '', Icon: Strikethrough },
         ] as const
-      ).map(({ key, label, Icon }) => (
+      ).map(({ key, label, shortcut, Icon }) => (
         <button
           className={`icon-button ${value(key) ? 'active' : ''}`}
           key={key}
-          title={label}
+          title={shortcut ? `${label} · ${shortcut}` : label}
           aria-label={label}
           aria-pressed={value(key) ?? 'mixed'}
           onClick={() => patch({ [key]: !value(key) })}

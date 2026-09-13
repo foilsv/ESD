@@ -1,6 +1,7 @@
 import { Cpu } from 'lucide-react';
 import {
   bounds,
+  canEditLabel,
   fonts,
   isLine,
   labelBounds,
@@ -11,12 +12,15 @@ import {
 import type { PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent } from 'react';
 import { connectionGeometry } from './connectionGeometry';
 import type { View } from './viewport';
+import LabelEditor from './LabelEditor';
 interface Props {
   objects: DiagramObject[];
   selected: string[];
   editing: string | null;
-  draft: string;
   setDraft: (value: string) => void;
+  textEntryEnabled: boolean;
+  startTyping: (id: string, value: string) => void;
+  emphasize: (property: 'bold' | 'italic' | 'underline') => void;
   view: View;
   grid: boolean;
   panning: boolean;
@@ -54,7 +58,9 @@ export default function DiagramCanvas(props: Props) {
           props.edit(id);
         }}
         onKeyDown={(e) => {
+          if (e.target !== e.currentTarget) return;
           if (e.key === 'Enter') {
+            e.preventDefault();
             e.stopPropagation();
             props.select(id, false);
             props.edit(id);
@@ -212,7 +218,7 @@ export default function DiagramCanvas(props: Props) {
             ))}
           </g>
         )}
-        {object.label && kind !== 'symbol' && (
+        {canEditLabel(object) && (
           <foreignObject
             x={label.x}
             y={label.y}
@@ -220,38 +226,18 @@ export default function DiagramCanvas(props: Props) {
             height={label.h}
             style={{ overflow: 'visible' }}
           >
-            {editing === id ? (
-              <input
-                className="canvas-label-input"
-                aria-label="Edit object label"
-                autoFocus
-                value={props.draft}
-                maxLength={500}
-                onFocus={(e) => e.currentTarget.select()}
-                onChange={(e) => props.setDraft(e.target.value)}
-                onPointerDown={(e) => e.stopPropagation()}
-                onKeyDown={(e) => {
-                  e.stopPropagation();
-                  if (e.key === 'Enter') props.finishEdit();
-                  if (e.key === 'Escape') props.finishEdit(true);
-                }}
-                style={{
-                  fontFamily: fonts[style.fontFamily].css,
-                  fontSize: style.fontSize,
-                  fontWeight: style.bold ? 700 : 400,
-                  fontStyle: style.italic ? 'italic' : 'normal',
-                  textDecoration: [
-                    style.underline && 'underline',
-                    style.strikethrough && 'line-through',
-                  ]
-                    .filter(Boolean)
-                    .join(' '),
-                  color: style.textColor,
-                  backgroundColor: !isLine(object) && kind !== 'text' ? style.fill : '#ffffff',
-                  textAlign: style.align,
-                }}
-              />
-            ) : (
+            <div style={{ position: 'relative', height: '100%' }}>
+              {active && selected.length === 1 && (
+                <LabelEditor
+                  object={object}
+                  editing={editing === id}
+                  enabled={props.textEntryEnabled}
+                  onStart={(value) => props.startTyping(id, value)}
+                  onDraft={props.setDraft}
+                  onFinish={props.finishEdit}
+                  onFormat={props.emphasize}
+                />
+              )}
               <div
                 className={`object-label ${isLine(object) ? 'connection-label' : ''}`}
                 style={{
@@ -267,11 +253,12 @@ export default function DiagramCanvas(props: Props) {
                     .join(' '),
                   color: style.textColor,
                   textAlign: style.align,
+                  visibility: editing === id ? 'hidden' : undefined,
                 }}
               >
                 <span>{object.label}</span>
               </div>
-            )}
+            </div>
           </foreignObject>
         )}
         {object.subtitle && !isLine(object) && (
@@ -307,6 +294,7 @@ export default function DiagramCanvas(props: Props) {
     <svg
       className={`diagram-canvas ${props.panning ? 'panning' : ''}`}
       aria-label="Electronics system diagram"
+      tabIndex={0}
       onPointerDown={props.startCanvas}
       onPointerMove={(e) => props.move({ x: e.clientX, y: e.clientY })}
       onPointerUp={props.end}

@@ -21,6 +21,7 @@ function render(
 ) {
   return renderToStaticMarkup(
     createElement(FormattingToolbar, {
+      onEscape() {},
       objects: selection,
       behavior,
       mergeStrokeControls,
@@ -48,6 +49,7 @@ test('rare style actions are opt-in and the menu trigger stays at the end of eve
 
     const shown = renderToStaticMarkup(
       createElement(FormattingToolbar, {
+        onEscape() {},
         objects: [mcu],
         behavior,
         showMoreActions: true,

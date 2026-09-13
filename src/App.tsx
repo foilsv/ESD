@@ -17,12 +17,14 @@ import {
   FlaskConical,
   Focus,
   Grid2X2,
+  Keyboard,
   Maximize2,
   Minus,
   MousePointer2,
   Plus,
   Redo2,
   RotateCcw,
+  Search,
   Shapes,
   Square,
   Type,
@@ -33,6 +35,16 @@ import {
 import DiagramCanvas from './DiagramCanvas';
 import FormattingToolbar from './FormattingToolbar';
 import WhatsNew from './WhatsNew';
+import KeyboardShortcuts from './KeyboardShortcuts';
+import CommandPalette from './CommandPalette';
+import type { PaletteCommand } from './commandPaletteModel';
+import {
+  isCommandPaletteShortcut,
+  resolveCanvasShortcut,
+  nudgeObjects,
+  toggleLabelEmphasis,
+} from './keyboard';
+import type { FormattingToolbarHandle } from './FormattingToolbar';
 import {
   bounds,
   connectionArrows,
@@ -73,6 +85,8 @@ type Drag = {
 };
 export default function App() {
   const [showWhatsNew, setShowWhatsNew] = useState(() => window.location.hash === '#whats-new');
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [initial] = useState(loadSnapshot);
   const [scene, setScene] = useState<Scene>(initial?.scene ?? 'system');
   const [history, setHistory] = useState<History>({
@@ -98,18 +112,23 @@ export default function App() {
   );
   const [groupedTextToolbar, setGroupedTextToolbar] = useState(initial?.groupedTextToolbar ?? true);
   const [showMoreActions, setShowMoreActions] = useState(initial?.showMoreActions ?? false);
+  const [showShortcutHints, setShowShortcutHints] = useState(initial?.showShortcutHints ?? false);
   const [styleClipboard, setStyleClipboard] = useState<Style | null>(null);
   const [styleDefaults, setStyleDefaults] = useState<Partial<Record<ObjectKind, Style>>>({});
   const [labOpen, setLabOpen] = useState(() => window.innerWidth > 900);
   const [grid, setGrid] = useState(false);
   const [tool, setTool] = useState<Tool>('select');
   const [panning, setPanning] = useState(false);
+  const [pointerActive, setPointerActive] = useState(false);
+  const [spaceHeld, setSpaceHeld] = useState(false);
+  const spaceDown = useRef(false);
   const [connectSource, setConnectSource] = useState<string | null>(null);
   const [notice, setNotice] = useState('');
   const [saved, setSaved] = useState(true);
   const stage = useRef<HTMLDivElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const drag = useRef<Drag | null>(null);
+  const formattingToolbar = useRef<FormattingToolbarHandle>(null);
   const [viewport, setViewport] = useState({ w: 0, h: 0 });
   const [view, setView] = useState<View>({ x: 30, y: 25, zoom: 0.9 });
   const chosen = objects.filter((o) => selected.includes(o.id));
@@ -126,8 +145,9 @@ export default function App() {
   );
   const announce = (message: string) => setNotice(message);
   const fit = useCallback(
-    (items: DiagramObject[] = objects) => {
-      const box = union(items.map((o) => bounds(o, items)));
+    (items: DiagramObject[] = objects, geometryItems: DiagramObject[] = items) => {
+      if (!items.length) return;
+      const box = union(items.map((o) => bounds(o, geometryItems)));
       const available = {
         w: viewport.w - (labOpen && viewport.w > 900 ? 330 : 125),
         h: viewport.h - 125,
@@ -173,6 +193,7 @@ export default function App() {
             mergeStrokeControls,
             groupedTextToolbar,
             showMoreActions,
+            showShortcutHints,
             manufacturer,
           }),
         ),
@@ -188,6 +209,7 @@ export default function App() {
     mergeStrokeControls,
     groupedTextToolbar,
     showMoreActions,
+    showShortcutHints,
     manufacturer,
   ]);
   useEffect(() => {
@@ -198,9 +220,23 @@ export default function App() {
 
   function finishEdit(cancel = false) {
     if (editing && !cancel)
-      commit(objects.map((o) => (o.id === editing ? { ...o, label: draft.trim() || o.label } : o)));
+      commit(objects.map((o) => (o.id === editing ? { ...o, label: draft } : o)));
     setEditing(null);
     setDetail(null);
+    focusCanvas();
+  }
+  function focusCanvas() {
+    requestAnimationFrame(() => {
+      const input = stage.current?.querySelector<HTMLInputElement>('[data-label-entry="true"]');
+      if (input) {
+        input.focus({ preventScroll: true });
+        input.select();
+      } else {
+        stage.current
+          ?.querySelector<SVGSVGElement>('.diagram-canvas')
+          ?.focus({ preventScroll: true });
+      }
+    });
   }
   function select(id: string, shift: boolean) {
     if (editing) finishEdit();
@@ -217,12 +253,12 @@ export default function App() {
     );
     setSelected(nextIds);
   }
-  function edit(id: string) {
+  function edit(id: string, replacement?: string) {
     const object = objects.find((o) => o.id === id);
     if (!object || !canEditLabel(object)) return;
     setSelected([id]);
     setEditing(id);
-    setDraft(object.label);
+    setDraft(replacement ?? object.label);
     setDetail(detailOnTextEntry(behavior));
     setTool('select');
   }
@@ -234,9 +270,28 @@ export default function App() {
   function patchObjects(patch: Partial<DiagramObject>) {
     commit(objects.map((o) => (selected.includes(o.id) ? { ...o, ...patch } : o)));
   }
+  function emphasize(property: 'bold' | 'italic' | 'underline') {
+    commit(toggleLabelEmphasis(objects, selected, property));
+  }
+  function copyStyle() {
+    if (
+      !chosen.length ||
+      !chosen.every((o) => JSON.stringify(o.style) === JSON.stringify(chosen[0].style))
+    ) {
+      announce('Select objects with matching formatting to copy a style.');
+      return;
+    }
+    setStyleClipboard({ ...chosen[0].style });
+    announce('Style copied. Select another object and paste style.');
+  }
+  function pasteStyle() {
+    if (!styleClipboard || !chosen.length) return;
+    patch(styleClipboard);
+    announce('Style applied to the selection.');
+  }
   function changeManufacturer(next: ManufacturerStyle) {
     const current = editing
-      ? objects.map((o) => (o.id === editing ? { ...o, label: draft.trim() || o.label } : o))
+      ? objects.map((o) => (o.id === editing ? { ...o, label: draft } : o))
       : objects;
     commit(applyManufacturerStyle(current, next), next);
     setEditing(null);
@@ -283,23 +338,26 @@ export default function App() {
         : { ...defaultStyle, fontSize: kind === 'text' ? 24 : 16 },
     };
     const existing = editing
-      ? objects.map((o) => (o.id === editing ? { ...o, label: draft.trim() || o.label } : o))
+      ? objects.map((o) => (o.id === editing ? { ...o, label: draft } : o))
       : objects;
     commit([...existing, ...applyManufacturerStyle([object], manufacturer)]);
     setSelected([id]);
     setDetail(kind === 'text' ? detailOnTextEntry(behavior) : null);
     setTool('select');
+    focusCanvas();
   }
   function startObject(event: ReactPointerEvent, object: DiagramObject, resize = false) {
     if ((event.target as Element).closest('input')) return;
-    if (event.button === 2) {
+    if (event.button === 1 || event.button === 2 || (event.button === 0 && spaceDown.current)) {
       event.preventDefault();
       event.stopPropagation();
       startPan(event);
       return;
     }
     if (event.button !== 0) return;
+    event.preventDefault();
     event.stopPropagation();
+    focusCanvas();
     if (tool === 'connect' && !isLine(object)) {
       if (!connectSource) {
         setConnectSource(object.id);
@@ -340,8 +398,9 @@ export default function App() {
         : [object.id];
     if (event.shiftKey || !selected.includes(object.id)) select(object.id, event.shiftKey);
     if (!event.shiftKey && (!isLine(object) || !object.source)) {
+      setPointerActive(true);
       const before = editing
-        ? objects.map((o) => (o.id === editing ? { ...o, label: draft.trim() || o.label } : o))
+        ? objects.map((o) => (o.id === editing ? { ...o, label: draft } : o))
         : objects;
       drag.current = {
         point: { x: event.clientX, y: event.clientY },
@@ -355,6 +414,7 @@ export default function App() {
     }
   }
   function startPan(event: ReactPointerEvent) {
+    setPointerActive(true);
     setPanning(true);
     drag.current = {
       point: { x: event.clientX, y: event.clientY },
@@ -367,12 +427,13 @@ export default function App() {
     event.currentTarget.setPointerCapture(event.pointerId);
   }
   function startCanvas(event: ReactPointerEvent<SVGSVGElement>) {
-    if (event.button === 1 || event.button === 2) {
+    if (event.button === 1 || event.button === 2 || (event.button === 0 && spaceDown.current)) {
       event.preventDefault();
       startPan(event);
       return;
     }
     if (event.button !== 0) return;
+    event.preventDefault();
     finishEdit();
     setSelected([]);
     setConnectSource(null);
@@ -400,6 +461,7 @@ export default function App() {
   function end() {
     const current = drag.current;
     drag.current = null;
+    setPointerActive(false);
     setPanning(false);
     if (current?.moved && current.kind !== 'pan')
       setHistory((h) => ({ ...h, past: [...h.past.slice(-49), current.before], future: [] }));
@@ -421,6 +483,30 @@ export default function App() {
         ? { past: [...h.past, h.present], present: h.future[0], future: h.future.slice(1) }
         : h,
     );
+  }
+  function deleteSelection() {
+    if (!selected.length) return;
+    setEditing(null);
+    commit(
+      objects.filter(
+        (object) =>
+          !selected.includes(object.id) &&
+          !selected.includes(object.source ?? '') &&
+          !selected.includes(object.target ?? ''),
+      ),
+    );
+    setSelected([]);
+    setDetail(null);
+    focusCanvas();
+  }
+  function selectAllObjects() {
+    if (editing) {
+      commit(objects.map((object) => (object.id === editing ? { ...object, label: draft } : object)));
+      setEditing(null);
+    }
+    setSelected(objects.map((object) => object.id));
+    setDetail(null);
+    focusCanvas();
   }
   function zoomBy(factor: number) {
     setView((v) => zoomViewAt(v, factor, { x: viewport.w / 2, y: viewport.h / 2 }));
@@ -468,65 +554,139 @@ export default function App() {
   }
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) return;
+      if (!showShortcuts && !showWhatsNew && isCommandPaletteShortcut(event)) {
+        event.preventDefault();
+        setShowCommandPalette(true);
+        return;
+      }
+      if (showShortcuts || showCommandPalette) return;
       if (showWhatsNew) {
         if (event.key === 'Escape') closeWhatsNew();
         return;
       }
-      if ((event.target as HTMLElement).closest('input, textarea, select, [contenteditable]'))
+      const target = event.target instanceof Element ? event.target : null;
+      if (!target?.closest('.diagram-canvas')) return;
+      const labelInput = target.closest('[data-label-entry="true"]');
+      const activeEditor = target.closest('[data-label-editing="true"]');
+      if (
+        target.closest('input, textarea, select, [contenteditable], button') &&
+        !labelInput &&
+        !activeEditor
+      )
         return;
-      if (event.key === 'Escape') {
-        if (editing) finishEdit(true);
-        else {
-          setSelected([]);
-          setDetail(null);
+      const action = resolveCanvasShortcut(event, {
+        selectedCount: chosen.length,
+        editableSelection: chosen.length === 1 && canEditLabel(chosen[0]),
+        allLabelsEditable: chosen.length > 0 && chosen.every(canEditLabel),
+        toolIdle: tool === 'select' && !drag.current,
+      });
+      if (!action) return;
+      if (activeEditor && !['escape', 'copy-style', 'paste-style'].includes(action.type)) return;
+      if (action.type === 'replace-label' || action.type === 'compose-label') {
+        // The selected label's native input receives text and composition unchanged.
+        // onInput then reveals that same input, preserving the first character and undo.
+        const input = stage.current?.querySelector<HTMLInputElement>('[data-label-entry="true"]');
+        if (input && document.activeElement !== input) {
+          input.focus({ preventScroll: true });
+          input.select();
         }
-        setTool('select');
-        setConnectSource(null);
+        return;
       }
-      const modifier = event.ctrlKey || event.metaKey;
-      if (modifier && event.key.toLowerCase() === 'z') {
-        event.preventDefault();
-        event.shiftKey ? redo() : undo();
-      }
-      if (modifier && event.key.toLowerCase() === 'y') {
-        event.preventDefault();
-        redo();
-      }
-      if (event.key === 'Delete' || event.key === 'Backspace') {
-        event.preventDefault();
-        commit(
-          objects.filter(
-            (o) =>
-              !selected.includes(o.id) &&
-              !selected.includes(o.source ?? '') &&
-              !selected.includes(o.target ?? ''),
-          ),
-        );
-        setSelected([]);
-        setEditing(null);
-      }
-      if (!modifier && !(event.target as HTMLElement).closest('button')) {
-        if (event.key.toLowerCase() === 'v') setTool('select');
-        if (event.key.toLowerCase() === 'b') add('block');
-        if (event.key.toLowerCase() === 't') add('text');
-        if (event.key.toLowerCase() === 'c') {
-          setTool('connect');
-          setConnectSource(null);
-        }
-        if (event.key === 'Enter' && chosen.length === 1) {
-          event.preventDefault();
+      event.preventDefault();
+      switch (action.type) {
+        case 'escape':
+          escapeCanvas();
+          break;
+        case 'edit-label':
           edit(chosen[0].id);
-        }
+          break;
+        case 'delete':
+          deleteSelection();
+          break;
+        case 'undo':
+          undo();
+          break;
+        case 'redo':
+          redo();
+          break;
+        case 'select-all':
+          selectAllObjects();
+          break;
+        case 'copy-style':
+          copyStyle();
+          break;
+        case 'paste-style':
+          pasteStyle();
+          break;
+        case 'emphasis':
+          emphasize(action.property);
+          break;
+        case 'nudge':
+          commit(nudgeObjects(objects, selected, action.dx, action.dy));
+          break;
+        case 'zoom':
+          zoomBy(
+            action.direction === 'reset'
+              ? 1 / view.zoom
+              : action.direction === 'in'
+                ? 1.15
+                : 1 / 1.15,
+          );
+          break;
+        case 'fit':
+          fit(action.target === 'selection' ? chosen : objects, objects);
+          break;
+        case 'pan-start':
+          spaceDown.current = true;
+          setSpaceHeld(true);
+          break;
+        case 'tool':
+          if (action.tool === 'select' || action.tool === 'connect') {
+            setTool(action.tool);
+            setConnectSource(null);
+          } else add(action.tool);
+          break;
       }
     };
+    const releaseSpace = (event?: Event) => {
+      if (event instanceof KeyboardEvent && event.code !== 'Space' && event.key !== ' ') return;
+      spaceDown.current = false;
+      setSpaceHeld(false);
+    };
     window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    window.addEventListener('keyup', releaseSpace);
+    window.addEventListener('blur', releaseSpace);
+    return () => {
+      window.removeEventListener('keydown', handler);
+      window.removeEventListener('keyup', releaseSpace);
+      window.removeEventListener('blur', releaseSpace);
+    };
   });
+  function escapeCanvas() {
+    if (formattingToolbar.current?.dismiss()) return;
+    if (editing) finishEdit(true);
+    else if (tool !== 'select' || drag.current) {
+      const before = drag.current?.before;
+      if (before && drag.current?.moved && drag.current.kind !== 'pan')
+        setHistory((h) => ({ ...h, present: before }));
+      drag.current = null;
+      setPointerActive(false);
+      setPanning(false);
+      setTool('select');
+      setConnectSource(null);
+      focusCanvas();
+    } else {
+      setSelected([]);
+      setDetail(null);
+      focusCanvas();
+    }
+  }
   function exportSnapshot() {
     const snapshot: Snapshot = {
       version: 2,
       objects: editing
-        ? objects.map((o) => (o.id === editing ? { ...o, label: draft.trim() || o.label } : o))
+        ? objects.map((o) => (o.id === editing ? { ...o, label: draft } : o))
         : objects,
       scene,
       behavior,
@@ -535,6 +695,7 @@ export default function App() {
       mergeStrokeControls,
       groupedTextToolbar,
       showMoreActions,
+      showShortcutHints,
       manufacturer,
     };
     const url = URL.createObjectURL(
@@ -564,6 +725,7 @@ export default function App() {
       setMergeStrokeControls(snapshot.mergeStrokeControls ?? true);
       setGroupedTextToolbar(snapshot.groupedTextToolbar ?? true);
       setShowMoreActions(snapshot.showMoreActions ?? false);
+      setShowShortcutHints(snapshot.showShortcutHints ?? false);
       setSelected([]);
       setEditing(null);
       setDetail(null);
@@ -585,6 +747,229 @@ export default function App() {
     w: selectedBounds.w * view.zoom,
     h: selectedBounds.h * view.zoom,
   };
+  const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
+  const mod = isMac ? 'Cmd' : 'Ctrl';
+  const alt = isMac ? 'Option' : 'Alt';
+  const canCopyStyle =
+    chosen.length > 0 &&
+    chosen.every((object) => JSON.stringify(object.style) === JSON.stringify(chosen[0].style));
+  const canFormatLabels = chosen.length > 0 && chosen.every(canEditLabel);
+  const paletteCommands: PaletteCommand[] = [
+    {
+      id: 'select-tool',
+      label: 'Select tool',
+      group: 'Tools',
+      shortcut: 'V',
+      keywords: ['pointer'],
+      run: () => {
+        if (editing) finishEdit();
+        setTool('select');
+        setConnectSource(null);
+        focusCanvas();
+      },
+    },
+    {
+      id: 'add-block',
+      label: 'Add functional block',
+      group: 'Tools',
+      shortcut: 'B',
+      run: () => add('block'),
+    },
+    {
+      id: 'add-text',
+      label: 'Add text',
+      group: 'Tools',
+      shortcut: 'T',
+      run: () => add('text'),
+    },
+    {
+      id: 'connect',
+      label: 'Connect two objects',
+      group: 'Tools',
+      shortcut: 'L',
+      keywords: ['line', 'connection'],
+      run: () => {
+        if (editing) finishEdit();
+        setTool('connect');
+        setConnectSource(null);
+        announce('Select a source, then a destination.');
+        focusCanvas();
+      },
+    },
+    {
+      id: 'add-rectangle',
+      label: 'Add rectangle',
+      group: 'Tools',
+      shortcut: 'R',
+      keywords: ['shape'],
+      run: () => add('rectangle'),
+    },
+    {
+      id: 'add-ellipse',
+      label: 'Add ellipse',
+      group: 'Tools',
+      shortcut: 'O',
+      keywords: ['circle', 'shape'],
+      run: () => add('ellipse'),
+    },
+    {
+      id: 'undo',
+      label: 'Undo',
+      group: 'Edit',
+      shortcut: `${mod}+Z`,
+      disabled: !history.past.length,
+      run: undo,
+    },
+    {
+      id: 'redo',
+      label: 'Redo',
+      group: 'Edit',
+      shortcut: `${mod}+Shift+Z`,
+      disabled: !history.future.length,
+      run: redo,
+    },
+    {
+      id: 'select-all',
+      label: 'Select all objects',
+      group: 'Edit',
+      shortcut: `${mod}+A`,
+      run: selectAllObjects,
+    },
+    {
+      id: 'delete-selection',
+      label: 'Delete selection',
+      group: 'Edit',
+      shortcut: 'Backspace',
+      disabled: !selected.length,
+      run: deleteSelection,
+    },
+    {
+      id: 'bold',
+      label: 'Toggle bold',
+      group: 'Format',
+      shortcut: `${mod}+B`,
+      disabled: !canFormatLabels,
+      run: () => emphasize('bold'),
+    },
+    {
+      id: 'italic',
+      label: 'Toggle italic',
+      group: 'Format',
+      shortcut: `${mod}+I`,
+      disabled: !canFormatLabels,
+      run: () => emphasize('italic'),
+    },
+    {
+      id: 'underline',
+      label: 'Toggle underline',
+      group: 'Format',
+      shortcut: `${mod}+U`,
+      disabled: !canFormatLabels,
+      run: () => emphasize('underline'),
+    },
+    {
+      id: 'copy-style',
+      label: 'Copy style',
+      group: 'Format',
+      shortcut: `${mod}+${alt}+C`,
+      disabled: !canCopyStyle,
+      run: copyStyle,
+    },
+    {
+      id: 'paste-style',
+      label: 'Paste style',
+      group: 'Format',
+      shortcut: `${mod}+${alt}+V`,
+      disabled: !styleClipboard || !chosen.length,
+      run: pasteStyle,
+    },
+    {
+      id: 'zoom-in',
+      label: 'Zoom in',
+      group: 'View',
+      shortcut: `${mod}+=`,
+      run: () => zoomBy(1.15),
+    },
+    {
+      id: 'zoom-out',
+      label: 'Zoom out',
+      group: 'View',
+      shortcut: `${mod}+-`,
+      run: () => zoomBy(1 / 1.15),
+    },
+    {
+      id: 'actual-size',
+      label: 'Reset zoom to 100%',
+      group: 'View',
+      shortcut: `${mod}+0`,
+      keywords: ['actual size'],
+      run: () => zoomBy(1 / view.zoom),
+    },
+    {
+      id: 'fit-diagram',
+      label: 'Fit diagram',
+      group: 'View',
+      shortcut: `${alt}+1`,
+      run: () => fit(),
+    },
+    {
+      id: 'fit-selection',
+      label: 'Fit selection',
+      group: 'View',
+      shortcut: `${alt}+2`,
+      disabled: !chosen.length,
+      run: () => fit(chosen, objects),
+    },
+    {
+      id: 'toggle-grid',
+      label: grid ? 'Hide grid' : 'Show grid',
+      group: 'View',
+      keywords: ['toggle grid'],
+      run: () => setGrid((current) => !current),
+    },
+    {
+      id: 'toggle-shortcut-hints',
+      label: showShortcutHints ? 'Hide toolbar shortcut hints' : 'Show toolbar shortcut hints',
+      group: 'View',
+      keywords: ['keys', 'badges'],
+      run: () => setShowShortcutHints((current) => !current),
+    },
+    {
+      id: 'toggle-lab',
+      label: labOpen ? 'Close Interaction lab' : 'Open Interaction lab',
+      group: 'App',
+      keywords: ['experiment panel'],
+      run: () => setLabOpen((current) => !current),
+    },
+    {
+      id: 'keyboard-shortcuts',
+      label: 'Keyboard shortcuts',
+      group: 'App',
+      keywords: ['help', 'keys'],
+      run: () => setShowShortcuts(true),
+    },
+    {
+      id: 'whats-new',
+      label: "What's new",
+      group: 'App',
+      keywords: ['release notes', 'version'],
+      run: openWhatsNew,
+    },
+    {
+      id: 'open-experiment',
+      label: 'Open experiment',
+      group: 'App',
+      keywords: ['load', 'import', 'json'],
+      run: () => fileInput.current?.click(),
+    },
+    {
+      id: 'save-experiment',
+      label: 'Save experiment',
+      group: 'App',
+      keywords: ['export', 'json'],
+      run: exportSnapshot,
+    },
+  ];
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -609,13 +994,29 @@ export default function App() {
           <span className="version-link-label">What&apos;s new</span>
         </button>
         <div className="header-actions">
+          <button
+            className="icon-button"
+            aria-label="Command palette"
+            title={`Command palette · ${mod}+/`}
+            onClick={() => setShowCommandPalette(true)}
+          >
+            <Search size={18} />
+          </button>
+          <button
+            className="icon-button"
+            aria-label="Keyboard shortcuts"
+            title="Keyboard shortcuts"
+            onClick={() => setShowShortcuts(true)}
+          >
+            <Keyboard size={18} />
+          </button>
           <span className="save-status">
             {saved ? 'Saved in this browser' : 'Browser storage unavailable'}
           </span>
           <button
             className="icon-button"
             aria-label="Undo"
-            title="Undo · Ctrl+Z"
+            title={`Undo · ${mod}+Z`}
             disabled={!history.past.length}
             onClick={undo}
           >
@@ -624,7 +1025,7 @@ export default function App() {
           <button
             className="icon-button"
             aria-label="Redo"
-            title="Redo · Ctrl+Shift+Z"
+            title={`Redo · ${mod}+Shift+Z`}
             disabled={!history.future.length}
             onClick={redo}
           >
@@ -671,16 +1072,22 @@ export default function App() {
         />
       </header>
       {showWhatsNew && <WhatsNew onBack={closeWhatsNew} />}
+      {showShortcuts && <KeyboardShortcuts onClose={() => setShowShortcuts(false)} />}
+      {showCommandPalette && (
+        <CommandPalette commands={paletteCommands} onClose={() => setShowCommandPalette(false)} />
+      )}
       <main ref={stage} className="stage" hidden={showWhatsNew}>
         <DiagramCanvas
           objects={objects}
           selected={selected}
           editing={editing}
-          draft={draft}
           setDraft={setDraft}
+          startTyping={edit}
+          emphasize={emphasize}
+          textEntryEnabled={tool === 'select' && !pointerActive && !spaceHeld}
           view={view}
           grid={grid}
-          panning={panning}
+          panning={panning || spaceHeld}
           select={select}
           edit={edit}
           finishEdit={finishEdit}
@@ -700,9 +1107,18 @@ export default function App() {
             className={`tool-button ${tool === 'select' ? 'active' : ''}`}
             title="Select · V"
             aria-label="Select tool"
-            onClick={() => setTool('select')}
+            onClick={() => {
+              setTool('select');
+              setConnectSource(null);
+              focusCanvas();
+            }}
           >
             <MousePointer2 size={20} />
+            {showShortcutHints && (
+              <span className="tool-shortcut" aria-hidden="true">
+                V
+              </span>
+            )}
           </button>
           <button
             className="tool-button"
@@ -711,10 +1127,15 @@ export default function App() {
             onClick={() => add('block')}
           >
             <Box size={20} />
+            {showShortcutHints && (
+              <span className="tool-shortcut" aria-hidden="true">
+                B
+              </span>
+            )}
           </button>
           <button
             className={`tool-button ${tool === 'connect' ? 'active' : ''}`}
-            title="Connect two objects · C"
+            title="Connect two objects · L (nothing selected)"
             aria-label="Connect objects"
             onClick={() => {
               setTool('connect');
@@ -724,6 +1145,11 @@ export default function App() {
             }}
           >
             <Waypoints size={20} />
+            {showShortcutHints && (
+              <span className="tool-shortcut" aria-hidden="true">
+                L
+              </span>
+            )}
           </button>
           <button
             className="tool-button"
@@ -741,26 +1167,43 @@ export default function App() {
             onClick={() => add('text')}
           >
             <Type size={20} />
+            {showShortcutHints && (
+              <span className="tool-shortcut" aria-hidden="true">
+                T
+              </span>
+            )}
           </button>
           <button
             className="tool-button"
-            title="Add rectangle"
+            title="Add rectangle · R (nothing selected)"
             aria-label="Add rectangle"
             onClick={() => add('rectangle')}
           >
             <Square size={20} />
+            {showShortcutHints && (
+              <span className="tool-shortcut" aria-hidden="true">
+                R
+              </span>
+            )}
           </button>
           <button
             className="tool-button"
-            title="Add ellipse"
+            title="Add ellipse · O (nothing selected)"
             aria-label="Add ellipse"
             onClick={() => add('ellipse')}
           >
             <Circle size={20} />
+            {showShortcutHints && (
+              <span className="tool-shortcut" aria-hidden="true">
+                O
+              </span>
+            )}
           </button>
         </nav>
         {chosen.length > 0 && (
           <FormattingToolbar
+            ref={formattingToolbar}
+            onEscape={escapeCanvas}
             key={chosen.map((o) => o.id).join(',')}
             objects={chosen}
             editing={Boolean(editing)}
@@ -790,16 +1233,8 @@ export default function App() {
               setStyleDefaults((current) => ({ ...current, [first.kind]: { ...first.style } }));
               announce(`Default ${kinds[first.kind].toLowerCase()} style set for this session.`);
             }}
-            copyStyle={() => {
-              if (!chosen[0]) return;
-              setStyleClipboard({ ...chosen[0].style });
-              announce('Style copied.');
-            }}
-            pasteStyle={() => {
-              if (!styleClipboard) return;
-              patch(styleClipboard);
-              announce('Style pasted.');
-            }}
+            copyStyle={copyStyle}
+            pasteStyle={pasteStyle}
             canPasteStyle={Boolean(styleClipboard)}
           />
         )}
@@ -851,7 +1286,6 @@ export default function App() {
                 <select
                   id="manufacturer-style"
                   value={manufacturer}
-                  aria-describedby="manufacturer-style-note"
                   onChange={(e) => changeManufacturer(e.target.value as ManufacturerStyle)}
                 >
                   {Object.entries(manufacturerStyles).map(([id, palette]) => (
@@ -875,9 +1309,6 @@ export default function App() {
                   <i key={color} style={{ backgroundColor: color }} />
                 ))}
               </div>
-              <p id="manufacturer-style-note" className="manufacturer-note">
-                Applies to all objects. Individual colors remain editable.
-              </p>
             </div>
             <div className="experiment-section">
               <div className="eyebrow">PANEL BEHAVIOR</div>
@@ -982,6 +1413,18 @@ export default function App() {
                 />
                 <span className="switch" />
               </label>
+              <label className="switch-row">
+                <span>
+                  Show toolbar shortcuts<span className="field-note">Tool key hints</span>
+                </span>
+                <input
+                  type="checkbox"
+                  aria-label="Show toolbar shortcut hints"
+                  checked={showShortcutHints}
+                  onChange={(event) => setShowShortcutHints(event.target.checked)}
+                />
+                <span className="switch" />
+              </label>
             </div>
             <div className="experiment-section reset-section">
               <button
@@ -1001,14 +1444,14 @@ export default function App() {
           <button
             className="icon-button"
             aria-label="Zoom out"
-            title="Zoom out"
+            title={`Zoom out · ${mod}+-`}
             onClick={() => zoomBy(0.85)}
           >
             <Minus size={16} />
           </button>
           <button
             className="zoom-value"
-            title="Reset zoom to 100%"
+            title={`Reset zoom to 100% · ${mod}+0`}
             onClick={() => zoomBy(1 / view.zoom)}
           >
             {Math.round(view.zoom * 100)}%
@@ -1016,7 +1459,7 @@ export default function App() {
           <button
             className="icon-button"
             aria-label="Zoom in"
-            title="Zoom in"
+            title={`Zoom in · ${mod}+=`}
             onClick={() => zoomBy(1.15)}
           >
             <Plus size={16} />
@@ -1024,7 +1467,7 @@ export default function App() {
           <span className="divider" />
           <button
             className="icon-button"
-            title="Fit diagram"
+            title={`Fit diagram · ${alt}+1`}
             aria-label="Fit diagram"
             onClick={() => fit()}
           >
@@ -1049,7 +1492,11 @@ export default function App() {
                 : 'Select the source'
               : editing
                 ? 'Enter to finish · Escape to cancel label'
-                : 'Drag to move · Right-drag to pan · Wheel to zoom · Double-click to edit · Shift-click to select multiple'}
+                : chosen.length === 1 && canEditLabel(chosen[0])
+                  ? 'Type to replace label · Enter or F2 to edit · Shift-click to select multiple'
+                  : chosen.length
+                    ? 'Arrow keys to move · Shift-click to change selection · Escape to deselect'
+                    : 'B block · T text · L connection · R rectangle · O ellipse · Space-drag to pan'}
           </span>
         </div>
         {notice && (

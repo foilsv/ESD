@@ -341,10 +341,24 @@ button[aria-pressed='true']:not(.swatch):not(.color-swatch) {
   flex-shrink: 0;
 }
 .tool-button {
+  position: relative;
   height: 37px;
   width: 36px;
   border-radius: 6px;
   color: #5b687b;
+}
+.tool-shortcut {
+  position: absolute;
+  right: 3px;
+  bottom: 2px;
+  color: #8b96a6;
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1;
+  pointer-events: none;
+}
+.tool-button.active .tool-shortcut {
+  color: #547fca;
 }
 .horizontal-divider {
   height: 1px;
@@ -751,12 +765,6 @@ button[aria-pressed='true']:not(.swatch):not(.color-swatch) {
   height: 9px;
   border: 1px solid var(--border);
   border-radius: 3px;
-}
-.manufacturer-note {
-  margin: 7px 0 0;
-  font-size: 10px;
-  line-height: 1.5;
-  color: var(--muted);
 }
 .behavior-options {
   display: grid;
@@ -1384,6 +1392,11 @@ button[aria-pressed='true']:not(.swatch):not(.color-swatch) {
   border-radius: 5px;
   color: #445268;
   font-size: 12px;
+}
+.menu-shortcut {
+  margin-left: auto;
+  color: #8a95a5;
+  font-size: 9px;
 }
 .more-actions-menu > button:disabled {
   background: transparent;

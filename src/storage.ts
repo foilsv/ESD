@@ -13,6 +13,7 @@ export interface Snapshot {
   mergeStrokeControls?: boolean;
   groupedTextToolbar?: boolean;
   showMoreActions?: boolean;
+  showShortcutHints?: boolean;
   manufacturer?: ManufacturerStyle;
 }
 export function validSnapshot(input: unknown): input is Snapshot {
@@ -27,6 +28,7 @@ export function validSnapshot(input: unknown): input is Snapshot {
     (data.mergeStrokeControls === undefined || typeof data.mergeStrokeControls === 'boolean') &&
     (data.groupedTextToolbar === undefined || typeof data.groupedTextToolbar === 'boolean') &&
     (data.showMoreActions === undefined || typeof data.showMoreActions === 'boolean') &&
+    (data.showShortcutHints === undefined || typeof data.showShortcutHints === 'boolean') &&
     (data.manufacturer === undefined ||
       (typeof data.manufacturer === 'string' &&
         Object.hasOwn(manufacturerStyles, data.manufacturer))) &&
@@ -97,6 +99,7 @@ export function parseSnapshot(input: unknown): Snapshot | null {
     mergeStrokeControls: data.mergeStrokeControls === undefined ? true : data.mergeStrokeControls,
     groupedTextToolbar: data.groupedTextToolbar === undefined ? true : data.groupedTextToolbar,
     showMoreActions: data.showMoreActions === undefined ? false : data.showMoreActions,
+    showShortcutHints: data.showShortcutHints === undefined ? false : data.showShortcutHints,
     behavior:
       typeof data.behavior === 'string'
         ? (legacyNames[data.behavior] ?? data.behavior)

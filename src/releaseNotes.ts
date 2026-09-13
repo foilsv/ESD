@@ -11,19 +11,24 @@ export type ReleaseNote = {
 export const releaseNotes: ReleaseNote[] = [
   {
     version: '6',
-    title: 'More direct Grouped text editing',
+    title: 'Label editing and keyboard controls',
     summary:
-      'Grouped label editing and text objects can now use the same compact, one-line text toolbar as Flat while preserving Grouped popovers for manual formatting.',
+      'This iteration compares a one-line Grouped text toolbar and adds a shared keyboard scheme that separates typing labels from choosing canvas tools.',
     changes: [
       {
-        title: 'One-line label tools',
+        title: 'Compare one-line Grouped text tools',
         description:
-          'Entering label editing or selecting a text object in Grouped reveals font, size, emphasis, color, and alignment together without opening the larger Text popover.',
+          'Grouped label editing and selected text objects show the Flat-style text row by default. A saved Lab switch restores the original automatic Text popover for comparison; manual Text formatting keeps its Grouped popover.',
       },
       {
-        title: 'A focused comparison switch',
+        title: 'Type on the selection',
         description:
-          'Use the default-on Interaction Lab option to compare the one-line editing row with the original Grouped popover; the choice saves with experiments.',
+          'Typing on one selected object replaces its label and reveals text tools; Enter or F2 edits the existing text. Tool letters require an empty selection, so labels can include the same letters without changing tools.',
+      },
+      {
+        title: 'Shared keyboard commands',
+        description:
+          'All solutions share selection, history, nudge, pan, zoom, emphasis, and style-copy commands. Tooltips, optional toolbar key hints, a shortcut reference, and a searchable command palette expose the same actions and their scope.',
       },
       {
         title: 'Scenes visible at a glance',

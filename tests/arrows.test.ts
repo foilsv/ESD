@@ -31,8 +31,10 @@ test('rendering separates the trimmed visible shaft from the unpainted arrow car
       objects,
       selected: [],
       editing: null,
-      draft: '',
       setDraft() {},
+      textEntryEnabled: true,
+      startTyping() {},
+      emphasize() {},
       view: { x: 0, y: 0, zoom: 1 },
       grid: false,
       panning: false,
@@ -69,6 +71,46 @@ test('rendering separates the trimmed visible shaft from the unpainted arrow car
         s.includes('stroke="none"') &&
         s.includes(`d="${geometry.fullPath}"`),
     ),
+  );
+});
+
+test('empty editable labels keep a native entry input, while noneditable and mixed selections do not', () => {
+  const emptyLabel = { ...createScene('system').find((object) => object.id === 'mcu')!, label: '' };
+  const line: DiagramObject = { ...emptyLabel, id: 'line', kind: 'line' };
+  const render = (objects: DiagramObject[], selected: string[], editing: string | null = null) =>
+    renderToStaticMarkup(
+      createElement(DiagramCanvas, {
+        objects,
+        selected,
+        editing,
+        setDraft() {},
+        textEntryEnabled: true,
+        startTyping() {},
+        emphasize() {},
+        view: { x: 0, y: 0, zoom: 1 },
+        grid: false,
+        panning: false,
+        select() {},
+        edit() {},
+        finishEdit() {},
+        startObject() {},
+        startCanvas() {},
+        zoomWheel() {},
+        move() {},
+        end() {},
+      }),
+    );
+  const dormant = render([emptyLabel], [emptyLabel.id]);
+  assert.match(dormant, /aria-label="Edit object label"/);
+  assert.match(dormant, /data-label-entry="true"/);
+  assert.match(dormant, /value=""/);
+  const editing = render([emptyLabel], [emptyLabel.id], emptyLabel.id);
+  assert.match(editing, /data-label-editing="true"/);
+  assert.doesNotMatch(editing, /data-label-entry="true"/);
+  assert.doesNotMatch(render([line], [line.id]), /aria-label="Edit object label"/);
+  assert.doesNotMatch(
+    render([emptyLabel, line], [emptyLabel.id, line.id]),
+    /aria-label="Edit object label"/,
   );
 });
 

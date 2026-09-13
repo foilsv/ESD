@@ -1,4 +1,12 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  useImperativeHandle,
+  type Ref,
+  type ReactNode,
+} from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -66,7 +74,12 @@ function BidirectionalArrow({ size = 18 }: { size?: number }) {
   );
 }
 
+export interface FormattingToolbarHandle {
+  dismiss: () => boolean;
+}
 interface Props {
+  ref?: Ref<FormattingToolbarHandle>;
+  onEscape: () => void;
   objects: DiagramObject[];
   editing: boolean;
   behavior: PanelBehavior;
@@ -89,6 +102,9 @@ interface Props {
 }
 export default function FormattingToolbar(props: Props) {
   const { objects, editing, behavior, detail, setDetail, patch, selection, viewport } = props;
+  const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
+  const styleCopyShortcut = `${isMac ? 'Cmd' : 'Ctrl'}+${isMac ? 'Option' : 'Alt'}+C`;
+  const stylePasteShortcut = `${isMac ? 'Cmd' : 'Ctrl'}+${isMac ? 'Option' : 'Alt'}+V`;
   const context = toolbarContext(objects);
   const strokeColorIsMerged =
     (props.mergeStrokeControls ?? true) &&
@@ -607,7 +623,11 @@ export default function FormattingToolbar(props: Props) {
       <button
         role="menuitem"
         disabled={!uniformStyle}
-        title={uniformStyle ? 'Copy the selected formatting' : 'Select objects with the same style'}
+        title={
+          uniformStyle
+            ? `Copy the selected formatting · ${styleCopyShortcut}`
+            : 'Select objects with the same style'
+        }
         onClick={() => {
           props.copyStyle();
           closeMore();
@@ -615,11 +635,18 @@ export default function FormattingToolbar(props: Props) {
       >
         <Copy size={16} />
         Copy style
+        <span className="menu-shortcut" aria-hidden="true">
+          {styleCopyShortcut}
+        </span>
       </button>
       <button
         role="menuitem"
         disabled={!props.canPasteStyle}
-        title={props.canPasteStyle ? 'Apply the copied formatting' : 'Copy a style first'}
+        title={
+          props.canPasteStyle
+            ? `Apply the copied formatting · ${stylePasteShortcut}`
+            : 'Copy a style first'
+        }
         onClick={() => {
           props.pasteStyle();
           closeMore();
@@ -627,6 +654,9 @@ export default function FormattingToolbar(props: Props) {
       >
         <ClipboardPaste size={16} />
         Paste style
+        <span className="menu-shortcut" aria-hidden="true">
+          {stylePasteShortcut}
+        </span>
       </button>
     </div>
   );
@@ -651,6 +681,22 @@ export default function FormattingToolbar(props: Props) {
                 : 'Stroke';
   const popover =
     moreOpen || fontOpen || sizeOpen || color || (visibleDetail && behavior === 'grouped');
+  const dismiss = () => {
+    if (fontOpen) closeFont();
+    else if (moreOpen) closeMore();
+    else if (sizeOpen || color || (visibleDetail && behavior === 'grouped')) {
+      setSizeOpen(false);
+      setColor(null);
+      if (visibleDetail && behavior === 'grouped') setDetail(null);
+      toolbar.current
+        ?.querySelector<HTMLButtonElement>(`[data-popover-trigger="${activeTrigger}"]`)
+        ?.focus({ preventScroll: true });
+    } else if (!editing && (visibleDetail || flatText || groupedTextObjectMode)) {
+      returnToObject();
+    } else return false;
+    return true;
+  };
+  useImperativeHandle(props.ref, () => ({ dismiss }));
   return (
     <div
       ref={root}
@@ -665,16 +711,21 @@ export default function FormattingToolbar(props: Props) {
         maxWidth: viewport.w,
         visibility: placement ? undefined : 'hidden',
       }}
-      onPointerDown={(e) => e.stopPropagation()}
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        // Pointer formatting keeps the native label selection and caret intact.
+        if (
+          editing &&
+          (e.target as Element).closest('button') &&
+          document.activeElement?.matches('[data-label-editing="true"]')
+        )
+          e.preventDefault();
+      }}
       onKeyDown={(e) => {
         if (e.key !== 'Escape') return;
+        e.preventDefault();
         e.stopPropagation();
-        if (fontOpen) closeFont();
-        else if (moreOpen) closeMore();
-        else if (sizeOpen) setSizeOpen(false);
-        else if (color) setColor(null);
-        else if (visibleDetail) setDetail(null);
-        else if (textMode && (!context.textOnly || groupedFlatTextMode)) returnToObject();
+        props.onEscape();
       }}
     >
       <div

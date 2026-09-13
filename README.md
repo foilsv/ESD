@@ -24,19 +24,21 @@ npm test        # Formatting, geometry, and snapshot checks
 
 ## Try
 
-- Select a block, open Fill color, and choose a swatch. Double-click its label (or press Enter) to reveal text controls. Enter finishes label editing; Escape cancels the label draft.
+- Select a block, open Fill color, and choose a swatch. With the canvas focused, start typing to replace its label immediately, or press Enter/F2 to edit the existing text at its end. Double-click also edits labels. Text controls appear automatically; Enter finishes editing and Escape cancels the label draft after closing any open popup.
 - Choose **Manufacturer style** in the Interaction lab: STM, Infineon, Renesas, NXP, or TI. The screenshot-inspired palette recolors the entire diagram and new objects; individual colors remain editable. **Original colors** restores the colors from before the first manufacturer switch. Palette changes support undo/redo and save with the experiment.
 - Switch **Flat / Grouped / Inline** in the Interaction lab. These implement the three [document-defined solutions](docs/solutions.md): dedicated Stroke/Text/Alignment sub-toolbars with Back, stable compound controls with grouped popovers, and actual expansion within one toolbar row.
 - Toggle **Use one-line text toolbar** to compare Grouped label editing and selected text objects in the Flat-style text row with the original automatic Text popover. It defaults on; Back reveals a text object's whole-object row, where manually opening Text still uses the Grouped popover.
 - Toggle **Merge stroke color and style** to compare combined and independent controls. It defaults on for Flat and Inline; Grouped keeps color separate.
 - Toggle **Show more actions** to add an overflow menu at the end of every formatting row. It defaults off; when shown, the menu holds Set default style, Copy style, and Paste style.
+- Toggle **Show toolbar shortcuts** to place small V/B/L/T/R/O key hints on the canvas tool buttons. It defaults off and saves with the experiment.
 - Open Stroke to compare patterns and Small / Medium / Large / Extra large widths (1 / 2 / 4 / 8 px).
 - Select a connection and open its arrow-style group to choose None, Left, Right, or Both, or use the separate cycle button to iterate None → Left → Right → Both. The group icon shows the current state; the cycle button tooltip names the next state. Left and right refer to the source and target ends of the drawn path, even when moved around the canvas.
 - Shift-click objects to apply shared formatting together. Different values appear as Mixed.
-- Drag objects, resize from the bottom-right handle, right-drag to pan, use the mouse wheel or zoom controls, and try the dense and edge scenes.
+- Drag objects, resize from the bottom-right handle, use arrows to nudge (Shift for larger steps), and Space+drag or right-drag to pan. Use the mouse wheel, zoom controls, or Ctrl/Cmd+plus/minus/0; Alt/Option+1 fits the diagram and Alt/Option+2 fits the selection. Try the dense and edge scenes.
 - In the edge scenes, open and switch Grouped popovers: the toolbar stays fixed, while a popover can flip toward the selection when it lacks space to open away from it.
 - Switch to **Object families** to test block, hardware, software, port, connection, simple line, rectangle, ellipse, text, and symbol contexts.
-- B adds a block, T adds text, C connects two objects, and V selects. Delete removes the selection; Ctrl/Cmd+Z undoes; Ctrl/Cmd+Shift+Z redoes.
+- With canvas focus and nothing selected, B adds a block, T adds text, L connects objects, R adds a rectangle, O adds an ellipse, and V selects. Selected-object typing takes priority over these letters. Delete/Backspace removes the selection; Ctrl/Cmd+A selects all; Ctrl/Cmd+Z undoes; Ctrl/Cmd+Shift+Z redoes (Ctrl+Y also works on Windows).
+- Ctrl/Cmd+B/I/U changes whole-label emphasis, including while editing. Ctrl/Cmd+Alt/Option+C/V copies/pastes style using the existing shared-capability rules. Press Ctrl/Cmd+/ or use the header search button to open the searchable command palette from anywhere in the lab. Open **Keyboard shortcuts** in the header for the complete [shortcut scheme](docs/shortcuts-proposal.md). Focused fields, menus, buttons, and dialogs keep their normal keys except for the app-wide palette chord.
 - Changes and Lab display preferences save in this browser. **Save experiment** exports JSON; **Open** restores it. Reset scene is undoable. Changing a scene replaces the current sample; export to keep several experiments. Copied and default styles last for the current session.
 - Earlier experiments migrate automatically: Replace → Flat, Stack → Grouped, Expand → Inline. Object styling is preserved. New exports use snapshot version 2.
 
@@ -60,6 +62,8 @@ There is no server, account, production ESD connection, or runtime access to Goo
 | `src/fixtures.ts`            | Adding realistic scenarios or object examples                               |
 | `src/DiagramCanvas.tsx`      | Changing rendering, labels, and selection affordances                       |
 | `src/App.tsx`                | Changing selection, interaction state, history, and experiment controls     |
+| `src/KeyboardShortcuts.tsx`  | Updating the visible keyboard shortcut reference                            |
+| `src/CommandPalette.tsx`     | Updating searchable access to app, canvas, and formatting commands          |
 | `src/manufacturerStyles.ts`  | Changing screenshot-inspired manufacturer palettes and color application    |
 | `src/storage.ts`             | Changing snapshot validation and local persistence                          |
 | `src/releaseNotes.ts`        | Grouping user-visible changes for the next deployment and version history   |

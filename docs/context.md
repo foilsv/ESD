@@ -52,6 +52,14 @@ The table above captures capability families from the initial discussions; the c
 - Stickiness across compatible selections is an optional experiment, enabled initially.
 - The live document lists Courier New for Mono; an earlier chat suggested IBM Plex Mono. This prototype follows Courier New.
 
+## Keyboard shortcuts — 2026-09-13
+
+The user approved the [shortcut scheme](shortcuts-proposal.md) for implementation. With the canvas focused and one label-capable object selected, typing replaces its label immediately, including the first character; Enter or F2 preserves the label and places the caret at its end. This reveals the active solution's text tools. Empty drafts are allowed. Enter commits and Escape cancels, after dismissing the innermost popup first.
+
+Bare V/B/T/L/R/O tool letters require an empty selection. Multiple selections and objects without editable labels ignore typing; focused controls retain their normal keyboard behavior. Canvas commands include standard history and selection keys, arrow nudging, Space+drag panning, modifier-based zoom/fit, whole-label B/I/U formatting, and the existing style clipboard. The header shortcut reference explains scope and platform-specific keys. Tooltips include available shortcuts, and a saved Lab modifier can add small tool-letter hints to the creation toolbar; it defaults off.
+
+Ctrl/Cmd+/ opens a searchable command palette from anywhere in the lab, including while a control or label field has focus. The palette groups the existing tool, edit, format, view, and app actions; unavailable selection-dependent actions remain visible but disabled. Arrow keys move through available results, Enter runs the active command, and Escape closes the palette. Keep text editing, text formatting, and canvas commands distinct; object clipboard operations remain deferred.
+
 ## Technical decision
 
 Local React + TypeScript + Vite, SVG rendering, plain CSS and HTML controls. This is a small code project meant for agent-assisted iteration, not a hosted website deliverable. Keep it independent of ESD production and private Drive data. Browser storage is versioned; JSON export captures reproducible experiments. Reconsider a diagram engine only when experiments actually require richer routing/geometry.

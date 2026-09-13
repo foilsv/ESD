@@ -19,6 +19,7 @@ test('older experiments keep popover headers visible', () => {
     assert.equal(restored.mergeStrokeControls, true);
     assert.equal(restored.groupedTextToolbar, true);
     assert.equal(restored.showMoreActions, false);
+    assert.equal(restored.showShortcutHints, false);
     assert.deepEqual(restored.objects, snapshot.objects);
   }
 });
@@ -42,6 +43,17 @@ test('more-actions preference defaults off, survives round trips, and rejects in
   }
   for (const showMoreActions of [null, 'true', 1, {}]) {
     assert.equal(parseSnapshot({ ...snapshot, showMoreActions }), null);
+  }
+});
+
+test('toolbar shortcut hints default off, survive round trips, and reject invalid values', () => {
+  for (const showShortcutHints of [false, true]) {
+    const restored = parseSnapshot(JSON.parse(JSON.stringify({ ...snapshot, showShortcutHints })));
+    assert.ok(restored);
+    assert.equal(restored.showShortcutHints, showShortcutHints);
+  }
+  for (const showShortcutHints of [null, 'true', 1, {}]) {
+    assert.equal(parseSnapshot({ ...snapshot, showShortcutHints }), null);
   }
 });
 

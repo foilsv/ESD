@@ -1,0 +1,131 @@
+.shortcut-dialog {
+  width: min(780px, calc(100vw - 32px));
+  max-height: calc(100dvh - 40px);
+  padding: 0;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow:
+    var(--shadow),
+    0 20px 70px #16243a24;
+  overflow: hidden;
+}
+.shortcut-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+.shortcut-dialog::backdrop {
+  background: #16243a55;
+}
+.shortcut-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.shortcut-header > svg {
+  color: var(--accent);
+}
+.shortcut-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+.shortcut-header button {
+  margin-left: auto;
+}
+.shortcut-scroll {
+  min-height: 0;
+  padding: 20px 22px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.shortcut-scroll:focus-visible {
+  outline-offset: -3px;
+}
+.shortcut-rule {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0 0 22px;
+  padding: 13px 15px;
+  border-radius: 7px;
+  background: var(--accent-light);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.shortcut-rule strong {
+  font-size: 13px;
+}
+.shortcut-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px 32px;
+}
+.shortcut-section h3 {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.shortcut-section dl {
+  margin: 0;
+}
+.shortcut-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.shortcut-row dd {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+  margin: 0;
+  text-align: right;
+}
+.shortcut-row dd > span {
+  white-space: nowrap;
+}
+.shortcut-row kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #f7f8fa;
+  font: inherit;
+  font-size: 10px;
+}
+.shortcut-or {
+  margin-right: 4px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.shortcut-notes {
+  display: grid;
+  gap: 8px;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.shortcut-notes p {
+  margin: 0;
+}
+@media (max-width: 650px) {
+  .shortcut-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .shortcut-scroll {
+    padding: 16px;
+  }
+}
