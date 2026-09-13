@@ -301,15 +301,22 @@ test('Inline keeps Text and Stroke in-row while alignment uses a popover by defa
   assert.match(directAlignment, /aria-label="Vertical alignment"/);
   assert.doesNotMatch(directAlignment, /data-testid="formatting-popover"/);
 });
-test('sticky groups transfer only to compatible selections, and switching off closes them', () => {
+test('only compatible non-popover groups stay open across selections', () => {
   const port = objects.find((o) => o.kind === 'port')!;
   const line = objects.find((o) => o.kind === 'connection')!;
   assert.equal(compatibleDetail('stroke', [mcu, line], 'inline', true), 'stroke');
   assert.equal(compatibleDetail('stroke', [port], 'inline', true), null);
-  assert.equal(compatibleDetail('text', [mcu, port], 'grouped', true), 'text');
+  assert.equal(compatibleDetail('text', [mcu, port], 'inline', true), 'text');
+  assert.equal(compatibleDetail('text', [mcu, port], 'grouped', true), null);
+  assert.equal(compatibleDetail('stroke', [mcu], 'grouped', true), null);
   assert.equal(compatibleDetail('alignment', [mcu, port], 'grouped', true), null);
   assert.equal(compatibleDetail('text', [mcu], 'grouped', false), null);
+  assert.equal(compatibleDetail('alignment', [mcu], 'flat', true), null);
+  assert.equal(compatibleDetail('alignment', [mcu], 'flat', true, false), 'alignment');
+  assert.equal(compatibleDetail('alignment', [mcu], 'inline', true), null);
+  assert.equal(compatibleDetail('alignment', [mcu], 'inline', true, false), 'alignment');
   assert.equal(compatibleDetail('arrows', [line], 'inline', true), 'arrows');
+  assert.equal(compatibleDetail('arrows', [line], 'flat', true), 'arrows');
   assert.equal(compatibleDetail('arrows', [mcu, line], 'inline', true), null);
   assert.equal(compatibleDetail('arrows', [line], 'grouped', false), null);
 });

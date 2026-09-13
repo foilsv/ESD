@@ -257,7 +257,7 @@ export default function App() {
     setDetail(
       toolbarContext(next).textOnly
         ? detailOnTextEntry(behavior)
-        : compatibleDetail(detail, next, behavior, sticky),
+        : compatibleDetail(detail, next, behavior, sticky, compactTextAlignment),
     );
     setSelected(nextIds);
   }
@@ -1417,14 +1417,19 @@ export default function App() {
                 />
                 <span className="switch" />
               </label>
-              <label className="switch-row">
+              <label className={`switch-row ${behavior === 'grouped' ? 'disabled' : ''}`}>
                 <span>
                   Keep details open
-                  <span className="field-note">Across compatible selections</span>
+                  <span className="field-note">
+                    {behavior === 'grouped'
+                      ? 'Unavailable for popovers'
+                      : 'Non-popover groups across selections'}
+                  </span>
                 </span>
                 <input
                   type="checkbox"
-                  checked={sticky}
+                  checked={behavior !== 'grouped' && sticky}
+                  disabled={behavior === 'grouped'}
                   onChange={(e) => setSticky(e.target.checked)}
                 />
                 <span className="switch" />

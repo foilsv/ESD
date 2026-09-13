@@ -1,4 +1,4 @@
-[ ] "Keep details open" does not seem have sense for the popovers, because of their size and space. Let's disable this mode for popovers (it would mean no keep details open for Grouped behavior, because all of it's controls are popovers). 
+[x] "Keep details open" does not seem have sense for the popovers, because of their size and space. Let's disable this mode for popovers (it would mean no keep details open for Grouped behavior, because all of it's controls are popovers).
 [ ] 
 [ ] 
 [ ] 

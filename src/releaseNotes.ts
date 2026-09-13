@@ -18,7 +18,7 @@ export const releaseNotes: ReleaseNote[] = [
       {
         title: 'Compare compact and direct text controls',
         description:
-          'Flat, Inline, and Grouped’s one-line text row use the 3×3 Alignment popover by default, while saved Lab switches can restore six direct axis controls or replace the size dropdown with large − / value / + controls. Single-action popovers close after a choice; compound Text and Stroke popovers remain open.',
+          'Flat, Inline, and Grouped’s one-line text row use the 3×3 Alignment popover by default, while saved Lab switches can restore six direct axis controls or replace the size dropdown with large − / value / + controls. Popovers close on selection changes; only persistent Flat sub-toolbars and Inline expansions can stay open across compatible selections.',
       },
       {
         title: 'Type on the selection',

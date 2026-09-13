@@ -50,7 +50,7 @@ The table above captures capability families from the initial discussions; the c
 - The user selected the updated document's three architectures: **Flat**, **Grouped**, and **Inline**. These replace the starter options. A separate label-local anchor remains deferred.
 - The initial default is Flat; all three solutions remain switchable and no winner has been chosen.
 - Property allocation varies by solution as described in `docs/solutions.md`; these are working comparison variants.
-- Stickiness across compatible selections is an optional experiment, enabled initially.
+- Keeping details open across compatible selections is an optional experiment, enabled initially for persistent Flat sub-toolbars and Inline expansions. Popovers always close on selection changes, so the option is unavailable for Grouped and does not retain compact Alignment popovers.
 - The live document lists Courier New for Mono; an earlier chat suggested IBM Plex Mono. This prototype follows Courier New.
 
 ## Keyboard shortcuts — 2026-09-13

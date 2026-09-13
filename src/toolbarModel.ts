@@ -51,8 +51,12 @@ export function compatibleDetail(
   objects: DiagramObject[],
   behavior: PanelBehavior,
   sticky: boolean,
+  compactTextAlignment = true,
 ): Detail {
   if (!sticky) return null;
+  const usesPopover =
+    behavior === 'grouped' || (detail === 'alignment' && compactTextAlignment);
+  if (usesPopover) return null;
   const context = toolbarContext(objects);
   if (detail === 'stroke' && context.stroke) return detail;
   if (detail === 'arrows' && context.direction) return detail;

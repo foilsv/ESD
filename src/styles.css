@@ -888,6 +888,10 @@ button[aria-pressed='true']:not(.swatch):not(.color-swatch) {
 .switch-row + .switch-row {
   margin-top: 12px;
 }
+.switch-row.disabled {
+  color: #8994a3;
+  cursor: default;
+}
 .switch-row input {
   position: absolute;
   right: 0;
