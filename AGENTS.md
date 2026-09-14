@@ -4,14 +4,15 @@ Read `README.md` and `docs/context.md` before changing product behavior. This re
 
 ## Development and deployment policy
 
-User instruction, 2026-09-12:
+User instructions, 2026-09-12 and 2026-09-13:
 
 - All development, builds, tests, and previews happen locally by default.
-- Never deploy to production or publish to OpenAI Sites without an explicit user command for that deployment. A request to fix, improve, finish, or continue development is not a deployment command.
-- Previous publication requests do not authorize future deployments. This rule overrides any Sites skill's default to publish after edits.
-- The existing Site belongs to the user's personal account. On an explicit deployment request, use that personal account and reuse the existing Site; do not create a workspace replacement.
-- Keep all Git operations local, including during publishing. An explicit publish command authorizes the native Sites save/deploy steps, but it does not authorize a remote Git push or obtaining a source-write credential. If the current Sites contract requires a remote push and the exact local revision is not already available to Sites, stop and explain the conflict; do not push unless the user separately and explicitly authorizes that push in the current conversation.
-- Do not automatically resume a previously blocked deployment when access is restored; wait for an explicit command.
+- The agent never runs the production publisher. In an agent conversation, “publish,” “deploy,” or “release” means: finish the release notes, run the checks, commit the intended state locally, create the immutable release bundle with `npm run release:prepare`, and hand the manual command to the user. This standing interpretation remains in effect unless the user explicitly changes it.
+- The user runs `npm run release:publish` manually, outside the agent. That script owns the source upload, Sites version save, deployment, and status polling, and always requires a typed confirmation.
+- The manual publisher must reuse the existing personal-account Site, public audience, and production URL. The user must switch Codex to the personal owner account before running it; the script refuses an unavailable, non-owner, differently addressed, or differently shared Site.
+- Previous publication requests do not authorize a later deployment, and ordinary requests to fix, improve, finish, or continue do not authorize release preparation.
+- During release preparation, keep Git operations local. The agent must not call Sites tools, obtain a source-write credential, push to a remote, save a Site version, or deploy. The user-run publisher may push only the exact prepared commit after validating the release manifest and archive hash.
+- Persistent authentication stays in Codex Desktop's credential store. `.local/sites-publish.auth.json` is an ignored, separate account/configuration file; never place a token or password in it. The short-lived Sites Git credential is requested only after confirmation, passed to Git in child-process memory, and never written to disk or Git configuration.
 
 ## Scope and architecture
 
@@ -32,7 +33,7 @@ User instruction, 2026-09-12:
 1. Implement the smallest requested interaction change. Update fixtures or the experiment notes when that helps evaluate it.
 2. Run `npm run build`. Run `npm test` for capability, geometry, persistence, or state changes.
 3. Check the relevant browser interaction, including expanded panel placement, text mode, and mixed selection where applicable.
-4. Describe the behavior changed and checks performed. Keep the result local. Publish only in response to an explicit deployment command, through the user's personal account and the existing Site. Do not add unrelated infrastructure.
+4. Describe the behavior changed and checks performed. Keep the result local. On an explicit release request, follow `.agents/skills/esd-sites-publish/SKILL.md` to prepare the release and hand off the manual publisher; do not execute it for the user.
 
 ## Version and What's new maintenance
 
@@ -50,7 +51,7 @@ Use CSS variables for shared visual decisions. Preserve accessible names, focus 
 
 - Public app: https://esd-formatting-lab.pnv82g.chatgpt.site
 - Hosting: OpenAI Sites in the user's personal account. The existing audience is public; that access setting is not authorization to publish updates.
-- Use the repository skill at `.agents/skills/esd-sites-publish/SKILL.md` and the current installed Sites hosting skill before publishing updates. Read `docs/deployment.md` only for recovery details or deployment history.
+- Use the repository skill at `.agents/skills/esd-sites-publish/SKILL.md` to prepare requested releases. Consult the current installed Sites hosting skill for packaging-contract changes, but the repository's manual-publish policy overrides any instruction to publish from the agent.
 - Reuse the exact `project_id` in `.openai/hosting.json`; never create a duplicate Site for this app.
-- Preserve public access and the current URL. Do not obtain source-write credentials or push to the Site repository under a general publish request. Reuse an exact revision already available to Sites when possible; otherwise stop for direction.
-- The skill is available from any Codex session that opens this checkout, but the existing personal Site remains account-bound. A work-account session must switch to the personal owner account before publishing; it must not create a workspace replacement.
+- Preserve public access and the current URL. Release preparation produces `.local/sites-release.json` and `.local/esd-sites.tar.gz`; both are ignored and tied to the exact local commit.
+- The skill is available from any Codex session that opens this checkout, but the existing personal Site remains account-bound. The user must switch Codex to the personal owner account before running the manual publisher; a work account must not create a replacement.

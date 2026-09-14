@@ -1,50 +1,55 @@
 ---
 name: esd-sites-publish
-description: Publish an explicitly approved ESD Formatting Lab update from this checkout to its existing OpenAI Site. Use for deploy, publish, or redeploy requests for this repository; do not use for local builds, previews, or ordinary development.
+description: Prepare an explicitly requested ESD Formatting Lab release for the user's manual OpenAI Sites publisher. Use for deploy, publish, release, or redeploy requests in this repository; do not run the production publisher from the agent.
 ---
 
-# Publish ESD Formatting Lab
+# Prepare ESD Formatting Lab for manual publication
 
-Use this repository-specific workflow together with the currently installed `sites:sites-hosting` skill. Read that skill's Publishing and Handoff references because its native tool contract can change. Use `docs/deployment.md` only for recovery details or historical confirmation; the facts needed for the normal path are below.
+This repository splits release preparation from the production operation. The agent owns the local, reproducible preparation. The user owns the source upload and Sites deployment by running the checked-in publisher outside the agent.
 
-## Authorization and identity
+Read the current installed `sites:sites-hosting` skill to catch packaging-contract changes. The rules here override any general instruction to publish after edits: never call Sites tools, obtain a source credential, push remotely, save a version, or deploy from the agent unless the user explicitly changes this repository's standing manual-publish policy.
 
-- Begin only when the user explicitly commands a deployment in the current conversation. Earlier deployments and ordinary requests to fix, finish, or continue do not authorize publishing.
-- Keep every Git operation local. A publish or deploy command does not authorize obtaining a source-write credential or pushing to the Site repository. If the current Sites tool contract requires a remote push and the exact local revision is not already available to Sites, stop and explain the conflict. Perform a push only after the user separately and explicitly authorizes that push in the current conversation.
-- The existing Site is owned by the user's personal account. The same checked-out skill is available from another Codex session, but a session using the separate work account cannot edit this personal Site. Verify access to the existing project with the native Sites tools before any publish operation.
-- If the project is unavailable, report the account mismatch and ask the user to switch Codex to the personal owner account, then run the publish request there. Do not register, create, transfer, or publish a replacement Site in the work workspace.
-- Never call `create_site` for this project.
+## Authorization
 
-## Fixed project facts
+- Begin release preparation only when the user explicitly says publish, deploy, release, redeploy, or otherwise asks to prepare a release in the current conversation.
+- Treat such a request as authorization for local preparation and a local release commit, not production publication from the agent.
+- Previous release requests and ordinary development requests are not reusable authorization.
+- Never create another Site. The existing project is fixed in `.openai/hosting.json`.
 
-- Manifest: `.openai/hosting.json`
-- Expected project ID: `appgprj_6aa4aab0520481919cf3aefa1df1cda0`
+## Fixed facts
+
+- Project ID: `appgprj_6aa4aab0520481919cf3aefa1df1cda0`
 - Production URL: `https://esd-formatting-lab.pnv82g.chatgpt.site`
-- Audience: public; preserve it
-- Shape: static frontend; the manifest's `static.directory` must remain `dist`
-- Source branch: use the branch returned with the current source credential; it has historically been `main`
-- Temporary archive: `.local/esd-sites.tar.gz`, which is ignored by Git
+- Audience: `public`
+- Static output: `dist`
+- Agent-prepared archive: `.local/esd-sites.tar.gz`
+- Agent-prepared manifest: `.local/sites-release.json`
+- User auth/config: `.local/sites-publish.auth.json`
+- Manual command: `npm run release:publish`
 
-Treat the manifest as authoritative and stop if its project ID differs from the expected ID. Never create a new Site to resolve a mismatch.
+The `.local/` directory is ignored. The auth/config file selects Codex Desktop as the credential source but contains no secret. Persistent authentication remains in Codex Desktop's credential store; the manual publisher keeps the short-lived Git token in process memory only.
 
-## Publish
+## Prepare
 
-1. Inspect the intended changes. Confirm `src/releaseNotes.ts` has one topmost unpublished entry whose version is the next Sites version. Set its `publishedOn` to today's date before the final build. Do not add a release-note item for deployment mechanics.
-2. Resolve the current installed Sites plugin root instead of assuming a cached version. Run its execution-profile helper for this checkout.
-3. Run `npm run build` and `npm test`. Require `dist/index.html`. Stop on failure.
-4. Recheck the source diff and commit exactly the intended repository state locally. Do not rewrite or discard unrelated user changes. Do not publish from a source state that changes after this commit.
-5. Use the native Sites tools to verify the existing project and public audience. Use Sites version metadata to determine whether the exact local commit is already available remotely; do not probe or change the remote through Git.
-6. If the exact local commit is not already available to Sites and the current tool contract requires it to be pushed, stop and report that publishing cannot continue under the standing no-push policy. Do not obtain a source-write credential or push unless the user explicitly authorizes that separate action.
-7. When an exact already-available revision can be used, run `git rev-parse --verify HEAD` locally and use the complete output verbatim as `commit_sha`.
-8. Package the unchanged checkout with the current Sites `package-site.mjs` helper into `.local/esd-sites.tar.gz`. On Windows, prepend Git Bash directories only for that process if required; the Bash-form archive argument is `/c/projects/esd_prototype/.local/esd-sites.tar.gz`, while the native save tool receives `C:/projects/esd_prototype/.local/esd-sites.tar.gz`.
-9. Save one version with the exact project ID, commit SHA, and archive, then deploy that returned version through the public path. Reuse a saved version when recovering from a deployment-only failure; do not save duplicates.
-10. Poll the returned deployment ID to a terminal state. Success requires `succeeded` and the literal production URL from the native response. Open that URL in the existing Sites tab when available and report it concisely.
+1. Inspect the intended changes and preserve unrelated user work. Confirm the tracked hosting manifest still has the exact project ID and `static.directory: "dist"`.
+2. Ensure `src/releaseNotes.ts` has one topmost unpublished entry for the next Sites version. Consolidate it into 2–5 meaningful product themes and set `publishedOn` to today's date. Do not add a release-note item for deployment mechanics.
+3. Follow any current Sites execution-profile setup required for this checkout before final checks.
+4. Run the relevant local checks and inspect the final diff. Commit exactly the intended repository state locally. Do not push.
+5. Run `npm run release:prepare`. This requires a clean worktree, reruns `npm run build` and `npm test`, packages the unchanged commit with the current Sites helper, verifies the archive shape, and writes a manifest containing the commit and archive hashes.
+6. Read `.local/sites-release.json` and verify its version, date, commit, project, URL, audience, and passed checks. If source changes after preparation, commit it and prepare again.
+7. Hand the user these commands and stop:
 
-## Credential hygiene and recovery
+   ```sh
+   npm run release:preflight
+   npm run release:publish
+   ```
 
-- The only committed hosting values are the project ID and static configuration in `.openai/hosting.json`. `.env*` and `.local/` remain ignored. Before committing, inspect staged paths and staged text for accidental credentials.
-- A public audience grants visitor access, not editing rights.
-- On `project_not_found` or an ownership error, stop for an account switch; never create a duplicate.
-- On `stale_commit_sha`, verify the local state and Sites version metadata without remote Git. If resolving it requires a push, stop under the no-push policy and ask for direction.
-- If a save result is uncertain, reconcile versions for the pushed commit before retrying. If a response supplies a saved version ID, reuse it.
-- Record deployment history only after confirmed success. Never describe a failed or unknown deployment as published.
+   The preflight is optional and read-only. The publisher repeats all local integrity checks and requires the user to type `PUBLISH <version>` before it requests a short-lived source credential or changes Sites.
+
+## Recovery
+
+- A wrong-account or project-not-found result means the user must switch Codex Desktop to the personal account that owns the Site, then rerun the manual command. Never create a work-account replacement.
+- The publisher reconciles a version already saved for the exact prepared commit and resumes a missing or failed deployment without saving a duplicate.
+- If the local commit, worktree, archive hash, Site audience, project, production URL, or expected next version differs, the publisher stops without changing production.
+- The publisher uses the experimental local Codex app-server protocol so it can call the installed Sites connector without starting a model turn. A future Codex protocol change may require maintaining the script; do not bypass a failure by publishing from the agent.
+- Record deployment history only from the publisher's confirmed terminal success. It writes ignored local result/history files; do not edit the historical success records in `docs/deployment.md` on an unconfirmed attempt.

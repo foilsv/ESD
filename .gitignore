@@ -5,4 +5,5 @@ dist/
 !.env.example
 test-results/
 playwright-report/
+# Local release bundles, publish records, and account configuration
 .local/

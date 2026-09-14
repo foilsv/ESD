@@ -4,7 +4,7 @@ A small, local browser prototype for experimenting with the Electronics System D
 
 **Published app:** [ESD Formatting Lab](https://esd-formatting-lab.pnv82g.chatgpt.site) — accessible to anyone with the link. See [deployment instructions](docs/deployment.md) to update the same Site.
 
-Development and previews stay local. Production updates require an explicit deployment command and use the owner's personal OpenAI account.
+Development, release preparation, and checks stay local. The agent prepares an immutable release bundle; the user publishes it manually with `npm run release:publish` while Codex is using the personal account that owns the Site. The manual publisher does not start a model turn.
 
 ## Run
 
@@ -20,6 +20,14 @@ Open http://127.0.0.1:5173. The dev server refreshes the app as you edit.
 ```sh
 npm run build   # TypeScript check and production build
 npm test        # Formatting, geometry, and snapshot checks
+```
+
+Release commands are intentionally separate from normal development:
+
+```sh
+npm run release:prepare    # agent-facing: verify and package a clean commit
+npm run release:preflight  # user-facing: read-only account and Site check
+npm run release:publish    # user-facing: upload and deploy the prepared release
 ```
 
 ## Try

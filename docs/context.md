@@ -67,6 +67,12 @@ Ctrl/Cmd+/ opens a searchable command palette from anywhere in the lab, includin
 
 Local React + TypeScript + Vite, SVG rendering, plain CSS and HTML controls. This is a small code project meant for agent-assisted iteration, not a hosted website deliverable. Keep it independent of ESD production and private Drive data. Browser storage is versioned; JSON export captures reproducible experiments. Reconsider a diagram engine only when experiments actually require richer routing/geometry.
 
+## Manual publication workflow — 2026-09-13
+
+Release preparation and production publication are deliberately split. On a release request, the agent updates the top release note, commits the intended local state, runs the build and test suite, packages the exact commit, and writes an ignored manifest containing its commit and archive hashes. The user then runs the publisher manually. It talks directly to the local Codex app-server and Sites connector without starting a model turn, validates the personal owner account and existing public Site, uploads only the prepared commit, saves one Site version, deploys it, and polls to a terminal result.
+
+Persistent authentication remains in Codex Desktop's credential store. The ignored `.local/sites-publish.auth.json` selects that credential source but contains no token. The short-lived repository credential is held only in the publisher process and passed to Git without putting it in an argument, remote URL, file, or Git configuration. This keeps the manual boundary explicit while avoiding duplicated long-lived credentials.
+
 ## Manufacturer style experiment — 2026-09-12
 
 The Lab now offers Original colors, STM, Infineon, Renesas, NXP, and TI in a single manufacturer-style dropdown. Palettes follow the five screenshots supplied in this request, not official brand specifications. STM uses cyan blocks and magenta connections; Infineon uses teal components, magenta control, and orange sensing; Renesas uses blue; NXP uses blue with orange control; TI uses teal and pale aqua surfaces. Labels choose contrasting light or dark ink.

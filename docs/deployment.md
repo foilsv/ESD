@@ -2,22 +2,36 @@
 
 ## Preferred repeat workflow
 
-Use the checked-in `$esd-sites-publish` skill for routine updates. Codex discovers it from `.agents/skills/esd-sites-publish` whenever this repository is opened, so the project-specific procedure travels with the checkout instead of depending on one user's personal skill directory.
+Use the checked-in `$esd-sites-publish` skill to ask the agent to prepare a release. Codex discovers it from `.agents/skills/esd-sites-publish` whenever this repository is opened. Preparation updates release metadata, checks and commits the exact local source, packages it, and writes an ignored manifest that pins both the commit and archive hashes.
 
-The skill can be invoked from another Codex session, including one initially opened under the user's work account. Publishing the existing Site still requires the personal account that owns it: personal Sites cannot grant an external work account editor rights. If the native Sites preflight cannot access the project ID below, switch Codex to the personal account and issue the publish request there. Never create a work-workspace replacement.
+The agent stops there. Switch Codex Desktop to the personal account that owns the Site, then run the publisher yourself from a terminal:
 
-No credentials belong in this repository. The standing policy does not authorize obtaining source-write credentials or performing remote Git operations during a general publish request.
+```sh
+npm run release:preflight
+npm run release:publish
+```
+
+The preflight is optional and read-only. The publisher repeats the local integrity checks and asks you to type `PUBLISH <version>` before it obtains a short-lived source credential or changes Sites. It then uploads only the prepared commit, saves or reuses its Site version, deploys it, and polls until success or failure. It does not start a model turn.
+
+For this checkout, `.local/sites-publish.auth.json` has already been created and is excluded by `.gitignore`. For a fresh checkout, initialize it with:
+
+```powershell
+New-Item -ItemType Directory -Force .local
+Copy-Item scripts/sites-publish.auth.example.json .local/sites-publish.auth.json
+```
+
+The file contains account-selection configuration, not a secret. Persistent authentication stays in Codex Desktop's credential store. The fresh, short-lived Git token returned during publication remains in process memory and is never written to a file, remote URL, or Git configuration.
 
 ## Development and deployment policy
 
-User instruction, 2026-09-12:
+User instructions, 2026-09-12 and 2026-09-13:
 
 - All development, builds, tests, and previews happen locally by default.
-- Never deploy to production or publish to OpenAI Sites without an explicit user command for that deployment. A request to fix, improve, finish, or continue development is not a deployment command.
-- Previous publication requests do not authorize future deployments. This rule overrides any Sites skill's default to publish after edits.
-- The existing Site belongs to the user's personal account. On an explicit deployment request, use that personal account and reuse the existing Site; do not create a workspace replacement.
-- Keep all Git operations local, including during publishing. A publish command authorizes native Sites save/deploy operations but not a remote Git push or source-write credential. If publishing requires a push and the exact revision is not already available to Sites, stop and explain the conflict unless the user separately authorizes that push in the current conversation.
-- Do not automatically resume a previously blocked deployment when access is restored; wait for an explicit command.
+- A publish/deploy request made to the agent authorizes only local release preparation and a local commit. The agent never runs the production publisher, calls Sites tools, obtains a source credential, pushes, saves a version, or deploys under this standing workflow.
+- The user performs the production operation by running `npm run release:publish` manually. Its typed confirmation is the final publication boundary.
+- Previous publication requests do not authorize later release preparation. Ordinary requests to fix, improve, finish, or continue are development-only.
+- The existing Site belongs to the user's personal account. The manual script must reuse that Site, its public audience, and its URL; it refuses the wrong account or a mismatched Site rather than creating a replacement.
+- The user-run publisher may push only the exact commit recorded by the agent-prepared manifest. It refuses a dirty worktree, moved HEAD, changed archive, wrong version, or changed Site identity/access.
 
 ## Existing Site
 
@@ -29,7 +43,7 @@ User instruction, 2026-09-12:
 - Authoritative configuration: `C:/projects/esd_prototype/.openai/hosting.json`.
 - Site shape: static frontend, with `static.directory: "dist"`. No server, runtime secrets, or database. Visitors' experiments save in their own browser; JSON exports are available.
 
-Reuse the exact project ID from the manifest. Never call `create_site` again for this app. Do not store credentials or deployment history in the manifest.
+Reuse the exact project ID from the manifest. Never call `create_site` again for this app. The tracked manifest contains no credentials or deployment history.
 
 ## First successful publication
 
@@ -43,32 +57,36 @@ Confirmed by the native deployment status response on 2026-09-12 at 01:32:35 UTC
 
 These identify the first publication. Copy new version/deployment IDs directly from tool responses for subsequent revisions.
 
-## Publishing an update after an explicit command
+## Preparing and publishing an update
 
-The repository skill is the concise source for the normal path. The expanded procedure below remains as recovery context.
+The repository skill is the concise source for the agent side. The scripts enforce the handoff mechanically.
 
-Start this procedure only after the user explicitly commands deployment. Use the personal account that owns this Site.
+### Agent preparation
 
-1. Read the current installed `sites:sites-hosting` skill and its publishing/handoff references. Use native Sites tools and the current plugin scripts.
-2. Read the manifest, reuse its project ID, and check the Site audience through `get_site` as required by the skill. Preserve public access; do not switch it to private to deploy.
-3. Reuse this checkout. Run the execution-profile helper when entering a new environment; the initial deployment used `portable`. Build changed app source with `npm run build` and run appropriate tests. Reuse an unchanged successful build when allowed.
-4. Commit the intended source locally and use Sites version metadata to determine whether that exact commit is already available remotely. Do not obtain a source-write credential or run remote Git commands under the publish request.
-5. If Sites does not already have the exact commit and its current contract requires a push, stop and explain the blocker. A push requires separate, explicit authorization in the current conversation.
-6. For an already-available exact commit, package only the built app using the Sites helper. The archive is `.local/esd-sites.tar.gz`, ignored by Git. Repackage changed source; an existing archive is not automatically current. Keep it unchanged until saving succeeds.
-7. Call `save_site_version` with the exact project ID, known available SHA, and absolute archive path, then `deploy_site_version` with the returned version ID. This is the public deployment path.
-8. Poll `get_deployment_status` with the returned deployment ID until terminal. Report success only for `succeeded` with a URL. Return the exact URL and use the app-opening tool for handoff.
+1. Inspect the intended changes and update the top `src/releaseNotes.ts` entry to the next Sites version with today's `publishedOn` date.
+2. Follow the current Sites execution-profile requirement, run the relevant checks, inspect the diff, and commit exactly the intended state locally. Do not push.
+3. Run `npm run release:prepare`. It requires a clean tree, runs the production build and complete test suite, locates the current Sites packaging helper, creates `.local/esd-sites.tar.gz`, verifies the archive, and writes `.local/sites-release.json`.
+4. Verify the prepared manifest and give the manual commands to the user. If the source changes, commit and prepare again.
 
-Every development change stays local until an explicit deployment command. Do not infer publishing authorization from app edits or documentation maintenance.
+### User publication
+
+1. Switch Codex Desktop to the personal Site-owner account.
+2. Optionally run `npm run release:preflight`. It validates the prepared commit/archive, account, Site identity, public audience, URL, and next version without changing anything.
+3. Run `npm run release:publish` and type the requested `PUBLISH <version>` confirmation.
+4. The script asks the connector for a short-lived source credential, pushes the exact prepared commit when needed, verifies the remote branch SHA, saves or reuses one version for that commit, deploys it, and polls for a terminal result.
+5. A confirmed success is written to ignored `.local/sites-publish-result.json` and `.local/sites-publish-history.jsonl`. A failed or uncertain operation is not recorded as successful.
+
+The production script communicates with the Sites connector through `codex app-server` directly and never sends a model prompt or starts a model turn. The app-server JSON-RPC interface is currently experimental, so a future Codex release may require a small compatibility update to `scripts/publish-sites.mjs`.
 
 ## Windows notes
 
 - Git Bash is installed at `C:/Program Files/Git/bin/bash.exe`, but was absent from the default PATH. The packager invokes Bash. Prepending `C:\Program Files\Git\bin;C:\Program Files\Git\usr\bin;` to that process's PATH allowed it to run; no permanent PATH change was needed.
-- The installed helper was `C:/Users/pnv82/.codex/plugins/cache/openai-curated-remote/sites/0.1.62/scripts/package-site.mjs`. Resolve the current installed plugin root on later runs rather than assuming that version.
+- Installed plugin locations can change. The preparation script resolves the newest cached Sites packager and falls back to Codex's bundled marketplace copy rather than assuming a versioned path.
 - Git Bash tar treated a `C:/...` archive destination as remote. Passing `/c/projects/esd_prototype/.local/esd-sites.tar.gz` to the helper succeeded. Pass `C:/projects/esd_prototype/.local/esd-sites.tar.gz` to the native Sites save tool.
 - If Git reports a sandbox ownership mismatch, use per-command `-c safe.directory=C:/projects/esd_prototype`; do not broadly trust unrelated directories.
 - The initial sandbox helper failed to start, so publication used reviewed elevated execution. Try normal execution first on future runs; that historical error does not imply elevation is always needed.
 
-Historical source credentials were never stored here, in the manifest, or in Git configuration. Do not obtain a new one under a general publish request.
+Historical source credentials were never stored here, in the manifest, or in Git configuration. The manual publisher keeps the fresh, short-lived credential in process memory only.
 
 ## Latest successful publication · 2026-09-13
 

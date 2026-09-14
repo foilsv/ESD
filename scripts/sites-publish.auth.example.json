@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "credentials_mode": "codex_desktop",
+  "connector_server": "codex_apps",
+  "codex_executable": "codex",
+  "expected_account": "personal Site owner"
+}
