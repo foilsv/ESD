@@ -78,6 +78,7 @@ function BidirectionalArrow({ size = 18 }: { size?: number }) {
 
 export interface FormattingToolbarHandle {
   dismiss: () => boolean;
+  dismissPopovers: () => void;
 }
 interface Props {
   ref?: Ref<FormattingToolbarHandle>;
@@ -738,7 +739,16 @@ export default function FormattingToolbar(props: Props) {
     } else return false;
     return true;
   };
-  useImperativeHandle(props.ref, () => ({ dismiss }));
+  useImperativeHandle(props.ref, () => ({
+    dismiss,
+    dismissPopovers: () => {
+      setFontOpen(false);
+      setSizeOpen(false);
+      setColor(null);
+      setMoreOpen(false);
+      if (alignmentPopoverOpen || behavior === 'grouped') setDetail(null);
+    },
+  }));
   return (
     <div
       ref={root}

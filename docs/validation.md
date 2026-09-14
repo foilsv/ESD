@@ -1,5 +1,11 @@
 # Toolbar solutions validation · 2026-09-11
 
+## Context menu layout · 2026-09-14
+
+Added compact object, connection, multi-selection, and empty-canvas menus. Align uses one submenu with six object-alignment choices; Align and Group remain visible but unavailable for unsuitable selections. Formatting, style actions, Edit label, and empty-canvas Undo/Redo are excluded. Only existing delete, selection, fit, and grid operations are connected; other commands remain layout placeholders. Menus focus their container and open with no command highlighted.
+
+Local browser checks verified unchanged diagram markup after Duplicate, Align Left, and Group; preserved multi-selection; selection replacement on a connection; keyboard opening and dismissal; and native label-input context handling. Align and Group are visible but disabled for one object and enabled for two independently movable objects. Menus open with zero highlighted rows; Down/Up begin at the first/last available command, Right opens Align, and Escape returns to its trigger before dismissing the main menu. The empty-canvas menu contains only Paste, Select all, Fit diagram, and Show grid. The Align submenu flips left near the right edge, with both panels within the viewport. Earlier checks confirmed existing Select all, Delete, grid, and Fit diagram actions and stable expanded-toolbar bounds across all three solutions. No browser warnings or errors appeared. The build and all 104 tests pass, including gesture coverage and alignment eligibility for attached versus free connections. Changes remain local.
+
 ## Optional simple popover arrows · 2026-09-13
 
 Single-choice toolbar popovers now omit down-chevron indicators by default. The saved **Show simple popover arrows** Lab modifier restores them for comparison. Popover behavior, active and expanded state, tooltips, and accessible names remain unchanged. Compound Stroke and Text controls retain down chevrons in Grouped, while every Inline expansion uses a left chevron in both states to signal its in-row transition. Flat navigation retains its existing right-chevron and Back pattern. Arrow-free font and size controls reclaim the space previously reserved for their indicators.

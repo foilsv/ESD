@@ -31,7 +31,7 @@ interface Props {
   startCanvas: (e: ReactPointerEvent<SVGSVGElement>) => void;
   zoomWheel: (e: ReactWheelEvent<SVGSVGElement>) => void;
   move: (point: Point) => void;
-  end: () => void;
+  end: (event: ReactPointerEvent<SVGSVGElement>) => void;
 }
 
 export default function DiagramCanvas(props: Props) {
@@ -300,7 +300,11 @@ export default function DiagramCanvas(props: Props) {
       onPointerUp={props.end}
       onPointerCancel={props.end}
       onWheel={props.zoomWheel}
-      onContextMenu={(e) => e.preventDefault()}
+      onContextMenu={(event) => {
+        // Native text editing keeps its own clipboard and spelling menu.
+        if (!(event.target as Element).closest('input, textarea, [contenteditable]'))
+          event.preventDefault();
+      }}
     >
       {props.grid && (
         <>

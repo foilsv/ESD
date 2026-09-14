@@ -99,6 +99,7 @@ export default function KeyboardShortcuts({ onClose }: Props) {
               { action: 'Delete selection', keys: ['Delete', 'Backspace'] },
               { action: 'Select all', keys: [`${mod}+A`] },
               { action: 'Add or remove selection', keys: ['Shift+click'] },
+              { action: 'Open context menu', keys: ['Shift+F10', 'Menu key'] },
             ]}
           />
           <ShortcutSection

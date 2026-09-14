@@ -52,6 +52,7 @@ Typing with multiple objects or a noneditable object selected does nothing. Do n
 
 ## Secondary commands and discoverability
 
+- Shift+F10 or the Menu key opens the diagram context menu at the focused object or selection, initially with no row highlighted; active label inputs retain their native menu. Arrow keys, Home/End, and first-letter navigation move through available rows. Right or Enter opens Align; Left or Escape closes the submenu and returns to Align. Enter/Space chooses an action, and Escape dismisses the main menu. The layout preview displays conventional object clipboard, duplicate, and grouping hints without implementing those bindings.
 - Mod+Alt+C / Mod+Alt+V invoke existing Copy style / Paste style, matching Miro. Menu access and current mixed-value restrictions remain. Set default style, stroke/arrow choices, alignment, and Lab modifiers stay in menus/toolbars.
 - Reserve Mod+C / Mod+X / Mod+V for object clipboard operations and Mod+D for duplication when those features are added. These are outside the current prototype's scope; do not advertise them as implemented. Normal text clipboard commands remain available inside editing.
 - Mod+/ opens a searchable, grouped command palette from anywhere in the lab. Arrow keys select available results, Enter runs one, and Escape closes the palette. Selection-dependent commands remain visible but disabled when unavailable.

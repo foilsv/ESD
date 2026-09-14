@@ -33,6 +33,13 @@ import {
   X,
 } from 'lucide-react';
 import DiagramCanvas from './DiagramCanvas';
+import DiagramContextMenu from './DiagramContextMenu';
+import {
+  canAlignObjects,
+  contextMenuGroups,
+  releasedContextTarget,
+  type ContextAction,
+} from './contextMenuModel';
 import FormattingToolbar from './FormattingToolbar';
 import WhatsNew from './WhatsNew';
 import KeyboardShortcuts from './KeyboardShortcuts';
@@ -84,11 +91,13 @@ type Drag = {
   kind: 'move' | 'pan' | 'resize';
   view: View;
   moved: boolean;
+  contextTarget?: string | null;
 };
 export default function App() {
   const [showWhatsNew, setShowWhatsNew] = useState(() => window.location.hash === '#whats-new');
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [contextMenu, setContextMenu] = useState<Point | null>(null);
   const [initial] = useState(loadSnapshot);
   const [scene, setScene] = useState<Scene>(initial?.scene ?? 'system');
   const [history, setHistory] = useState<History>({
@@ -483,6 +492,14 @@ export default function App() {
       kind: 'pan',
       view,
       moved: false,
+      ...(event.button === 2
+        ? {
+            contextTarget:
+              (event.target as Element)
+                .closest('[data-object-id]')
+                ?.getAttribute('data-object-id') ?? null,
+          }
+        : {}),
     };
     event.currentTarget.setPointerCapture(event.pointerId);
   }
@@ -518,13 +535,52 @@ export default function App() {
     );
     setHistory((h) => ({ ...h, present: { ...h.present, objects: next } }));
   }
-  function end() {
+  function end(event?: ReactPointerEvent<SVGSVGElement>) {
     const current = drag.current;
     drag.current = null;
     setPointerActive(false);
     setPanning(false);
     if (current?.moved && current.kind !== 'pan')
       setHistory((h) => ({ ...h, past: [...h.past.slice(-49), current.before], future: [] }));
+    const contextTarget = releasedContextTarget(current, event?.type);
+    if (event && contextTarget !== undefined)
+      openContextMenu({ x: event.clientX, y: event.clientY }, contextTarget);
+  }
+  function openContextMenu(point: Point, objectId: string | null) {
+    if (editing) finishEdit();
+    formattingToolbar.current?.dismissPopovers();
+    if (objectId) {
+      if (!selected.includes(objectId)) select(objectId, false);
+    } else {
+      setSelected([]);
+      setDetail(null);
+    }
+    setTool('select');
+    setConnectSource(null);
+    setContextMenu(point);
+  }
+  function closeContextMenu(restoreFocus = true) {
+    setContextMenu(null);
+    if (restoreFocus) focusCanvas();
+  }
+  function runContextAction(action: ContextAction) {
+    // Reuse existing editor operations only. Other rows are layout placeholders.
+    switch (action) {
+      case 'delete':
+        deleteSelection();
+        break;
+      case 'select-all':
+        selectAllObjects();
+        break;
+      case 'fit':
+        fit();
+        break;
+      case 'grid':
+        setGrid((current) => !current);
+        break;
+      default:
+        announce('This action is not available in the prototype yet.');
+    }
   }
   function undo() {
     setEditing(null);
@@ -619,6 +675,7 @@ export default function App() {
       if (event.defaultPrevented) return;
       if (!showShortcuts && !showWhatsNew && isCommandPaletteShortcut(event)) {
         event.preventDefault();
+        setContextMenu(null);
         setShowCommandPalette(true);
         return;
       }
@@ -631,6 +688,35 @@ export default function App() {
       if (!target?.closest('.diagram-canvas')) return;
       const labelInput = target.closest('[data-label-entry="true"]');
       const activeEditor = target.closest('[data-label-editing="true"]');
+      if (
+        !activeEditor &&
+        !drag.current &&
+        (event.key === 'ContextMenu' ||
+          (event.key === 'F10' &&
+            event.shiftKey &&
+            !event.ctrlKey &&
+            !event.metaKey &&
+            !event.altKey))
+      ) {
+        event.preventDefault();
+        const targetId =
+          target.closest('[data-object-id]')?.getAttribute('data-object-id') ??
+          chosen[0]?.id ??
+          null;
+        const targetElement = targetId
+          ? stage.current?.querySelector(`[data-object-id="${CSS.escape(targetId)}"]`)
+          : null;
+        const rect = (targetElement ?? stage.current)?.getBoundingClientRect();
+        if (rect)
+          openContextMenu(
+            {
+              x: rect.left + (targetId ? rect.width / 2 : 90),
+              y: rect.top + (targetId ? rect.height / 2 : 70),
+            },
+            targetId,
+          );
+        return;
+      }
       if (
         target.closest('input, textarea, select, [contenteditable], button') &&
         !labelInput &&
@@ -1167,6 +1253,20 @@ export default function App() {
           move={move}
           end={end}
         />
+        {contextMenu && (
+          <DiagramContextMenu
+            point={contextMenu}
+            groups={contextMenuGroups({
+              selectionCount: chosen.length,
+              objectCount: objects.length,
+              canAlign: canAlignObjects(chosen),
+              grid,
+              isMac,
+            })}
+            onAction={runContextAction}
+            onClose={closeContextMenu}
+          />
+        )}
         <div className="scene-caption">
           {scenes[scene]}
           <span> / </span>

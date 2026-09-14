@@ -1,0 +1,66 @@
+.diagram-context-menu {
+  --menu-row-height: 32px;
+  --menu-hover: var(--accent-light);
+  --menu-danger: #b54747;
+  position: fixed;
+  z-index: 30;
+  width: 238px;
+  max-width: calc(100vw - 16px);
+  max-height: calc(100dvh - 16px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+.context-menu-item {
+  width: 100%;
+  min-height: var(--menu-row-height);
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 0 9px;
+  border-radius: 4px;
+  font-size: 12px;
+  text-align: left;
+}
+.context-menu-item > svg {
+  color: var(--muted);
+}
+.diagram-context-menu .context-menu-item:hover {
+  background: transparent;
+}
+.diagram-context-menu .context-menu-item[data-active='true'] {
+  background: var(--menu-hover);
+}
+.diagram-context-menu[role='menu']:focus {
+  outline: none;
+}
+.diagram-context-menu .context-menu-item:focus-visible {
+  outline-offset: -2px;
+}
+.context-menu-item:disabled {
+  background: transparent;
+  opacity: 0.4;
+}
+.context-menu-item.destructive,
+.context-menu-item.destructive > svg {
+  color: var(--menu-danger);
+}
+.context-menu-shortcut {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 10px;
+}
+.context-menu-separator {
+  height: 1px;
+  margin: 5px 4px;
+  background: var(--border);
+}
+.context-menu-chevron {
+  margin-left: auto;
+}
+.context-submenu {
+  width: 218px;
+}

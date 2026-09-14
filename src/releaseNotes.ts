@@ -11,10 +11,15 @@ export type ReleaseNote = {
 export const releaseNotes: ReleaseNote[] = [
   {
     version: '7',
-    title: 'Quieter toolbar controls',
+    title: 'Toolbar and context menu boundaries',
     summary:
-      'This iteration tests familiar popover actions without repeated down-chevron indicators while keeping an explicit Lab comparison.',
+      'This iteration tests quieter formatting controls and a compact right-click menu for object and canvas operations.',
     changes: [
+      {
+        title: 'A compact context menu',
+        description:
+          'Right-click opens a neutral menu with direct actions and one Align submenu. Align and Group remain visible and become available for suitable multi-selections; formatting and history stay in their existing controls. Delete, selection, fit, and grid actions work, while the other rows remain visual placeholders. Right-drag continues to pan.',
+      },
       {
         title: 'Optional simple-popover indicators',
         description:
