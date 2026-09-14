@@ -1,5 +1,11 @@
 # Toolbar solutions validation · 2026-09-11
 
+## Optional simple popover arrows · 2026-09-13
+
+Single-choice toolbar popovers now omit down-chevron indicators by default. The saved **Show simple popover arrows** Lab modifier restores them for comparison. Popover behavior, active and expanded state, tooltips, and accessible names remain unchanged. Compound Stroke and Text controls retain down chevrons in Grouped, while every Inline expansion uses a left chevron in both states to signal its in-row transition. Flat navigation retains its existing right-chevron and Back pattern. Arrow-free font and size controls reclaim the space previously reserved for their indicators.
+
+Local browser checks initially confirmed that Fill still opened its popover and the toolbar retained its exact 423.4375 × 311.90625 anchor. Follow-ups corrected the modifier's scope after compound chevrons were found missing, then aligned Inline's indicator with its horizontal transition. With the modifier off, Grouped shows down chevrons on Stroke and Text, while Inline shows left chevrons; Fill, text color, and compact Alignment have none. A final browser pass visually confirmed left chevrons on collapsed Stroke and Text and on each expanded group while switching between them. Automated coverage distinguishes simple popovers, Grouped compound popovers, and collapsed or expanded Inline groups. No browser warnings or errors appeared. The production build and all 100 tests pass. No deployment was performed.
+
 ## Optional direct font-size stepper · 2026-09-13
 
 Flat, Inline, and Grouped's one-line text row can now replace the size dropdown with large decrease and increase buttons around an editable numeric value. The default-off **Use font size stepper** Lab modifier preserves the baseline for comparison, saves locally, and travels with exported experiments. Each button changes 2 px—half the gap between the 12, 16, and 20 px presets—within 8–72 px; mixed-size selections do not assume a baseline. Grouped's ordinary Text popover retains its existing size choices.

@@ -21,6 +21,7 @@ test('older experiments keep popover headers visible', () => {
     assert.equal(restored.groupedTextToolbar, true);
     assert.equal(restored.compactTextAlignment, true);
     assert.equal(restored.fontSizeStepper, false);
+    assert.equal(restored.showDropdownArrows, false);
     assert.equal(restored.showMoreActions, false);
     assert.equal(restored.showShortcutHints, false);
     assert.deepEqual(restored.objects, snapshot.objects);
@@ -72,6 +73,17 @@ test('font-size stepper defaults off, survives round trips, and rejects invalid 
   }
   for (const fontSizeStepper of [null, 'true', 1, {}]) {
     assert.equal(parseSnapshot({ ...snapshot, fontSizeStepper }), null);
+  }
+});
+
+test('simple popover arrows default off, survive round trips, and reject invalid values', () => {
+  for (const showDropdownArrows of [false, true]) {
+    const restored = parseSnapshot(JSON.parse(JSON.stringify({ ...snapshot, showDropdownArrows })));
+    assert.ok(restored);
+    assert.equal(restored.showDropdownArrows, showDropdownArrows);
+  }
+  for (const showDropdownArrows of [null, 'true', 1, {}]) {
+    assert.equal(parseSnapshot({ ...snapshot, showDropdownArrows }), null);
   }
 });
 

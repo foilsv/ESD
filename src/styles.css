@@ -1296,6 +1296,11 @@ button[aria-pressed='true']:not(.swatch):not(.color-swatch) {
 .font-picker:hover {
   background: #f0f3f8;
 }
+.font-picker.without-dropdown-arrow {
+  width: 32px;
+  justify-content: center;
+  padding-inline: 3px;
+}
 .font-style-icon text {
   fill: currentColor;
 }
@@ -1310,6 +1315,10 @@ button[aria-pressed='true']:not(.swatch):not(.color-swatch) {
   height: 29px;
   justify-content: space-between;
   border: 1px solid #e0e5ed;
+}
+.size-dropdown-trigger.without-dropdown-arrow {
+  min-width: 36px;
+  justify-content: center;
 }
 .font-dropdown-options,
 .size-dropdown-options {

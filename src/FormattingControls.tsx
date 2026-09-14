@@ -92,6 +92,7 @@ export function ColorButton({
   active,
   onClick,
   controlsId,
+  showDropdownArrow = false,
 }: {
   value?: string;
   label: string;
@@ -99,6 +100,7 @@ export function ColorButton({
   active: boolean;
   onClick: () => void;
   controlsId?: string;
+  showDropdownArrow?: boolean;
 }) {
   return (
     <button
@@ -125,7 +127,7 @@ export function ColorButton({
         />
       </span>
       {value === undefined && <span className="mixed-label">Mixed</span>}
-      <ChevronDown size={10} />
+      {showDropdownArrow && <ChevronDown size={10} aria-hidden="true" />}
     </button>
   );
 }
@@ -160,12 +162,18 @@ export function FontControl({
   active,
   onClick,
   controlsId,
-}: Pick<ControlProps, 'value'> & { active: boolean; onClick: () => void; controlsId: string }) {
+  showDropdownArrow = false,
+}: Pick<ControlProps, 'value'> & {
+  active: boolean;
+  onClick: () => void;
+  controlsId: string;
+  showDropdownArrow?: boolean;
+}) {
   const family = value('fontFamily');
   return (
     <button
       type="button"
-      className={`font-picker ${active ? 'active' : ''}`}
+      className={`font-picker ${showDropdownArrow ? '' : 'without-dropdown-arrow'} ${active ? 'active' : ''}`}
       aria-label="Font family"
       title={`Font style: ${family ? fonts[family].label : 'Mixed'}`}
       aria-expanded={active}
@@ -174,7 +182,7 @@ export function FontControl({
       onClick={onClick}
     >
       <FontStyleIcon family={family} />
-      <ChevronDown size={10} aria-hidden="true" />
+      {showDropdownArrow && <ChevronDown size={10} aria-hidden="true" />}
     </button>
   );
 }

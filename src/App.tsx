@@ -120,6 +120,9 @@ export default function App() {
     initial?.compactTextAlignment ?? true,
   );
   const [fontSizeStepper, setFontSizeStepper] = useState(initial?.fontSizeStepper ?? false);
+  const [showDropdownArrows, setShowDropdownArrows] = useState(
+    initial?.showDropdownArrows ?? false,
+  );
   const [showMoreActions, setShowMoreActions] = useState(initial?.showMoreActions ?? false);
   const [showShortcutHints, setShowShortcutHints] = useState(initial?.showShortcutHints ?? false);
   const [styleClipboard, setStyleClipboard] = useState<Style | null>(null);
@@ -204,6 +207,7 @@ export default function App() {
             groupedTextToolbar,
             compactTextAlignment,
             fontSizeStepper,
+            showDropdownArrows,
             showMoreActions,
             showShortcutHints,
             manufacturer,
@@ -223,6 +227,7 @@ export default function App() {
     groupedTextToolbar,
     compactTextAlignment,
     fontSizeStepper,
+    showDropdownArrows,
     showMoreActions,
     showShortcutHints,
     manufacturer,
@@ -556,7 +561,9 @@ export default function App() {
   }
   function selectAllObjects() {
     if (editing) {
-      commit(objects.map((object) => (object.id === editing ? { ...object, label: draft } : object)));
+      commit(
+        objects.map((object) => (object.id === editing ? { ...object, label: draft } : object)),
+      );
       setEditing(null);
     }
     setSelected(objects.map((object) => object.id));
@@ -752,6 +759,7 @@ export default function App() {
       groupedTextToolbar,
       compactTextAlignment,
       fontSizeStepper,
+      showDropdownArrows,
       showMoreActions,
       showShortcutHints,
       manufacturer,
@@ -785,6 +793,7 @@ export default function App() {
       setGroupedTextToolbar(snapshot.groupedTextToolbar ?? true);
       setCompactTextAlignment(snapshot.compactTextAlignment ?? true);
       setFontSizeStepper(snapshot.fontSizeStepper ?? false);
+      setShowDropdownArrows(snapshot.showDropdownArrows ?? false);
       setShowMoreActions(snapshot.showMoreActions ?? false);
       setShowShortcutHints(snapshot.showShortcutHints ?? false);
       setSelected([]);
@@ -1274,6 +1283,7 @@ export default function App() {
             groupedTextToolbar={groupedTextToolbar}
             compactTextAlignment={compactTextAlignment}
             fontSizeStepper={fontSizeStepper}
+            showDropdownArrows={showDropdownArrows}
             showMoreActions={showMoreActions}
             detail={detail}
             setDetail={setDetail}
@@ -1507,6 +1517,19 @@ export default function App() {
                   aria-label="Show popover headers"
                   checked={showPopoverHeaders}
                   onChange={(e) => setShowPopoverHeaders(e.target.checked)}
+                />
+                <span className="switch" />
+              </label>
+              <label className="switch-row">
+                <span>
+                  Show simple popover arrows
+                  <span className="field-note">Color, font, size, alignment</span>
+                </span>
+                <input
+                  type="checkbox"
+                  aria-label="Show simple popover arrows"
+                  checked={showDropdownArrows}
+                  onChange={(event) => setShowDropdownArrows(event.target.checked)}
                 />
                 <span className="switch" />
               </label>

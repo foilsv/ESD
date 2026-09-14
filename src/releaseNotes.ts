@@ -10,6 +10,24 @@ export type ReleaseNote = {
 // maintenance rules that keep this intentionally different from a commit log.
 export const releaseNotes: ReleaseNote[] = [
   {
+    version: '7',
+    title: 'Quieter toolbar controls',
+    summary:
+      'This iteration tests familiar popover actions without repeated down-chevron indicators while keeping an explicit Lab comparison.',
+    changes: [
+      {
+        title: 'Optional simple-popover indicators',
+        description:
+          'Color, font, size, compact Alignment, and Grouped arrow-style controls omit down arrows by default. A saved Lab switch restores them without changing each control’s popover or accessible state; Grouped compound controls retain down chevrons and Inline expansions use left chevrons.',
+      },
+      {
+        title: 'More compact type controls',
+        description:
+          'Font and size popover buttons use the space previously reserved for their arrows, leaving more room for direct text-formatting actions while retaining the same choices.',
+      },
+    ],
+  },
+  {
     version: '6',
     title: 'Label editing and keyboard controls',
     summary:

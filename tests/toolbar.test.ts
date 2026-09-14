@@ -82,6 +82,70 @@ test('rare style actions are opt-in and the menu trigger stays at the end of eve
     assert.ok(shown.lastIndexOf('More formatting actions') > shown.lastIndexOf('Stroke color'));
   }
 });
+test('only simple popover arrows are hidden by default and can be restored from the Lab', () => {
+  const flat = render('flat', false, null);
+  assert.doesNotMatch(flat, /lucide-chevron-down/);
+
+  const grouped = render('grouped', false, null);
+  const inline = render('inline', false, null);
+  for (const [behavior, markup] of [
+    ['grouped', grouped],
+    ['inline', inline],
+  ] as const) {
+    const strokeButton = markup.match(/<button[^>]*aria-label="Stroke settings"[\s\S]*?<\/button>/);
+    const textButton = markup.match(/<button[^>]*aria-label="Text settings"[\s\S]*?<\/button>/);
+    const alignmentButton = markup.match(
+      /<button[^>]*aria-label="Alignment settings"[\s\S]*?<\/button>/,
+    );
+    assert.ok(strokeButton);
+    assert.ok(textButton);
+    assert.ok(alignmentButton);
+    const complexChevron = behavior === 'grouped' ? /lucide-chevron-down/ : /lucide-chevron-left/;
+    assert.match(strokeButton[0], complexChevron);
+    assert.match(textButton[0], complexChevron);
+    assert.doesNotMatch(alignmentButton[0], /lucide-chevron-down/);
+    assert.doesNotMatch(alignmentButton[0], /lucide-chevron-left/);
+  }
+
+  const expandedInlineStroke = render('inline', false, 'stroke').match(
+    /<button[^>]*aria-label="Stroke settings"[\s\S]*?<\/button>/,
+  );
+  assert.ok(expandedInlineStroke);
+  assert.match(expandedInlineStroke[0], /lucide-chevron-left/);
+  assert.doesNotMatch(expandedInlineStroke[0], /lucide-chevron-down/);
+
+  const withArrows = renderToStaticMarkup(
+    createElement(FormattingToolbar, {
+      onEscape() {},
+      objects: [mcu],
+      behavior: 'grouped',
+      showDropdownArrows: true,
+      editing: false,
+      detail: null,
+      setDetail() {},
+      patch() {},
+      patchColor() {},
+      patchStroke() {},
+      patchObjects() {},
+      cycleArrows() {},
+      finishEditing() {},
+      setDefaultStyle() {},
+      copyStyle() {},
+      pasteStyle() {},
+      canPasteStyle: false,
+      selection: { x: 300, y: 300, w: 180, h: 100 },
+      viewport: { x: 0, y: 0, w: 1200, h: 800 },
+    }),
+  );
+  const fillButton = withArrows.match(/<button[^>]*aria-label="Fill color"[\s\S]*?<\/button>/);
+  const alignmentButton = withArrows.match(
+    /<button[^>]*aria-label="Alignment settings"[\s\S]*?<\/button>/,
+  );
+  assert.ok(fillButton);
+  assert.ok(alignmentButton);
+  assert.match(fillButton[0], /lucide-chevron-down/);
+  assert.match(alignmentButton[0], /lucide-chevron-down/);
+});
 test('Flat keeps typography direct and groups text alignment into a popover by default', () => {
   const markup = render('flat', true);
   assert.match(markup, /aria-label="Back to object formatting"/);

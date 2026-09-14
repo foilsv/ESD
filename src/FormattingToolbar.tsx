@@ -90,6 +90,7 @@ interface Props {
   groupedTextToolbar?: boolean;
   compactTextAlignment?: boolean;
   fontSizeStepper?: boolean;
+  showDropdownArrows?: boolean;
   showMoreActions?: boolean;
   detail: Detail;
   setDetail: (detail: Detail) => void;
@@ -215,6 +216,7 @@ export default function FormattingToolbar(props: Props) {
       label={label}
       active={color === key}
       controlsId={panelId}
+      showDropdownArrow={props.showDropdownArrows}
       onClick={() => showColor(key)}
     />
   );
@@ -256,6 +258,7 @@ export default function FormattingToolbar(props: Props) {
       value={value}
       active={fontOpen}
       controlsId={panelId}
+      showDropdownArrow={props.showDropdownArrows}
       onClick={() => {
         setSizeOpen(false);
         setColor(null);
@@ -267,7 +270,7 @@ export default function FormattingToolbar(props: Props) {
   );
   const sizeControl = (
     <button
-      className={`property-button size-dropdown-trigger ${sizeOpen ? 'active' : ''}`}
+      className={`property-button size-dropdown-trigger ${props.showDropdownArrows ? '' : 'without-dropdown-arrow'} ${sizeOpen ? 'active' : ''}`}
       aria-label="Font size"
       title="Font size"
       aria-expanded={sizeOpen}
@@ -282,7 +285,7 @@ export default function FormattingToolbar(props: Props) {
       }}
     >
       <span>{value('fontSize') ?? 'Mixed'}</span>
-      <ChevronDown size={11} />
+      {props.showDropdownArrows && <ChevronDown size={11} aria-hidden="true" />}
     </button>
   );
   const fontSizeStepperControl = <FontSizeStepper {...controls} />;
@@ -352,11 +355,11 @@ export default function FormattingToolbar(props: Props) {
           {summary}
           {presentation === 'flat' ? (
             <ChevronRight size={11} />
-          ) : expanded && presentation === 'inline' ? (
+          ) : presentation === 'inline' ? (
             <ChevronLeft size={11} />
-          ) : (
+          ) : id === 'stroke' || id === 'text' || props.showDropdownArrows ? (
             <ChevronDown size={11} />
-          )}
+          ) : null}
         </button>
         {expanded && presentation === 'inline' && (
           <div
