@@ -70,7 +70,21 @@ Every development change stays local until an explicit deployment command. Do no
 
 Historical source credentials were never stored here, in the manifest, or in Git configuration. Do not obtain a new one under a general publish request.
 
-## Latest successful publication · 2026-09-12
+## Latest successful publication · 2026-09-13
+
+Published after the user explicitly authorized both the source push and publication in the current conversation. The existing personal-account Site, public access, and original URL were preserved.
+
+- Live URL: https://esd-formatting-lab.pnv82g.chatgpt.site
+- Status: `succeeded`, confirmed at `2026-09-14T00:01:16.019326+00:00`.
+- Version number: `6`
+- Saved version ID: `appgprj_6aa4aab0520481919cf3aefa1df1cda0~appgver_422767d98ba88191a1dcd9f31ffaf714`
+- Deployment ID: `appgdep_6aa739429684819180ebbc64e67fdc58`
+- Source commit: `69070fad1b664fd389210e72643c4b2fddaec297`
+- Archive SHA-256: `22aea3cdd95214b741e750d329b0c8444db6822d424ebc6e6b1f3ed09373ede6`
+
+Includes direct label typing, shared keyboard commands and command palette, compact alignment and optional font-size controls, icon-based scene switching, and derived readable stroke and label colors. The source passed the build and all 92 tests before publication.
+
+## Previous successful publication · 2026-09-12
 
 Published after the user's explicit "let's publish" command using the personal account that owns the existing Site. Public access and the original URL were preserved.
 
@@ -86,7 +100,7 @@ Includes manufacturer-inspired styles, four-state connection arrows, canvas navi
 
 During this publication, the source push happened before the user clarified that future Git operations must remain local. That push completed before version saving; the subsequent version save and deployment reused it. This historical fact is not authorization for another push.
 
-## Previous successful publication · 2026-09-12
+## Earlier successful publication · 2026-09-12
 
 Published after the user's explicit "let's deploy" command using the personal account that owns the existing Site. Public access and the original URL were preserved.
 
