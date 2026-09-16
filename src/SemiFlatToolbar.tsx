@@ -2,12 +2,17 @@ import { useId, useRef, useState, useImperativeHandle, type Ref } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
+  Bold,
   ChevronDown,
   ChevronRight,
+  Italic,
   IterationCw,
   Link2,
   Minus,
+  MoreHorizontal,
+  Square,
   Type,
+  Underline,
 } from 'lucide-react';
 import {
   arrowStyles,
@@ -27,7 +32,6 @@ import {
   AlignmentGrid,
   AlignmentStateIcon,
   ColorButton,
-  EmphasisControls,
   FontSizeStepper,
   type ColorKey,
   type StrokeChoicePatch,
@@ -88,7 +92,9 @@ export default function SemiFlatToolbar({
   const panelId = useId();
   const isTextOnly = objects.length > 0 && objects.every((o) => o.kind === 'text');
   const isAllLine = objects.length > 0 && objects.every(isLine);
+  const isAllBlock = objects.length > 0 && objects.every((o) => o.kind === 'block');
   const [textMode, setTextMode] = useState(isTextOnly);
+  const [strokeMode, setStrokeMode] = useState(false);
   const [activePopover, setActivePopover] = useState<Popover>(null);
   const [linkDraft, setLinkDraft] = useState('');
   const [textStyleView, setTextStyleView] = useState<'main' | 'custom'>('main');
@@ -109,6 +115,10 @@ export default function SemiFlatToolbar({
     dismiss: () => {
       if (activePopover) {
         closePopover();
+        return true;
+      }
+      if (strokeMode) {
+        setStrokeMode(false);
         return true;
       }
       if (textMode && !isTextOnly) {
@@ -265,6 +275,40 @@ export default function SemiFlatToolbar({
     </button>
   );
 
+  const moreButton = (
+    <button
+      className={`icon-button ${activePopover === 'link' ? 'active' : ''}`}
+      aria-label="More"
+      title="More"
+      onClick={() => {
+        setLinkDraft(objects[0]?.hyperlink ?? '');
+        openPopover('link');
+      }}
+    >
+      <MoreHorizontal size={17} />
+    </button>
+  );
+
+  const strokeModeRow = (
+    <>
+      <button
+        className="icon-button"
+        aria-label="Back to object formatting"
+        title="Back to object formatting"
+        onClick={() => {
+          setStrokeMode(false);
+          closePopover();
+        }}
+      >
+        <ArrowLeft size={17} />
+      </button>
+      {colorButton('stroke', 'Stroke')}
+      <span className="divider" />
+      {strokePatternButton}
+      {strokeWidthButton}
+    </>
+  );
+
   const textModeRow = (
     <>
       {!isTextOnly && (
@@ -287,13 +331,31 @@ export default function SemiFlatToolbar({
         aria-controls={activePopover === 'textStyle' ? panelId : undefined}
         onClick={() => openPopover('textStyle')}
       >
-        <Type size={14} />
         <span style={{ fontSize: 12 }}>{textStyleLabel}</span>
         <ChevronDown size={10} />
       </button>
       {fontSizeStepper}
       <span className="divider" />
-      <EmphasisControls value={value} patch={patch} />
+      <div className="control-cluster" role="group" aria-label="Text emphasis">
+        {(
+          [
+            { key: 'bold', label: 'Bold', shortcut: 'Ctrl/Cmd+B', Icon: Bold },
+            { key: 'italic', label: 'Italic', shortcut: 'Ctrl/Cmd+I', Icon: Italic },
+            { key: 'underline', label: 'Underline', shortcut: 'Ctrl/Cmd+U', Icon: Underline },
+          ] as const
+        ).map(({ key, label, shortcut, Icon }) => (
+          <button
+            className={`icon-button ${value(key) ? 'active' : ''}`}
+            key={key}
+            title={`${label} · ${shortcut}`}
+            aria-label={label}
+            aria-pressed={value(key) ?? 'mixed'}
+            onClick={() => patch({ [key]: !value(key) })}
+          >
+            <Icon size={16} />
+          </button>
+        ))}
+      </div>
       {colorButton('textColor', 'Text')}
       <button
         className={`property-button ${activePopover === 'align' ? 'active' : ''}`}
@@ -312,14 +374,29 @@ export default function SemiFlatToolbar({
   const objectModeRow = (
     <>
       {context.fill && colorButton('fill', 'Fill')}
-      {(context.stroke || context.lineColor) && (
-        colorButton('stroke', context.lineColor ? 'Line' : 'Stroke')
-      )}
-      {(context.stroke || context.lineColor) && (
+      {context.lineColor && (
         <>
+          {colorButton('stroke', 'Line')}
           <span className="divider" />
           {strokePatternButton}
           {strokeWidthButton}
+        </>
+      )}
+      {context.stroke && !context.lineColor && (
+        <>
+          <span className="divider" />
+          <button
+            className="icon-button"
+            aria-label="Border formatting"
+            title="Open border formatting"
+            onClick={() => {
+              setStrokeMode(true);
+              closePopover();
+            }}
+          >
+            <Square size={17} />
+            <ChevronRight size={10} />
+          </button>
         </>
       )}
       {context.direction && (
@@ -348,6 +425,7 @@ export default function SemiFlatToolbar({
             title="Open text formatting"
             onClick={() => {
               setTextMode(true);
+              setStrokeMode(false);
               closePopover();
             }}
           >
@@ -357,7 +435,7 @@ export default function SemiFlatToolbar({
           {fontSizeStepper}
         </>
       )}
-      {!isAllLine && linkButton}
+      {!isAllLine && (isAllBlock ? moreButton : linkButton)}
     </>
   );
 
@@ -492,6 +570,7 @@ export default function SemiFlatToolbar({
   })();
 
   const showTextMode = isTextOnly || textMode;
+  const showStrokeMode = strokeMode && !!context.stroke && !isAllLine && !showTextMode;
 
   const popoverW = Math.min(popoverWidth, viewport.w);
   const anchoredPopoverLeft = (() => {
@@ -538,9 +617,9 @@ export default function SemiFlatToolbar({
         ref={toolbar}
         className="formatting-bar"
         role="toolbar"
-        aria-label={showTextMode ? 'Text formatting' : 'Object formatting'}
+        aria-label={showTextMode ? 'Text formatting' : showStrokeMode ? 'Border formatting' : 'Object formatting'}
       >
-        {showTextMode ? textModeRow : objectModeRow}
+        {showTextMode ? textModeRow : showStrokeMode ? strokeModeRow : objectModeRow}
       </div>
       {activePopover && (
         <div
