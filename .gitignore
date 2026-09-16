@@ -7,3 +7,9 @@ test-results/
 playwright-report/
 # Local release bundles, publish records, and account configuration
 .local/
+# Claude Code session files
+.claude/
+# Local development and deployment utilities
+serve.js
+inline-build.mjs
+netlify-drop.mjs
