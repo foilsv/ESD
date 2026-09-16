@@ -19,7 +19,7 @@ export type Capability =
   | 'symbolColor'
   | 'text'
   | 'alignment';
-export type PanelBehavior = 'flat' | 'grouped' | 'inline';
+export type PanelBehavior = 'flat' | 'grouped' | 'inline' | 'panel' | 'semi-flat';
 export type ArrowStyle = 'none' | 'left' | 'right' | 'both';
 export type Detail = 'stroke' | 'text' | 'alignment' | 'arrows' | null;
 export interface Style {
@@ -54,6 +54,10 @@ export interface DiagramObject {
   directional?: boolean;
   reversed?: boolean;
   arrowStyle?: ArrowStyle;
+  hyperlink?: string;
+  ports?: string[];
+  hardwareComponents?: string[];
+  softwareComponents?: string[];
 }
 export const arrowStyles: ArrowStyle[] = ['none', 'left', 'right', 'both'];
 export function connectionArrows(object: DiagramObject): ArrowStyle {

@@ -52,6 +52,8 @@ import {
   toggleLabelEmphasis,
 } from './keyboard';
 import type { FormattingToolbarHandle } from './FormattingToolbar';
+import SettingsPanel from './SettingsPanel';
+import SemiFlatToolbar from './SemiFlatToolbar';
 import {
   bounds,
   connectionArrows,
@@ -1370,7 +1372,7 @@ export default function App() {
             )}
           </button>
         </nav>
-        {chosen.length > 0 && (
+        {chosen.length > 0 && behavior !== 'panel' && behavior !== 'semi-flat' && (
           <FormattingToolbar
             ref={formattingToolbar}
             onEscape={escapeCanvas}
@@ -1411,6 +1413,49 @@ export default function App() {
             copyStyle={copyStyle}
             pasteStyle={pasteStyle}
             canPasteStyle={Boolean(styleClipboard)}
+          />
+        )}
+        {chosen.length > 0 && behavior === 'semi-flat' && (
+          <SemiFlatToolbar
+            ref={formattingToolbar}
+            onEscape={escapeCanvas}
+            key={chosen.map((o) => o.id).join(',')}
+            objects={chosen}
+            patch={patch}
+            patchColor={patchColor}
+            patchStroke={patchStroke}
+            patchObjects={patchObjects}
+            cycleArrows={() => {
+              const next = cycleConnectionArrows(objects, selected);
+              commit(next);
+              const connection = next.find(
+                (o) => selected.includes(o.id) && o.kind === 'connection',
+              );
+              if (connection) announce(`Connection arrows: ${connectionArrows(connection)}.`);
+            }}
+            selection={selectionScreen}
+            viewport={panelViewport}
+          />
+        )}
+        {chosen.length > 0 && behavior === 'panel' && (
+          <SettingsPanel
+            ref={formattingToolbar}
+            key={chosen.map((o) => o.id).join(',')}
+            objects={chosen}
+            fontSizeStepper={fontSizeStepper}
+            patch={patch}
+            patchColor={patchColor}
+            patchStroke={patchStroke}
+            patchObjects={patchObjects}
+            cycleArrows={() => {
+              const next = cycleConnectionArrows(objects, selected);
+              commit(next);
+              const connection = next.find(
+                (o) => selected.includes(o.id) && o.kind === 'connection',
+              );
+              if (connection) announce(`Connection arrows: ${connectionArrows(connection)}.`);
+            }}
+            panelRight={labOpen && viewport.w > 900 ? 296 : 16}
           />
         )}
         {labOpen && (

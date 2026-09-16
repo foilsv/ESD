@@ -10,25 +10,31 @@ export type ReleaseNote = {
 // maintenance rules that keep this intentionally different from a commit log.
 export const releaseNotes: ReleaseNote[] = [
   {
-    version: '7',
-    title: 'Toolbar and context menu boundaries',
+    version: ‘7’,
+    title: ‘Toolbar and context menu boundaries’,
     summary:
-      'This iteration tests quieter formatting controls and a compact right-click menu for object and canvas operations.',
+      ‘This iteration tests quieter formatting controls, on-demand semi-flat popovers, and a compact right-click menu for object and canvas operations.’,
+    publishedOn: ‘2026-09-16’,
     changes: [
       {
-        title: 'A compact context menu',
+        title: ‘A compact context menu’,
         description:
-          'Right-click opens a neutral menu with direct actions and one Align submenu. Align and Group remain visible and become available for suitable multi-selections; formatting and history stay in their existing controls. Delete, selection, fit, and grid actions work, while the other rows remain visual placeholders. Right-drag continues to pan.',
+          ‘Right-click opens a neutral menu with direct actions and one Align submenu. Align and Group remain visible and become available for suitable multi-selections; formatting and history stay in their existing controls. Delete, selection, fit, and grid actions work, while the other rows remain visual placeholders. Right-drag continues to pan.’,
       },
       {
-        title: 'Optional simple-popover indicators',
+        title: ‘Semi-flat stroke controls as individual popovers’,
         description:
-          'Color, font, size, compact Alignment, and Grouped arrow-style controls omit down arrows by default. A saved Lab switch restores them without changing each control’s popover or accessible state; Grouped compound controls retain down chevrons and Inline expansions use left chevrons.',
+          ‘Stroke pattern and stroke width each have their own toolbar button that opens a small popover on click, matching the color-picker interaction. The width button shows the current value in px. Both popovers anchor next to the button that triggered them rather than centring on the toolbar, and the text-mode button is reordered before the font-size stepper so its relationship is clear.’,
       },
       {
-        title: 'More compact type controls',
+        title: ‘Two-level font picker in semi-flat text style’,
         description:
-          'Font and size popover buttons use the space previously reserved for their arrows, leaving more room for direct text-formatting actions while retaining the same choices.',
+          ‘The text-style popover now has a "Custom" entry that opens a font-library sub-view in place. Code, Classic, and Compact apply directly from the main list. Choosing Custom reveals all four font families rendered in their own typeface so the difference is visible at a glance.’,
+      },
+      {
+        title: ‘Optional simple-popover indicators’,
+        description:
+          ‘Color, font, size, compact Alignment, and Grouped arrow-style controls omit down arrows by default. A saved Lab switch restores them without changing each control’s popover or accessible state; Grouped compound controls retain down chevrons and Inline expansions use left chevrons.’,
       },
     ],
   },

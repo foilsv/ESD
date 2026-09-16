@@ -29,6 +29,20 @@ export const behaviors: { id: PanelBehavior; label: string; title: string; descr
       description:
         'Groups expand in the same row. Alignment can instead use one compact position popover.',
     },
+    {
+      id: 'panel',
+      label: 'Panel',
+      title: 'Side properties panel',
+      description:
+        'All settings for the selected object appear in a floating panel on the right — no toolbar.',
+    },
+    {
+      id: 'semi-flat',
+      label: 'Semi-Flat',
+      title: 'Context-aware compact toolbar',
+      description:
+        'A compact toolbar adapts its controls to the selected object type — shape, line, or text. Switch between object and text modes with the T› button.',
+    },
   ];
 
 export function toolbarContext(objects: DiagramObject[]) {
@@ -53,7 +67,7 @@ export function compatibleDetail(
   sticky: boolean,
   compactTextAlignment = true,
 ): Detail {
-  if (!sticky) return null;
+  if (!sticky || behavior === 'panel' || behavior === 'semi-flat') return null;
   const usesPopover =
     behavior === 'grouped' || (detail === 'alignment' && compactTextAlignment);
   if (usesPopover) return null;
@@ -66,5 +80,5 @@ export function compatibleDetail(
 }
 
 export function detailOnTextEntry(behavior: PanelBehavior): Detail {
-  return behavior === 'flat' ? null : 'text';
+  return behavior === 'flat' || behavior === 'panel' || behavior === 'semi-flat' ? null : 'text';
 }

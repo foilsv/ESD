@@ -26,7 +26,7 @@ export function validSnapshot(input: unknown): input is Snapshot {
   return (
     data.version === 2 &&
     Object.hasOwn(scenes, data.scene) &&
-    ['flat', 'grouped', 'inline'].includes(data.behavior) &&
+    ['flat', 'grouped', 'inline', 'panel', 'semi-flat'].includes(data.behavior) &&
     typeof data.sticky === 'boolean' &&
     (data.showPopoverHeaders === undefined || typeof data.showPopoverHeaders === 'boolean') &&
     (data.mergeStrokeControls === undefined || typeof data.mergeStrokeControls === 'boolean') &&
@@ -81,6 +81,24 @@ export function validSnapshot(input: unknown): input is Snapshot {
         (o.directional === undefined || typeof o.directional === 'boolean') &&
         (o.reversed === undefined || typeof o.reversed === 'boolean') &&
         (o.arrowStyle === undefined || ['none', 'left', 'right', 'both'].includes(o.arrowStyle)) &&
+        (o.hyperlink === undefined ||
+          (typeof o.hyperlink === 'string' && o.hyperlink.length <= 2000)) &&
+        (o.ports === undefined ||
+          (Array.isArray(o.ports) &&
+            o.ports.length <= 20 &&
+            (o.ports as string[]).every((c) => typeof c === 'string' && c.length <= 100))) &&
+        (o.hardwareComponents === undefined ||
+          (Array.isArray(o.hardwareComponents) &&
+            o.hardwareComponents.length <= 50 &&
+            (o.hardwareComponents as string[]).every(
+              (c) => typeof c === 'string' && c.length <= 200,
+            ))) &&
+        (o.softwareComponents === undefined ||
+          (Array.isArray(o.softwareComponents) &&
+            o.softwareComponents.length <= 50 &&
+            (o.softwareComponents as string[]).every(
+              (c) => typeof c === 'string' && c.length <= 200,
+            ))) &&
         [o.source, o.target].every(
           (id) =>
             id === undefined ||

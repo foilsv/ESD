@@ -272,6 +272,54 @@ export default function DiagramCanvas(props: Props) {
             {object.subtitle}
           </text>
         )}
+        {!isLine(object) &&
+          (() => {
+            const hw = object.hardwareComponents ?? [];
+            const sw = object.softwareComponents ?? [];
+            const badges = [
+              ...hw.map((name) => ({ name, fill: '#fef3c7', stroke: '#d97706', color: '#92400e' })),
+              ...sw.map((name) => ({ name, fill: '#dcfce7', stroke: '#15803d', color: '#166534' })),
+            ];
+            if (!badges.length) return null;
+            const subtitleOffset = object.subtitle ? 20 : 0;
+            const startY = label.y + label.h + subtitleOffset + 8;
+            return (
+              <>
+                {badges.map((badge, i) => {
+                  const bh = 16;
+                  const displayName =
+                    badge.name.length > 16 ? badge.name.slice(0, 15) + '…' : badge.name;
+                  const bw = Math.max(48, Math.min(displayName.length * 5.8 + 18, w - 12));
+                  const bx = x + 6;
+                  const by = startY + i * (bh + 3);
+                  return (
+                    <g key={i} pointerEvents="none">
+                      <rect
+                        x={bx}
+                        y={by}
+                        width={bw}
+                        height={bh}
+                        rx={4}
+                        fill={badge.fill}
+                        stroke={badge.stroke}
+                        strokeWidth={0.8}
+                      />
+                      <text
+                        x={bx + 8}
+                        y={by + 11}
+                        fontSize={9}
+                        fontWeight={600}
+                        fill={badge.color}
+                        fontFamily="Inter, sans-serif"
+                      >
+                        {displayName}
+                      </text>
+                    </g>
+                  );
+                })}
+              </>
+            );
+          })()}
         {active && editing !== id && !isLine(object) && (
           <rect
             className="resize-handle"
